@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VT=/usr/local/bin/vesc_tool
+VT=/home/eitan/vesc_stuff/build-vesc_tool-Desktop_Qt_5_15_2_GCC_64bit-Debug/vesc_tool_6.00
 
 set -e
 
@@ -10,6 +10,16 @@ set -e
 # package. When 6 flags are used a markdown-file and a package name can be
 # passed. When using 4 flags a package-file must exist beforehand (e.g. by
 # creating it from the editor in VESC tool).
+
+# Balance OW
+cd balance_ow/balance_ow/
+make clean
+make
+cd ../
+$VT --buildPkg 'balance_ow.vescpkg:balance_ow.lisp:ui.qml:0:README.md:Balance_OW'
+cd balance_ow
+make clean
+cd ../../
 
 # Balance
 cd balance/balance/
