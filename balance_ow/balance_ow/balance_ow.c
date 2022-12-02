@@ -477,17 +477,17 @@ static void apply_turntilt(data *d) {
 	d->setpoint += d->turntilt_interpolated;
 }
 
-static float apply_deadzone(data *d, float error){
-	if (d->balance_conf.deadzone == 0) {
+static float apply_deadzone(float deadzone, float error){
+	if (deadzone == 0) {
 		return error;
 	}
 
-	if (error < d->balance_conf.deadzone && error > -d->balance_conf.deadzone) {
+	if (error < deadzone && error > -deadzone) {
 		return 0;
-	} else if(error > d->balance_conf.deadzone) {
-		return error - d->balance_conf.deadzone;
+	} else if(error > deadzone) {
+		return error - deadzone;
 	} else {
-		return error + d->balance_conf.deadzone;
+		return error + deadzone;
 	}
 }
 
@@ -669,7 +669,7 @@ static void balance_thd(void *arg) {
 			d->proportional = d->setpoint - d->pitch_angle;
 
 			// Apply deadzone
-			d->proportional = apply_deadzone(d, d->proportional);
+			d->proportional = apply_deadzone(d->balance_conf.deadzone_proportional, d->proportional);
 
 			// Resume real PID maths
 			d->integral = d->integral + d->proportional;
@@ -691,7 +691,19 @@ static void balance_thd(void *arg) {
 				d->derivative = d->derivative - d->d_pt1_highpass_state;
 			}
 
-			d->pid_value = (d->balance_conf.kp * d->proportional) + (d->balance_conf.ki * d->integral) + (d->balance_conf.kd * d->derivative);
+			// Calculate integral with deadzone
+			float pid_integral = 0;
+			if (d->balance_conf.ki > 0) {
+				pid_integral = d->balance_conf.ki * d->integral;
+				// Integral limiting using biquad highpass:
+				if(d->balance_conf.deadzone_integral > 0){
+					pid_integral = fminf(d->balance_conf.deadzone_integral * 10, fabsf(pid_integral));
+					pid_integral *= SIGN(d->integral);
+					d->integral = pid_integral / d->balance_conf.ki;
+				}
+			}
+
+			d->pid_value = (d->balance_conf.kp * d->proportional) + pid_integral + (d->balance_conf.kd * d->derivative);
 
 			if (d->balance_conf.pid_mode == BALANCE_PID_MODE_ANGLE_RATE_CASCADE) {
 				d->proportional2 = d->pid_value - d->gyro[1];
@@ -718,6 +730,14 @@ static void balance_thd(void *arg) {
 				} else {
 					d->pid_value += d->balance_conf.booster_current * SIGN(d->proportional);
 				}
+			}
+
+			if (d->balance_conf.pid_mode == BALANCE_PID_MODE_ANGLE_VESC_53) {
+				float kp2 = d->balance_conf.kp2;
+				if (kp2 >= 1)
+					kp2 = 0;
+				if (kp2 > 0)
+					d->pid_value -= d->gyro[1] * kp2;
 			}
 
 			if (d->balance_conf.multi_esc) {

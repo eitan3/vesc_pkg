@@ -15,7 +15,7 @@ p, li { white-space: pre-wrap; }
             <maxLen>0</maxLen>
         </config_name>
         <hw_name>
-            <longName>Balance Settings</longName>
+            <longName>Balance OW Settings</longName>
             <type>0</type>
             <transmittable>0</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -35,9 +35,10 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;PID loop mode, Angle or Cascadeing Angle Rate.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
             <cDefine>APPCONF_BALANCE_PID_MODE</cDefine>
-            <valInt>0</valInt>
+            <valInt>1</valInt>
             <enumNames>BALANCE_PID_MODE_ANGLE</enumNames>
             <enumNames>BALANCE_PID_MODE_ANGLE_RATE_CASCADE</enumNames>
+            <enumNames>BALANCE_PID_MODE_ANGLE_VESC_53</enumNames>
         </pid_mode>
         <kp>
             <longName>Angle P</longName>
@@ -56,7 +57,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>25</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -78,7 +79,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>0.005</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -122,7 +123,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>0.6</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -187,7 +188,7 @@ p, li { white-space: pre-wrap; }
             <minInt>50</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>100</stepInt>
-            <valInt>1000</valInt>
+            <valInt>800</valInt>
             <suffix> Hz</suffix>
             <vTx>3</vTx>
         </hertz>
@@ -207,7 +208,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>10</stepInt>
-            <valInt>0</valInt>
+            <valInt>10</valInt>
             <suffix> Hz</suffix>
             <vTx>3</vTx>
         </loop_time_filter>
@@ -228,7 +229,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>-180</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>1</stepDouble>
-            <valDouble>20</valDouble>
+            <valDouble>90</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -250,7 +251,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>-180</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>1</stepDouble>
-            <valDouble>45</valDouble>
+            <valDouble>90</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -272,7 +273,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.01</stepDouble>
-            <valDouble>0.9</valDouble>
+            <valDouble>1</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -294,7 +295,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>1</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>3.05</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> V</suffix>
             <vTx>9</vTx>
@@ -316,7 +317,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>1</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>3.05</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> V</suffix>
             <vTx>9</vTx>
@@ -337,7 +338,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>10</stepInt>
-            <valInt>0</valInt>
+            <valInt>1000</valInt>
             <suffix> ms</suffix>
             <vTx>3</vTx>
         </fault_delay_pitch>
@@ -357,7 +358,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>10</stepInt>
-            <valInt>0</valInt>
+            <valInt>1000</valInt>
             <suffix> ms</suffix>
             <vTx>3</vTx>
         </fault_delay_roll>
@@ -377,7 +378,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>10</stepInt>
-            <valInt>0</valInt>
+            <valInt>1000</valInt>
             <suffix> ms</suffix>
             <vTx>3</vTx>
         </fault_delay_duty>
@@ -397,7 +398,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>10</stepInt>
-            <valInt>0</valInt>
+            <valInt>250</valInt>
             <suffix> ms</suffix>
             <vTx>3</vTx>
         </fault_delay_switch_half>
@@ -417,7 +418,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>10</stepInt>
-            <valInt>0</valInt>
+            <valInt>1000</valInt>
             <suffix> ms</suffix>
             <vTx>3</vTx>
         </fault_delay_switch_full>
@@ -437,7 +438,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>10</stepInt>
-            <valInt>1000</valInt>
+            <valInt>300</valInt>
             <suffix> ERPM</suffix>
             <vTx>3</vTx>
         </fault_adc_half_erpm>
@@ -470,7 +471,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>1</stepDouble>
-            <valDouble>10</valDouble>
+            <valDouble>5</valDouble>
             <vTxDoubleScale>100</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>7</vTx>
@@ -514,7 +515,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.01</stepDouble>
-            <valDouble>0.75</valDouble>
+            <valDouble>0.8</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>7</vTx>
@@ -536,7 +537,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>1</stepDouble>
-            <valDouble>10</valDouble>
+            <valDouble>8</valDouble>
             <vTxDoubleScale>100</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>7</vTx>
@@ -558,7 +559,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>3</valDouble>
+            <valDouble>1</valDouble>
             <vTxDoubleScale>100</vTxDoubleScale>
             <suffix> °/s</suffix>
             <vTx>7</vTx>
@@ -580,7 +581,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>100</valDouble>
+            <valDouble>81</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> V</suffix>
             <vTx>9</vTx>
@@ -624,7 +625,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>3</valDouble>
+            <valDouble>1</valDouble>
             <vTxDoubleScale>100</vTxDoubleScale>
             <suffix> °/s</suffix>
             <vTx>7</vTx>
@@ -646,7 +647,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>57</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> V</suffix>
             <vTx>9</vTx>
@@ -668,7 +669,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>1</valDouble>
+            <valDouble>2.5</valDouble>
             <vTxDoubleScale>100</vTxDoubleScale>
             <suffix> °/s</suffix>
             <vTx>7</vTx>
@@ -732,7 +733,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>-1</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.01</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>0.1</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> °/1000 ERPM</suffix>
             <vTx>9</vTx>
@@ -754,7 +755,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>-80</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>1.5</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -798,7 +799,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>20</valDouble>
+            <valDouble>5</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -820,7 +821,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>8</valDouble>
+            <valDouble>45</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -842,21 +843,21 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>30</valDouble>
+            <valDouble>60</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °/s</suffix>
             <vTx>9</vTx>
         </startup_speed>
-        <deadzone>
-            <longName>Deadzone</longName>
+        <deadzone_proportional>
+            <longName>Proportional Deadzone</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Deadzone disables balancing at center.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_DEADZONE</cDefine>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Proportional Deadzone disables balancing at center.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_PROPORTIONAL_DEADZONE</cDefine>
             <editorDecimalsDouble>2</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -868,7 +869,31 @@ p, li { white-space: pre-wrap; }
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
-        </deadzone>
+        </deadzone_proportional>
+        <deadzone_integral>
+            <longName>Integral Deadzone</longName>
+            <type>1</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Integral Deadzone disables balancing at center.&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same deadzone FW 5.3 Stable V6 has.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_INTEGRAL_DEADZONE</cDefine>
+            <editorDecimalsDouble>2</editorDecimalsDouble>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxDouble>5</maxDouble>
+            <minDouble>0</minDouble>
+            <showDisplay>0</showDisplay>
+            <stepDouble>0.01</stepDouble>
+            <valDouble>0</valDouble>
+            <vTxDoubleScale>1000</vTxDoubleScale>
+            <suffix> °</suffix>
+            <vTx>9</vTx>
+        </deadzone_integral>
         <multi_esc>
             <longName>Multiple VESCs Over CAN</longName>
             <type>5</type>
@@ -1008,7 +1033,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>2</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>6</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> A</suffix>
             <vTx>9</vTx>
@@ -1029,7 +1054,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>5</stepInt>
-            <valInt>10</valInt>
+            <valInt>1</valInt>
             <suffix> s</suffix>
             <vTx>3</vTx>
         </brake_timeout>
@@ -1072,7 +1097,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>2</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>30</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> A</suffix>
             <vTx>9</vTx>
@@ -1134,7 +1159,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>8</valDouble>
+            <valDouble>0</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -1156,7 +1181,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>1</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>1</valDouble>
+            <valDouble>2</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -1178,7 +1203,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>1</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>15</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> A</suffix>
             <vTx>9</vTx>
@@ -1200,7 +1225,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>2</stepDouble>
-            <valDouble>10</valDouble>
+            <valDouble>15</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> A</suffix>
             <vTx>9</vTx>
@@ -1222,7 +1247,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>5</valDouble>
+            <valDouble>8</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -1288,7 +1313,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.05</stepDouble>
-            <valDouble>0</valDouble>
+            <valDouble>0.15</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °/A</suffix>
             <vTx>9</vTx>
@@ -1310,7 +1335,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>2</valDouble>
+            <valDouble>10</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> Hz</suffix>
             <vTx>9</vTx>
@@ -1354,7 +1379,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>5</valDouble>
+            <valDouble>3</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -1376,7 +1401,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>1</valDouble>
+            <valDouble>2</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -1397,7 +1422,7 @@ p, li { white-space: pre-wrap; }
             <minInt>100</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>100</stepInt>
-            <valInt>100</valInt>
+            <valInt>1000</valInt>
             <suffix> ERPM</suffix>
             <vTx>3</vTx>
         </turntilt_start_erpm>
@@ -1418,7 +1443,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>5</valDouble>
+            <valDouble>3</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °/s</suffix>
             <vTx>9</vTx>
@@ -1439,7 +1464,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>5</stepInt>
-            <valInt>20</valInt>
+            <valInt>200</valInt>
             <suffix> %</suffix>
             <vTx>3</vTx>
         </turntilt_erpm_boost>
@@ -1459,7 +1484,7 @@ p, li { white-space: pre-wrap; }
             <minInt>100</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>100</stepInt>
-            <valInt>20000</valInt>
+            <valInt>5000</valInt>
             <suffix> ERPM</suffix>
             <vTx>3</vTx>
         </turntilt_erpm_boost_end>
@@ -1504,7 +1529,8 @@ p, li { white-space: pre-wrap; }
         <ser>startup_pitch_tolerance</ser>
         <ser>startup_roll_tolerance</ser>
         <ser>startup_speed</ser>
-        <ser>deadzone</ser>
+        <ser>deadzone_proportional</ser>
+        <ser>deadzone_integral</ser>
         <ser>multi_esc</ser>
         <ser>yaw_kp</ser>
         <ser>yaw_ki</ser>
@@ -1555,8 +1581,9 @@ p, li { white-space: pre-wrap; }
                     <param>ki_limit</param>
                     <param>kd_pt1_lowpass_frequency</param>
                     <param>kd_pt1_highpass_frequency</param>
-                    <param>::sep::Experimental</param>
-                    <param>deadzone</param>
+                    <param>::sep::Deadzones</param>
+                    <param>deadzone_proportional</param>
+                    <param>deadzone_integral</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>

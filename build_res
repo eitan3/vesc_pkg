@@ -16,7 +16,7 @@ cd balance_ow/balance_ow/
 make clean
 make
 cd ../
-$VT --buildPkg 'balance_ow.vescpkg:balance_ow.lisp:ui.qml:0:README.md:Balance_OW'
+$VT --buildPkg 'balance_ow.vescpkg:balance_ow.lisp:ow_ui.qml:0:README.md:Balance_OW'
 cd balance_ow
 make clean
 cd ../../
