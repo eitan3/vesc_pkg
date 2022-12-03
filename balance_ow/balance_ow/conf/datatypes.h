@@ -50,7 +50,7 @@ typedef struct {
 	uint16_t fault_delay_switch_half;
 	uint16_t fault_delay_switch_full;
 	uint16_t fault_adc_half_erpm;
-	bool fault_is_dual_switch;
+	bool fault_is_single_switch;
 	float tiltback_duty_angle;
 	float tiltback_duty_speed;
 	float tiltback_duty;
@@ -99,6 +99,10 @@ typedef struct {
 	float turntilt_speed;
 	uint16_t turntilt_erpm_boost;
 	uint16_t turntilt_erpm_boost_end;
+	bool enable_reverse_stop;
+	bool enable_quickstop;
+	uint16_t quickstop_erpm;
+	float quickstop_angle;
 } balance_config;
 
 // DATATYPES_H_

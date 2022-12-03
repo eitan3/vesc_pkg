@@ -15,7 +15,7 @@ p, li { white-space: pre-wrap; }
             <maxLen>0</maxLen>
         </config_name>
         <hw_name>
-            <longName>Balance OW Settings</longName>
+            <longName>OW Settings</longName>
             <type>0</type>
             <transmittable>0</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -442,18 +442,18 @@ p, li { white-space: pre-wrap; }
             <suffix> ERPM</suffix>
             <vTx>3</vTx>
         </fault_adc_half_erpm>
-        <fault_is_dual_switch>
+        <fault_is_single_switch>
             <longName>Treat both sensors as one</longName>
             <type>5</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; font-weight:400; font-style:normal;&quot;&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Treat both sensors as a single one, i.e. startup only requires one of the sensors, and heel lifts aren't possible (for advanced riders only!).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_FAULT_IS_DUAL_SWITCH</cDefine>
+            <cDefine>APPCONF_BALANCE_FAULT_IS_SINGLE_SWITCH</cDefine>
             <valInt>0</valInt>
-        </fault_is_dual_switch>
+        </fault_is_single_switch>
         <tiltback_duty_angle>
             <longName>Angle</longName>
             <type>1</type>
@@ -1488,6 +1488,72 @@ p, li { white-space: pre-wrap; }
             <suffix> ERPM</suffix>
             <vTx>3</vTx>
         </turntilt_erpm_boost_end>
+        <enable_reverse_stop>
+            <longName>Reverse Stop</longName>
+            <type>5</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Enable reverse stop&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_REVERSE_STOP</cDefine>
+            <valInt>0</valInt>
+        </enable_reverse_stop>
+        <enable_quickstop>
+            <longName>Enable Quickstop</longName>
+            <type>5</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Enable quickstop&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_ENABLE_QUICKSTOP</cDefine>
+            <valInt>0</valInt>
+        </enable_quickstop>
+        <quickstop_erpm>
+            <longName>Quickstop max ERPM</longName>
+            <type>2</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Speed below which we check for quickstop conditions&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_QUICKSTOP_ERPM</cDefine>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxInt>10000</maxInt>
+            <minInt>0</minInt>
+            <showDisplay>0</showDisplay>
+            <stepInt>5</stepInt>
+            <valInt>200</valInt>
+            <suffix></suffix>
+            <vTx>3</vTx>
+        </quickstop_erpm>
+        <quickstop_angle>
+            <longName>Quickstop start angle</longName>
+            <type>1</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Check for quickstop fault if the board above this angle.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_QUICKSTOP_ANGLE</cDefine>
+            <editorDecimalsDouble>1</editorDecimalsDouble>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxDouble>90</maxDouble>
+            <minDouble>0</minDouble>
+            <showDisplay>0</showDisplay>
+            <stepDouble>0.5</stepDouble>
+            <valDouble>14</valDouble>
+            <vTxDoubleScale>1</vTxDoubleScale>
+            <suffix> °</suffix>
+            <vTx>9</vTx>
+        </quickstop_angle>
     </Params>
     <SerOrder>
         <ser>pid_mode</ser>
@@ -1510,7 +1576,7 @@ p, li { white-space: pre-wrap; }
         <ser>fault_delay_switch_half</ser>
         <ser>fault_delay_switch_full</ser>
         <ser>fault_adc_half_erpm</ser>
-        <ser>fault_is_dual_switch</ser>
+        <ser>fault_is_single_switch</ser>
         <ser>tiltback_duty_angle</ser>
         <ser>tiltback_duty_speed</ser>
         <ser>tiltback_duty</ser>
@@ -1559,6 +1625,10 @@ p, li { white-space: pre-wrap; }
         <ser>turntilt_speed</ser>
         <ser>turntilt_erpm_boost</ser>
         <ser>turntilt_erpm_boost_end</ser>
+        <ser>enable_reverse_stop</ser>
+        <ser>enable_quickstop</ser>
+        <ser>quickstop_erpm</ser>
+        <ser>quickstop_angle</ser>
     </SerOrder>
     <Grouping>
         <group>
@@ -1665,7 +1735,18 @@ p, li { white-space: pre-wrap; }
                     <param>fault_delay_switch_half</param>
                     <param>fault_delay_switch_full</param>
                     <param>fault_adc_half_erpm</param>
-                    <param>fault_is_dual_switch</param>
+                    <param>fault_is_single_switch</param>
+                </subgroupParams>
+            </subgroup>
+            <subgroup>
+                <subgroupName>Features</subgroupName>
+                <subgroupParams>
+                    <param>::sep::Reverse Stop</param>
+                    <param>enable_reverse_stop</param>
+                    <param>::sep::Quick Stop</param>
+                    <param>enable_quickstop</param>
+                    <param>quickstop_erpm</param>
+                    <param>quickstop_angle</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>

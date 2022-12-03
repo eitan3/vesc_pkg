@@ -52,11 +52,14 @@ typedef enum {
 	FAULT_SWITCH_HALF = 8,
 	FAULT_SWITCH_FULL = 9,
 	FAULT_DUTY = 10,
-	FAULT_STARTUP = 11
+	FAULT_STARTUP = 11,
+	FAULT_REVERSE = 12,
+	FAULT_QUICKSTOP = 13
 } BalanceState;
 
 typedef enum {
 	CENTERING = 0,
+	REVERSESTOP,
 	TILTBACK_DUTY,
 	TILTBACK_HV,
 	TILTBACK_LV,
@@ -124,6 +127,10 @@ typedef struct {
 	float d_pt1_lowpass_state, d_pt1_lowpass_k, d_pt1_highpass_state, d_pt1_highpass_k;
 	float motor_timeout_seconds;
 	float brake_timeout; // Seconds
+
+	// Reverse Stop
+	float reverse_stop_step_size, reverse_tolerance, reverse_total_erpm;
+	float reverse_timer;
 
 	// Debug values
 	int debug_render_1, debug_render_2;
@@ -217,6 +224,10 @@ static void configure(data *d) {
 	// Reset loop time variables
 	d->last_time = 0.0;
 	d->filtered_loop_overshoot = 0.0;
+
+	// Reverse Stop
+	d->reverse_tolerance = 50000;
+	d->reverse_stop_step_size = 100.0 / d->balance_conf.hertz;
 }
 
 static void reset_vars(data *d) {
@@ -246,6 +257,7 @@ static void reset_vars(data *d) {
 	d->last_time = 0;
 	d->diff_time = 0;
 	d->brake_timeout = 0;
+	d->reverse_timer = 0;
 }
 
 static float get_setpoint_adjustment_step_size(data *d) {
@@ -260,6 +272,8 @@ static float get_setpoint_adjustment_step_size(data *d) {
 			return d->tiltback_lv_step_size;
 		case (TILTBACK_NONE):
 			return d->tiltback_return_step_size;
+		case (REVERSESTOP):
+			return d->reverse_stop_step_size;
 		default:
 			;
 	}
@@ -275,12 +289,20 @@ static bool check_faults(data *d, bool ignoreTimers){
 			d->state = FAULT_SWITCH_FULL;
 			return true;
 		}
+		// QUICK STOP
+		else if (d->balance_conf.enable_quickstop && 
+				 d->abs_erpm < d->balance_conf.quickstop_erpm && 
+				 fabsf(d->pitch_angle) > d->balance_conf.quickstop_angle && 
+				 SIGN(d->pitch_angle) == SIGN(d->erpm)) {
+			d->state = FAULT_QUICKSTOP;
+			return true;
+		}
 	} else {
 		d->fault_switch_timer = d->current_time;
 	}
 
 	// Switch partially open and stopped
-	if(!d->balance_conf.fault_is_dual_switch) {
+	if(!d->balance_conf.fault_is_single_switch) {
 		if((d->switch_state == HALF || d->switch_state == OFF) && d->abs_erpm < d->balance_conf.fault_adc_half_erpm){
 			if ((1000.0 * (d->current_time - d->fault_switch_half_timer)) > d->balance_conf.fault_delay_switch_half || ignoreTimers){
 				d->state = FAULT_SWITCH_HALF;
@@ -627,7 +649,7 @@ static void balance_thd(void *arg) {
 			if (d->adc1 > d->balance_conf.fault_adc1 && d->adc2 > d->balance_conf.fault_adc2) {
 				d->switch_state = ON;
 			} else if (d->adc1 > d->balance_conf.fault_adc1 || d->adc2 > d->balance_conf.fault_adc2) {
-				if (d->balance_conf.fault_is_dual_switch) {
+				if (d->balance_conf.fault_is_single_switch) {
 					d->switch_state = ON;
 				} else {
 					d->switch_state = HALF;
@@ -775,6 +797,8 @@ static void balance_thd(void *arg) {
 
 		case (FAULT_ANGLE_PITCH):
 		case (FAULT_ANGLE_ROLL):
+		case (FAULT_REVERSE):
+		case (FAULT_QUICKSTOP):
 		case (FAULT_SWITCH_HALF):
 		case (FAULT_SWITCH_FULL):
 		case (FAULT_STARTUP):
