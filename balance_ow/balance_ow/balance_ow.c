@@ -257,7 +257,6 @@ static void reset_vars(data *d) {
 	d->last_time = 0;
 	d->diff_time = 0;
 	d->brake_timeout = 0;
-	d->reverse_timer = 0;
 }
 
 static float get_setpoint_adjustment_step_size(data *d) {
@@ -299,6 +298,36 @@ static bool check_faults(data *d, bool ignoreTimers){
 		}
 	} else {
 		d->fault_switch_timer = d->current_time;
+	}
+
+	// Feature: Reverse-Stop
+	if(d->setpointAdjustmentType == REVERSESTOP){
+		//  Taking your foot off entirely while reversing? Ignore delays
+		if (d->switch_state == OFF) {
+			d->state = FAULT_SWITCH_FULL;
+			return true;
+		}
+		if (fabsf(d->pitch_angle) > 15) {
+			d->state = FAULT_REVERSE;
+			return true;
+		}
+		// Above 10 degrees for a half a second? Switch it off
+		if ((fabsf(d->pitch_angle) > 10) && (d->current_time - d->reverse_timer > 500)) {
+			d->state = FAULT_REVERSE;
+			return true;
+		}
+		// Above 5 degrees for a full second? Switch it off
+		if ((fabsf(d->pitch_angle) > 5) && (d->current_time - d->reverse_timer > 1000)) {
+			d->state = FAULT_REVERSE;
+			return true;
+		}
+		if (d->reverse_total_erpm > d->reverse_tolerance * 3) {
+			d->state = FAULT_REVERSE;
+			return true;
+		}
+		if (fabsf(d->pitch_angle) < 5) {
+			d->reverse_timer = d->current_time;
+		}
 	}
 
 	// Switch partially open and stopped
@@ -350,6 +379,23 @@ static void calculate_setpoint_target(data *d) {
 	if (d->setpointAdjustmentType == CENTERING && d->setpoint_target_interpolated != d->setpoint_target) {
 		// Ignore tiltback during centering sequence
 		d->state = RUNNING;
+	} else if (d->setpointAdjustmentType == REVERSESTOP) {
+		// accumalete erpms:
+		d->reverse_total_erpm += d->erpm;
+		if (fabsf(d->reverse_total_erpm) > d->reverse_tolerance) {
+			// tilt down by 10 degrees after 50k aggregate erpm
+			d->setpoint_target = 10 * (fabsf(d->reverse_total_erpm) - d->reverse_tolerance) / 50000;
+		}
+		else {
+			if (fabsf(d->reverse_total_erpm) <= d->reverse_tolerance/2) {
+				if (d->erpm >= 0){
+					d->setpointAdjustmentType = TILTBACK_NONE;
+					d->reverse_total_erpm = 0;
+					d->setpoint_target = 0;
+					d->integral = 0;
+				}
+			}
+		}
 	} else if (d->abs_duty_cycle > d->balance_conf.tiltback_duty) {
 		if (d->erpm > 0) {
 			d->setpoint_target = d->balance_conf.tiltback_duty_angle;
@@ -377,7 +423,15 @@ static void calculate_setpoint_target(data *d) {
 		d->setpointAdjustmentType = TILTBACK_LV;
 		d->state = RUNNING_TILTBACK_LOW_VOLTAGE;
 	} else {
-		d->setpointAdjustmentType = TILTBACK_NONE;
+		// Normal run
+		if (d->balance_conf.enable_reverse_stop && (d->erpm < -200)) {
+			d->setpointAdjustmentType = REVERSESTOP;
+			d->reverse_timer = d->current_time;
+			d->reverse_total_erpm = 0;
+		}
+		else {
+			d->setpointAdjustmentType = TILTBACK_NONE;
+		}
 		d->setpoint_target = 0;
 		d->state = RUNNING;
 	}
@@ -723,6 +777,10 @@ static void balance_thd(void *arg) {
 					pid_integral *= SIGN(d->integral);
 					d->integral = pid_integral / d->balance_conf.ki;
 				}
+			}
+
+			if (d->setpointAdjustmentType == REVERSESTOP) {
+				d->integral = d->integral * 0.9;
 			}
 
 			d->pid_value = (d->balance_conf.kp * d->proportional) + pid_integral + (d->balance_conf.kd * d->derivative);

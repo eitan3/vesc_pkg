@@ -9,7 +9,9 @@ Most things should be similar to the regular balance app, except some of the tim
 
 Recent features:
 
-Added quick stop (thanks to surfdado).
+Added reverse stop (thanks to surfdado).
+
+Added quickstop (thanks to surfdado).
 
 Added new (old) PID mode, option 3 in PID mode set it like it was on vesc 5.3.
 
