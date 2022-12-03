@@ -9,6 +9,8 @@ Most things should be similar to the regular balance app, except some of the tim
 
 Recent features:
 
+Added Temp tiltback.
+
 Added reverse stop (thanks to surfdado).
 
 Added quickstop (thanks to surfdado).

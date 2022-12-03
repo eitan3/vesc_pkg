@@ -47,6 +47,7 @@ typedef enum {
 	RUNNING_TILTBACK_DUTY = 2,
 	RUNNING_TILTBACK_HIGH_VOLTAGE = 3,
 	RUNNING_TILTBACK_LOW_VOLTAGE = 4,
+	RUNNING_TILTBACK_TEMP = 5,
 	FAULT_ANGLE_PITCH = 6,
 	FAULT_ANGLE_ROLL = 7,
 	FAULT_SWITCH_HALF = 8,
@@ -63,6 +64,7 @@ typedef enum {
 	TILTBACK_DUTY,
 	TILTBACK_HV,
 	TILTBACK_LV,
+	TILTBACK_TEMP,
 	TILTBACK_NONE
 } SetpointAdjustmentType;
 
@@ -127,6 +129,11 @@ typedef struct {
 	float d_pt1_lowpass_state, d_pt1_lowpass_k, d_pt1_highpass_state, d_pt1_highpass_k;
 	float motor_timeout_seconds;
 	float brake_timeout; // Seconds
+
+	// Temp tiltback
+	float mc_fet_start_temp;
+	float mc_mot_start_temp;
+	float temp_tiltback_step_size;
 
 	// Reverse Stop
 	float reverse_stop_step_size, reverse_tolerance, reverse_total_erpm;
@@ -228,6 +235,11 @@ static void configure(data *d) {
 	// Reverse Stop
 	d->reverse_tolerance = 50000;
 	d->reverse_stop_step_size = 100.0 / d->balance_conf.hertz;
+
+	// Temp Tiltback
+	d->mc_fet_start_temp = VESC_IF->get_cfg_float(CFG_PARAM_l_temp_fet_start) - d->balance_conf.temp_tiltback_start_offset;
+	d->mc_mot_start_temp = VESC_IF->get_cfg_float(CFG_PARAM_l_temp_motor_start) - d->balance_conf.temp_tiltback_start_offset;
+	d->temp_tiltback_step_size = d->balance_conf.temp_tiltback_speed / d->balance_conf.hertz;
 }
 
 static void reset_vars(data *d) {
@@ -265,6 +277,8 @@ static float get_setpoint_adjustment_step_size(data *d) {
 			return d->startup_step_size;
 		case (TILTBACK_DUTY):
 			return d->tiltback_duty_step_size;
+		case (TILTBACK_TEMP):
+			return d->temp_tiltback_step_size;
 		case (TILTBACK_HV):
 			return d->tiltback_hv_step_size;
 		case (TILTBACK_LV):
@@ -422,13 +436,30 @@ static void calculate_setpoint_target(data *d) {
 
 		d->setpointAdjustmentType = TILTBACK_LV;
 		d->state = RUNNING_TILTBACK_LOW_VOLTAGE;
+	}else if(VESC_IF->mc_temp_fet_filtered() > d->mc_fet_start_temp){
+		if(d->erpm > 0){
+			d->setpoint_target = d->balance_conf.temp_tiltback_angle;
+		} else {
+			d->setpoint_target = -d->balance_conf.temp_tiltback_angle;
+		}
+		d->setpointAdjustmentType = TILTBACK_TEMP;
+		d->state = RUNNING_TILTBACK_TEMP;
+	}else if(VESC_IF->mc_temp_motor_filtered() > d->mc_mot_start_temp){
+		if(d->erpm > 0){
+			d->setpoint_target = d->balance_conf.temp_tiltback_angle;
+		} else {
+			d->setpoint_target = -d->balance_conf.temp_tiltback_angle;
+		}
+		d->setpointAdjustmentType = TILTBACK_TEMP;
+		d->state = RUNNING_TILTBACK_TEMP;
 	} else {
-		// Normal run
+		// Go to reverse stop state
 		if (d->balance_conf.enable_reverse_stop && (d->erpm < -200)) {
 			d->setpointAdjustmentType = REVERSESTOP;
 			d->reverse_timer = d->current_time;
 			d->reverse_total_erpm = 0;
 		}
+		// Normal run
 		else {
 			d->setpointAdjustmentType = TILTBACK_NONE;
 		}
@@ -728,6 +759,7 @@ static void balance_thd(void *arg) {
 		case (RUNNING_TILTBACK_DUTY):
 		case (RUNNING_TILTBACK_HIGH_VOLTAGE):
 		case (RUNNING_TILTBACK_LOW_VOLTAGE):
+		case (RUNNING_TILTBACK_TEMP):
 			// Check for faults
 			if (check_faults(d, false)) {
 				break;

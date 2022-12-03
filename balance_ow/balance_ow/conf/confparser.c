@@ -79,6 +79,9 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->turntilt_speed, &ind);
 	buffer_append_uint16(buffer, conf->turntilt_erpm_boost, &ind);
 	buffer_append_uint16(buffer, conf->turntilt_erpm_boost_end, &ind);
+	buffer_append_float32_auto(buffer, conf->temp_tiltback_start_offset, &ind);
+	buffer_append_float32_auto(buffer, conf->temp_tiltback_speed, &ind);
+	buffer_append_float32_auto(buffer, conf->temp_tiltback_angle, &ind);
 	buffer[ind++] = conf->enable_reverse_stop;
 	buffer[ind++] = conf->enable_quickstop;
 	buffer_append_uint16(buffer, conf->quickstop_erpm, &ind);
@@ -164,6 +167,9 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->turntilt_speed = buffer_get_float32_auto(buffer, &ind);
 	conf->turntilt_erpm_boost = buffer_get_uint16(buffer, &ind);
 	conf->turntilt_erpm_boost_end = buffer_get_uint16(buffer, &ind);
+	conf->temp_tiltback_start_offset = buffer_get_float32_auto(buffer, &ind);
+	conf->temp_tiltback_speed = buffer_get_float32_auto(buffer, &ind);
+	conf->temp_tiltback_angle = buffer_get_float32_auto(buffer, &ind);
 	conf->enable_reverse_stop = buffer[ind++];
 	conf->enable_quickstop = buffer[ind++];
 	conf->quickstop_erpm = buffer_get_uint16(buffer, &ind);
@@ -242,6 +248,9 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->turntilt_speed = APPCONF_BALANCE_TURNTILT_SPEED;
 	conf->turntilt_erpm_boost = APPCONF_BALANCE_TURNTILT_ERPM_BOOST;
 	conf->turntilt_erpm_boost_end = APPCONF_BALANCE_TURNTILT_ERPM_BOOST_END;
+	conf->temp_tiltback_start_offset = APPCONF_BALANCE_TEMP_TILTBACK_START;
+	conf->temp_tiltback_speed = APPCONF_BALANCE_TEMP_TILTBACK_SPEED;
+	conf->temp_tiltback_angle = APPCONF_BALANCE_TEMP_TILTBACK_ANGLE;
 	conf->enable_reverse_stop = APPCONF_BALANCE_REVERSE_STOP;
 	conf->enable_quickstop = APPCONF_BALANCE_ENABLE_QUICKSTOP;
 	conf->quickstop_erpm = APPCONF_BALANCE_QUICKSTOP_ERPM;

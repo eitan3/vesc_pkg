@@ -99,6 +99,9 @@ typedef struct {
 	float turntilt_speed;
 	uint16_t turntilt_erpm_boost;
 	uint16_t turntilt_erpm_boost_end;
+	float temp_tiltback_start_offset;
+	float temp_tiltback_speed;
+	float temp_tiltback_angle;
 	bool enable_reverse_stop;
 	bool enable_quickstop;
 	uint16_t quickstop_erpm;
