@@ -23,14 +23,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef enum {
-	BALANCE_PID_MODE_ANGLE = 0,
-	BALANCE_PID_MODE_ANGLE_RATE_CASCADE = 1,
-	BALANCE_PID_MODE_ANGLE_VESC_53 = 2
-} BALANCE_PID_MODE;
-
 typedef struct {
-	BALANCE_PID_MODE pid_mode;
 	float kp;
 	float ki;
 	float kp2;

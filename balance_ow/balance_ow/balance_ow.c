@@ -192,11 +192,10 @@ static void configure(data *d) {
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
 
 	// Init Filters
-	if (d->balance_conf.loop_time_filter > 0) {
-		d->loop_overshoot_alpha = 2.0 * M_PI * ((float)1.0 / (float)d->balance_conf.hertz) *
-				(float)d->balance_conf.loop_time_filter / (2.0 * M_PI * (1.0 / (float)d->balance_conf.hertz) *
-						(float)d->balance_conf.loop_time_filter + 1.0);
-	}
+	float loop_time_filter = 3.0; // Originally Parameter, now hard-coded
+	d->loop_overshoot_alpha = 2.0 * M_PI * ((float)1.0 / (float)d->balance_conf.hertz) *
+				loop_time_filter / (2.0 * M_PI * (1.0 / (float)d->balance_conf.hertz) *
+						loop_time_filter + 1.0);
 
 	if (d->balance_conf.torquetilt_filter > 0) { // Torquetilt Current Biquad
 		float Fc = d->balance_conf.torquetilt_filter / d->balance_conf.hertz;
@@ -617,10 +616,8 @@ static void balance_thd(void *arg) {
 		d->filtered_diff_time = 0.03 * d->diff_time + 0.97 * d->filtered_diff_time; // Purely a metric
 		d->last_time = d->current_time;
 
-		if (d->balance_conf.loop_time_filter > 0) {
-			d->loop_overshoot = d->diff_time - (d->loop_time_seconds - roundf(d->filtered_loop_overshoot));
-			d->filtered_loop_overshoot = d->loop_overshoot_alpha * d->loop_overshoot + (1.0 - d->loop_overshoot_alpha) * d->filtered_loop_overshoot;
-		}
+		d->loop_overshoot = d->diff_time - (d->loop_time_seconds - roundf(d->filtered_loop_overshoot));
+		d->filtered_loop_overshoot = d->loop_overshoot_alpha * d->loop_overshoot + (1.0 - d->loop_overshoot_alpha) * d->filtered_loop_overshoot;
 
 		// Read values for GUI
 		d->motor_current = VESC_IF->mc_get_tot_current_directional_filtered();
@@ -723,7 +720,7 @@ static void balance_thd(void *arg) {
 
 			d->pid_value = (d->balance_conf.kp * d->proportional) + d->balance_conf.ki * d->integral;
 
-			if (d->balance_conf.pid_mode == BALANCE_PID_MODE_ANGLE_RATE_CASCADE) {
+			if (d->balance_conf.kp2 > 0) {
 				d->proportional2 = d->pid_value - d->gyro[1];
 				d->integral2 = d->integral2 + d->proportional2;
 
@@ -747,14 +744,6 @@ static void balance_thd(void *arg) {
 				} else {
 					d->pid_value += d->balance_conf.booster_current * SIGN(d->proportional);
 				}
-			}
-
-			if (d->balance_conf.pid_mode == BALANCE_PID_MODE_ANGLE_VESC_53) {
-				float kp2 = d->balance_conf.kp2;
-				if (kp2 >= 1)
-					kp2 = 0;
-				if (kp2 > 0)
-					d->pid_value -= d->gyro[1] * kp2;
 			}
 
 			// Output to motor

@@ -14,5 +14,3 @@ Added Temp tiltback.
 Added reverse stop (thanks to surfdado).
 
 Added quickstop (thanks to surfdado).
-
-Added new (old) PID mode, option 3 in PID mode set it like it was on vesc 5.3.
