@@ -36,7 +36,7 @@ HEADER
 #define DEG2RAD_f(deg)		((deg) * (float)(M_PI / 180.0))
 #define RAD2DEG_f(rad) 		((rad) * (float)(180.0 / M_PI))
 
-// Data type (Value 5 was removed, and can be reused at a later date, but i wanted to preserve the current value's numbers for UIs)
+// Data type (Values 5 and 10 were removed, and can be reused at a later date, but i wanted to preserve the current value's numbers for UIs)
 typedef enum {
 	STARTUP = 0,
 	RUNNING = 1,
@@ -48,7 +48,6 @@ typedef enum {
 	FAULT_ANGLE_ROLL = 7,
 	FAULT_SWITCH_HALF = 8,
 	FAULT_SWITCH_FULL = 9,
-	FAULT_DUTY = 10,
 	FAULT_STARTUP = 11,
 	FAULT_REVERSE = 12,
 	FAULT_QUICKSTOP = 13
@@ -121,7 +120,7 @@ typedef struct {
 	SetpointAdjustmentType setpointAdjustmentType;
 	float current_time, last_time, diff_time, loop_overshoot; // Seconds
 	float filtered_loop_overshoot, loop_overshoot_alpha, filtered_diff_time;
-	float fault_angle_pitch_timer, fault_angle_roll_timer, fault_switch_timer, fault_switch_half_timer, fault_duty_timer; // Seconds
+	float fault_angle_pitch_timer, fault_angle_roll_timer, fault_switch_timer, fault_switch_half_timer; // Seconds
 	float motor_timeout_seconds;
 	float brake_timeout; // Seconds
 
@@ -359,16 +358,6 @@ static bool check_faults(data *d, bool ignoreTimers){
 		}
 	} else {
 		d->fault_angle_roll_timer = d->current_time;
-	}
-
-	// Check for duty /*HARD CODED FOR 100% DC and 100ms*/
-	if (d->abs_duty_cycle > 1.0){
-		if ((1000.0 * (d->current_time - d->fault_duty_timer)) > 100 || ignoreTimers) {
-			d->state = FAULT_DUTY;
-			return true;
-		}
-	} else {
-		d->fault_duty_timer = d->current_time;
 	}
 
 	return false;
@@ -763,16 +752,6 @@ static void balance_thd(void *arg) {
 				reset_vars(d);
 				break;
 			}
-
-			// Disable output
-			brake(d);
-			break;
-
-		case (FAULT_DUTY):
-			// We need another fault to clear duty fault.
-			// Otherwise duty fault will clear itself as soon as motor pauses, then motor will spool up again.
-			// Rendering this fault useless.
-			check_faults(d, true);
 
 			// Disable output
 			brake(d);

@@ -93,7 +93,7 @@ Item {
             }else if(state == 4){
                 stateString = "RUNNING_TILTBACK_LOW_VOLTAGE"
             }else if(state == 5){
-                stateString = "UNKNOWN"
+                stateString = "RUNNING_TILTBACK_TEMP"
             }else if(state == 6){
                 stateString = "FAULT_ANGLE_PITCH"
             }else if(state == 7){
@@ -103,7 +103,7 @@ Item {
             }else if(state == 9){
                 stateString = "FAULT_SWITCH_FULL"
             }else if(state == 10){
-                stateString = "FAULT_DUTY"
+                stateString = "Was FAULT_DUTY"
             }else if(state == 11){
                 stateString = "FAULT_STARTUP"
             }else{     
