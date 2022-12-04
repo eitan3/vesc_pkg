@@ -18,11 +18,6 @@
 #define APPCONF_BALANCE_KI 0.005
 #endif
 
-// Angle D
-#ifndef APPCONF_BALANCE_KD
-#define APPCONF_BALANCE_KD 0
-#endif
-
 // Rate P
 #ifndef APPCONF_BALANCE_KP2
 #define APPCONF_BALANCE_KP2 0.6
@@ -31,11 +26,6 @@
 // Rate I
 #ifndef APPCONF_BALANCE_KI2
 #define APPCONF_BALANCE_KI2 0
-#endif
-
-// Rate D
-#ifndef APPCONF_BALANCE_KD2
-#define APPCONF_BALANCE_KD2 0
 #endif
 
 // Loop Hertz
@@ -58,11 +48,6 @@
 #define APPCONF_BALANCE_FAULT_ROLL 90
 #endif
 
-// Duty Cycle Fault Cutoff
-#ifndef APPCONF_BALANCE_FAULT_DUTY
-#define APPCONF_BALANCE_FAULT_DUTY 1
-#endif
-
 // ADC1 Switch Voltage
 #ifndef APPCONF_BALANCE_FAULT_ADC1
 #define APPCONF_BALANCE_FAULT_ADC1 3.05
@@ -81,11 +66,6 @@
 // Roll Fault Delay
 #ifndef APPCONF_BALANCE_FAULT_DELAY_ROLL
 #define APPCONF_BALANCE_FAULT_DELAY_ROLL 1000
-#endif
-
-// Duty Fault Delay
-#ifndef APPCONF_BALANCE_FAULT_DELAY_DUTY
-#define APPCONF_BALANCE_FAULT_DELAY_DUTY 1000
 #endif
 
 // Half Switch Fault Delay
@@ -198,74 +178,14 @@
 #define APPCONF_BALANCE_STARTUP_SPEED 60
 #endif
 
-// Proportional Deadzone
-#ifndef APPCONF_BALANCE_PROPORTIONAL_DEADZONE
-#define APPCONF_BALANCE_PROPORTIONAL_DEADZONE 0
-#endif
-
-// Integral Deadzone
-#ifndef APPCONF_BALANCE_INTEGRAL_DEADZONE
-#define APPCONF_BALANCE_INTEGRAL_DEADZONE 0
-#endif
-
-// Multiple VESCs Over CAN
-#ifndef APPCONF_BALANCE_MULTI_ESC
-#define APPCONF_BALANCE_MULTI_ESC 0
-#endif
-
-// Yaw P
-#ifndef APPCONF_BALANCE_YAW_KP
-#define APPCONF_BALANCE_YAW_KP 0
-#endif
-
-// Yaw I
-#ifndef APPCONF_BALANCE_YAW_KI
-#define APPCONF_BALANCE_YAW_KI 0
-#endif
-
-// Yaw D
-#ifndef APPCONF_BALANCE_YAW_KD
-#define APPCONF_BALANCE_YAW_KD 0
-#endif
-
-// Roll Steer KP
-#ifndef APPCONF_BALANCE_ROLL_STEER_KP
-#define APPCONF_BALANCE_ROLL_STEER_KP 0
-#endif
-
-// Roll Steer ERPM KP
-#ifndef APPCONF_BALANCE_ROLL_STEER_ERPM_KP
-#define APPCONF_BALANCE_ROLL_STEER_ERPM_KP 0
-#endif
-
 // Brake Current
 #ifndef APPCONF_BALANCE_BRAKE_CURRENT
 #define APPCONF_BALANCE_BRAKE_CURRENT 6
 #endif
 
-// Brake Timeout
-#ifndef APPCONF_BALANCE_BRAKE_TIMEOUT
-#define APPCONF_BALANCE_BRAKE_TIMEOUT 1
-#endif
-
-// Yaw Current Clamp
-#ifndef APPCONF_BALANCE_YAW_CURRENT_CLAMP
-#define APPCONF_BALANCE_YAW_CURRENT_CLAMP 0
-#endif
-
 // I term limit
 #ifndef APPCONF_BALANCE_KI_LIMIT
 #define APPCONF_BALANCE_KI_LIMIT 30
-#endif
-
-// D term PT1 Low Pass Filter
-#ifndef APPCONF_BALANCE_KD_PT1_LOWPASS_FREQUENCY
-#define APPCONF_BALANCE_KD_PT1_LOWPASS_FREQUENCY 0
-#endif
-
-// D term PT1 High Pass Filter
-#ifndef APPCONF_BALANCE_KD_PT1_HIGHPASS_FREQUENCY
-#define APPCONF_BALANCE_KD_PT1_HIGHPASS_FREQUENCY 0
 #endif
 
 // Start Angle

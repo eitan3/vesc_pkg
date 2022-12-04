@@ -30,10 +30,6 @@
 
 HEADER
 
-// Can
-#define MAX_CAN_AGE		0.1
-#define MAX_CAN_DEVS	2
-
 // Return the sign of the argument. -1.0 if negative, 1.0 if zero or positive.
 #define SIGN(x)				(((x) < 0.0) ? -1.0 : 1.0)
 
@@ -103,6 +99,7 @@ typedef struct {
 
 	// Runtime values read from elsewhere
 	float pitch_angle, last_pitch_angle, roll_angle, abs_roll_angle, abs_roll_angle_sin, last_gyro_y;
+//  float true_pitch_angle; /*Used for Pitch Fault and ATR Features, requires modified "imu.c"*/
 	float gyro[3];
 	float duty_cycle, abs_duty_cycle;
 	float erpm, abs_erpm, avg_erpm;
@@ -113,7 +110,7 @@ typedef struct {
 
 	// Rumtime state values
 	BalanceState state;
-	float proportional, integral, derivative, proportional2, integral2, derivative2;
+	float proportional, integral, proportional2, integral2;
 	float last_proportional, abs_proportional;
 	float pid_value;
 	float setpoint, setpoint_target, setpoint_target_interpolated;
@@ -122,11 +119,9 @@ typedef struct {
 	Biquad torquetilt_current_biquad;
 	float turntilt_target, turntilt_interpolated;
 	SetpointAdjustmentType setpointAdjustmentType;
-	float yaw_proportional, yaw_integral, yaw_derivative, yaw_last_proportional, yaw_pid_value, yaw_setpoint;
 	float current_time, last_time, diff_time, loop_overshoot; // Seconds
 	float filtered_loop_overshoot, loop_overshoot_alpha, filtered_diff_time;
 	float fault_angle_pitch_timer, fault_angle_roll_timer, fault_switch_timer, fault_switch_half_timer, fault_duty_timer; // Seconds
-	float d_pt1_lowpass_state, d_pt1_lowpass_k, d_pt1_highpass_state, d_pt1_highpass_k;
 	float motor_timeout_seconds;
 	float brake_timeout; // Seconds
 
@@ -146,7 +141,7 @@ typedef struct {
 } data;
 
 // Function Prototypes
-static void set_current(data *d, float current, float yaw_current);
+static void set_current(data *d, float current);
 static void configure(data *d);
 
 // Utility Functions
@@ -203,18 +198,6 @@ static void configure(data *d) {
 						(float)d->balance_conf.loop_time_filter + 1.0);
 	}
 
-	if (d->balance_conf.kd_pt1_lowpass_frequency > 0) {
-		float dT = 1.0 / d->balance_conf.hertz;
-		float RC = 1.0 / ( 2.0 * M_PI * d->balance_conf.kd_pt1_lowpass_frequency);
-		d->d_pt1_lowpass_k =  dT / (RC + dT);
-	}
-
-	if (d->balance_conf.kd_pt1_highpass_frequency > 0) {
-		float dT = 1.0 / d->balance_conf.hertz;
-		float RC = 1.0 / ( 2.0 * M_PI * d->balance_conf.kd_pt1_highpass_frequency);
-		d->d_pt1_highpass_k =  dT / (RC + dT);
-	}
-
 	if (d->balance_conf.torquetilt_filter > 0) { // Torquetilt Current Biquad
 		float Fc = d->balance_conf.torquetilt_filter / d->balance_conf.hertz;
 		biquad_config(&d->torquetilt_current_biquad, BQ_LOWPASS, Fc);
@@ -247,10 +230,6 @@ static void reset_vars(data *d) {
 	d->integral = 0;
 	d->last_proportional = 0;
 	d->integral2 = 0;
-	d->yaw_integral = 0;
-	d->yaw_last_proportional = 0;
-	d->d_pt1_lowpass_state = 0;
-	d->d_pt1_highpass_state = 0;
 	// Set values for startup
 	d->setpoint = d->pitch_angle;
 	d->setpoint_target_interpolated = d->pitch_angle;
@@ -263,7 +242,6 @@ static void reset_vars(data *d) {
 	d->turntilt_target = 0;
 	d->turntilt_interpolated = 0;
 	d->setpointAdjustmentType = CENTERING;
-	d->yaw_setpoint = 0;
 	d->state = RUNNING;
 	d->current_time = 0;
 	d->last_time = 0;
@@ -302,11 +280,19 @@ static bool check_faults(data *d, bool ignoreTimers){
 			d->state = FAULT_SWITCH_FULL;
 			return true;
 		}
+		
+		// low speed (below 6 x half-fault threshold speed):
+		else if ((d->abs_erpm < d->balance_conf.fault_adc_half_erpm * 6)
+			   && (1000.0 * (d->current_time - d->fault_switch_timer) > d->balance_conf.fault_delay_switch_half)){
+			d->state = FAULT_SWITCH_FULL;
+			return true;
+		}
+
 		// QUICK STOP
 		else if (d->balance_conf.enable_quickstop && 
 				 d->abs_erpm < d->balance_conf.quickstop_erpm && 
-				 fabsf(d->pitch_angle) > d->balance_conf.quickstop_angle && 
-				 SIGN(d->pitch_angle) == SIGN(d->erpm)) {
+				 fabsf(d->pitch_angle/*true_pitch_angle*/) > d->balance_conf.quickstop_angle && 
+				 SIGN(d->pitch_angle/*true_pitch_angle*/) == SIGN(d->erpm)) {
 			d->state = FAULT_QUICKSTOP;
 			return true;
 		}
@@ -321,17 +307,17 @@ static bool check_faults(data *d, bool ignoreTimers){
 			d->state = FAULT_SWITCH_FULL;
 			return true;
 		}
-		if (fabsf(d->pitch_angle) > 15) {
+		if (fabsf(d->pitch_angle/*true_pitch_angle*/) > 15) {
 			d->state = FAULT_REVERSE;
 			return true;
 		}
 		// Above 10 degrees for a half a second? Switch it off
-		if ((fabsf(d->pitch_angle) > 10) && (d->current_time - d->reverse_timer > 500)) {
+		if ((fabsf(d->pitch_angle/*true_pitch_angle*/) > 10) && (d->current_time - d->reverse_timer > 500)) {
 			d->state = FAULT_REVERSE;
 			return true;
 		}
 		// Above 5 degrees for a full second? Switch it off
-		if ((fabsf(d->pitch_angle) > 5) && (d->current_time - d->reverse_timer > 1000)) {
+		if ((fabsf(d->pitch_angle/*true_pitch_angle*/) > 5) && (d->current_time - d->reverse_timer > 1000)) {
 			d->state = FAULT_REVERSE;
 			return true;
 		}
@@ -339,7 +325,7 @@ static bool check_faults(data *d, bool ignoreTimers){
 			d->state = FAULT_REVERSE;
 			return true;
 		}
-		if (fabsf(d->pitch_angle) < 5) {
+		if (fabsf(d->pitch_angle/*true_pitch_angle*/) < 5) {
 			d->reverse_timer = d->current_time;
 		}
 	}
@@ -357,7 +343,7 @@ static bool check_faults(data *d, bool ignoreTimers){
 	}
 
 	// Check pitch angle
-	if (fabsf(d->pitch_angle) > d->balance_conf.fault_pitch) {
+	if (fabsf(d->pitch_angle/*true_pitch_angle*/) > d->balance_conf.fault_pitch) {
 		if ((1000.0 * (d->current_time - d->fault_angle_pitch_timer)) > d->balance_conf.fault_delay_pitch || ignoreTimers) {
 			d->state = FAULT_ANGLE_PITCH;
 			return true;
@@ -376,9 +362,9 @@ static bool check_faults(data *d, bool ignoreTimers){
 		d->fault_angle_roll_timer = d->current_time;
 	}
 
-	// Check for duty
-	if (d->abs_duty_cycle > d->balance_conf.fault_duty){
-		if ((1000.0 * (d->current_time - d->fault_duty_timer)) > d->balance_conf.fault_delay_duty || ignoreTimers) {
+	// Check for duty /*HARD CODED FOR 100% DC and 100ms*/
+	if (d->abs_duty_cycle > 1.0){
+		if ((1000.0 * (d->current_time - d->fault_duty_timer)) > 100 || ignoreTimers) {
 			d->state = FAULT_DUTY;
 			return true;
 		}
@@ -584,24 +570,10 @@ static void apply_turntilt(data *d) {
 	d->setpoint += d->turntilt_interpolated;
 }
 
-static float apply_deadzone(float deadzone, float error){
-	if (deadzone == 0) {
-		return error;
-	}
-
-	if (error < deadzone && error > -deadzone) {
-		return 0;
-	} else if(error > deadzone) {
-		return error - deadzone;
-	} else {
-		return error + deadzone;
-	}
-}
-
 static void brake(data *d) {
-	// Brake timeout logic
-	if (d->balance_conf.brake_timeout > 0 && (d->abs_erpm > 1 || d->brake_timeout == 0)) {
-		d->brake_timeout = d->current_time + d->balance_conf.brake_timeout;
+	// Brake timeout logic /*Hard-Coded to 1s Brake Timeout*/
+	if ((d->abs_erpm > 1 || d->brake_timeout == 0)) {
+		d->brake_timeout = d->current_time + 1;
 	}
 
 	if (d->brake_timeout != 0 && d->current_time > d->brake_timeout) {
@@ -613,18 +585,9 @@ static void brake(data *d) {
 
 	// Set current
 	VESC_IF->mc_set_brake_current(d->balance_conf.brake_current);
-
-	if (d->balance_conf.multi_esc) {
-		for (int i = 0;i < MAX_CAN_DEVS;i++) {
-			can_status_msg *msg = VESC_IF->can_get_status_msg_index(i);
-			if (msg->id >= 0 && VESC_IF->ts_to_age_s(msg->rx_time) < MAX_CAN_AGE) {
-				VESC_IF->can_set_current_brake(msg->id, d->balance_conf.brake_current);
-			}
-		}
-	}
 }
 
-static void set_current(data *d, float current, float yaw_current){
+static void set_current(data *d, float current){
 	// Limit current output to configured max output (does not account for yaw_current)
 	if (current > 0 && current > VESC_IF->get_cfg_float(CFG_PARAM_l_current_max)) {
 		current = VESC_IF->get_cfg_float(CFG_PARAM_l_current_max);
@@ -634,30 +597,10 @@ static void set_current(data *d, float current, float yaw_current){
 
 	// Reset the timeout
 	VESC_IF->timeout_reset();
-
-	// Set current
-	if (d->balance_conf.multi_esc) {
-		// Set the current delay
-		VESC_IF->mc_set_current_off_delay(d->motor_timeout_seconds);
-
-		// Set Current
-		VESC_IF->mc_set_current(current + yaw_current);
-
-		// Can bus
-		for (int i = 0;i < MAX_CAN_DEVS;i++) {
-			can_status_msg *msg = VESC_IF->can_get_status_msg_index(i);
-
-			if (msg->id >= 0 && VESC_IF->ts_to_age_s(msg->rx_time) < MAX_CAN_AGE) {
-				// Assume 2 motors, i don't know how to steer 3 anyways
-				VESC_IF->can_set_current_off_delay(msg->id, current - yaw_current, d->motor_timeout_seconds);
-			}
-		}
-	} else {
-		// Set the current delay
-		VESC_IF->mc_set_current_off_delay(d->motor_timeout_seconds);
-		// Set Current
-		VESC_IF->mc_set_current(current);
-	}
+	// Set the current delay
+	VESC_IF->mc_set_current_off_delay(d->motor_timeout_seconds);
+	// Set Current
+	VESC_IF->mc_set_current(current);
 }
 
 static void balance_thd(void *arg) {
@@ -688,6 +631,7 @@ static void balance_thd(void *arg) {
 		d->last_gyro_y = d->gyro[1];
 
 		// Get the values we want
+		/*d->true_pitch_angle = RAD2DEG_f(VESC_IF->imu_ref_get_pitch());*/
 		d->pitch_angle = RAD2DEG_f(VESC_IF->imu_get_pitch());
 		d->roll_angle = RAD2DEG_f(VESC_IF->imu_get_roll());
 		d->abs_roll_angle = fabsf(d->roll_angle);
@@ -697,17 +641,6 @@ static void balance_thd(void *arg) {
 		d->abs_duty_cycle = fabsf(d->duty_cycle);
 		d->erpm = VESC_IF->mc_get_rpm();
 		d->abs_erpm = fabsf(d->erpm);
-		if (d->balance_conf.multi_esc) {
-			d->avg_erpm = d->erpm;
-			for (int i = 0;i < MAX_CAN_DEVS;i++) {
-				can_status_msg *msg = VESC_IF->can_get_status_msg_index(i);
-				if (msg->id >= 0 && VESC_IF->ts_to_age_s(msg->rx_time) < MAX_CAN_AGE) {
-					d->avg_erpm += msg->rpm;
-				}
-			}
-
-			d->avg_erpm = d->avg_erpm / 2.0; // Assume 2 motors, i don't know how to steer 3 anyways
-		}
 
 		d->adc1 = VESC_IF->io_read_analog(VESC_PIN_ADC1);
 		d->adc2 = VESC_IF->io_read_analog(VESC_PIN_ADC2); // Returns -1.0 if the pin is missing on the hardware
@@ -776,51 +709,23 @@ static void balance_thd(void *arg) {
 			// Do PID maths
 			d->proportional = d->setpoint - d->pitch_angle;
 
-			// Apply deadzone
-			d->proportional = apply_deadzone(d->balance_conf.deadzone_proportional, d->proportional);
-
 			// Resume real PID maths
 			d->integral = d->integral + d->proportional;
-			d->derivative = d->last_pitch_angle - d->pitch_angle;
 
 			// Apply I term Filter
 			if (d->balance_conf.ki_limit > 0 && fabsf(d->integral * d->balance_conf.ki) > d->balance_conf.ki_limit) {
 				d->integral = d->balance_conf.ki_limit / d->balance_conf.ki * SIGN(d->integral);
 			}
 
-			// Apply D term filters
-			if (d->balance_conf.kd_pt1_lowpass_frequency > 0) {
-				d->d_pt1_lowpass_state = d->d_pt1_lowpass_state + d->d_pt1_lowpass_k * (d->derivative - d->d_pt1_lowpass_state);
-				d->derivative = d->d_pt1_lowpass_state;
-			}
-
-			if (d->balance_conf.kd_pt1_highpass_frequency > 0){
-				d->d_pt1_highpass_state = d->d_pt1_highpass_state + d->d_pt1_highpass_k * (d->derivative - d->d_pt1_highpass_state);
-				d->derivative = d->derivative - d->d_pt1_highpass_state;
-			}
-
-			// Calculate integral with deadzone
-			float pid_integral = 0;
-			if (d->balance_conf.ki > 0) {
-				pid_integral = d->balance_conf.ki * d->integral;
-				// Integral limiting using biquad highpass:
-				if(d->balance_conf.deadzone_integral > 0){
-					pid_integral = fminf(d->balance_conf.deadzone_integral * 10, fabsf(pid_integral));
-					pid_integral *= SIGN(d->integral);
-					d->integral = pid_integral / d->balance_conf.ki;
-				}
-			}
-
 			if (d->setpointAdjustmentType == REVERSESTOP) {
 				d->integral = d->integral * 0.9;
 			}
 
-			d->pid_value = (d->balance_conf.kp * d->proportional) + pid_integral + (d->balance_conf.kd * d->derivative);
+			d->pid_value = (d->balance_conf.kp * d->proportional) + d->balance_conf.ki * d->integral;
 
 			if (d->balance_conf.pid_mode == BALANCE_PID_MODE_ANGLE_RATE_CASCADE) {
 				d->proportional2 = d->pid_value - d->gyro[1];
 				d->integral2 = d->integral2 + d->proportional2;
-				d->derivative2 = d->last_gyro_y - d->gyro[1];
 
 				// Apply I term Filter
 				if (d->balance_conf.ki_limit > 0 && fabsf(d->integral2 * d->balance_conf.ki2) > d->balance_conf.ki_limit) {
@@ -828,7 +733,7 @@ static void balance_thd(void *arg) {
 				}
 
 				d->pid_value = (d->balance_conf.kp2 * d->proportional2) +
-						(d->balance_conf.ki2 * d->integral2) + (d->balance_conf.kd2 * d->derivative2);
+						(d->balance_conf.ki2 * d->integral2);
 			}
 
 			d->last_proportional = d->proportional;
@@ -852,37 +757,8 @@ static void balance_thd(void *arg) {
 					d->pid_value -= d->gyro[1] * kp2;
 			}
 
-			if (d->balance_conf.multi_esc) {
-				// Calculate setpoint
-				if (d->abs_duty_cycle < .02) {
-					d->yaw_setpoint = 0;
-				} else if (d->avg_erpm < 0) {
-					d->yaw_setpoint = (-d->balance_conf.roll_steer_kp * d->roll_angle) +
-							(d->balance_conf.roll_steer_erpm_kp * d->roll_angle * d->avg_erpm);
-				} else {
-					d->yaw_setpoint = (d->balance_conf.roll_steer_kp * d->roll_angle) +
-							(d->balance_conf.roll_steer_erpm_kp * d->roll_angle * d->avg_erpm);
-				}
-
-				// Do PID maths
-				d->yaw_proportional = d->yaw_setpoint - d->gyro[2];
-				d->yaw_integral = d->yaw_integral + d->yaw_proportional;
-				d->yaw_derivative = d->yaw_proportional - d->yaw_last_proportional;
-
-				d->yaw_pid_value = (d->balance_conf.yaw_kp * d->yaw_proportional) +
-						(d->balance_conf.yaw_ki * d->yaw_integral) + (d->balance_conf.yaw_kd * d->yaw_derivative);
-
-				if (d->yaw_pid_value > d->balance_conf.yaw_current_clamp) {
-					d->yaw_pid_value = d->balance_conf.yaw_current_clamp;
-				} else if (d->yaw_pid_value < -d->balance_conf.yaw_current_clamp) {
-					d->yaw_pid_value = -d->balance_conf.yaw_current_clamp;
-				}
-
-				d->yaw_last_proportional = d->yaw_proportional;
-			}
-
 			// Output to motor
-			set_current(d, d->pid_value, d->yaw_pid_value);
+			set_current(d, d->pid_value);
 			break;
 
 		case (FAULT_ANGLE_PITCH):
@@ -934,7 +810,7 @@ static float app_balance_get_debug(int index) {
 		case(3):
 			return d->torquetilt_filtered_current;
 		case(4):
-			return d->derivative;
+			return d->proportional;
 		case(5):
 			return d->last_pitch_angle - d->pitch_angle;
 		case(6):

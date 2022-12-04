@@ -16,5 +16,3 @@ Added reverse stop (thanks to surfdado).
 Added quickstop (thanks to surfdado).
 
 Added new (old) PID mode, option 3 in PID mode set it like it was on vesc 5.3.
-
-Added 2 types of deadzones, one for proportional and one for integral. FW5.3 Stable V6 use integral deadzone.
