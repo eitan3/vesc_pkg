@@ -402,14 +402,28 @@ static void calculate_setpoint_target(data *d) {
 		d->setpointAdjustmentType = TILTBACK_HV;
 		d->state = RUNNING_TILTBACK_HIGH_VOLTAGE;
 	} else if (d->abs_duty_cycle > 0.05 && VESC_IF->mc_get_input_voltage_filtered() < d->balance_conf.tiltback_lv) {
-		if (d->erpm > 0) {
-			d->setpoint_target = d->balance_conf.tiltback_lv_angle;
-		} else {
-			d->setpoint_target = -d->balance_conf.tiltback_lv_angle;
-		}
+		float abs_motor_current = fabsf(d->motor_current);
+		float vdelta = d->balance_conf.tiltback_lv - VESC_IF->mc_get_input_voltage_filtered();
+		float ratio = vdelta * 20 / abs_motor_current;
+		// When to do LV tiltback:
+		// a) we're 2V below lv threshold
+		// b) motor current is small (we cannot assume vsag)
+		// c) we have more than 20A per Volt of difference (we tolerate some amount of vsag)
+		if ((vdelta > 2) || (abs_motor_current < 5) || (ratio > 1)) {
+			if (d->erpm > 0) {
+				d->setpoint_target = d->balance_conf.tiltback_lv_angle;
+			} else {
+				d->setpoint_target = -d->balance_conf.tiltback_lv_angle;
+			}
 
-		d->setpointAdjustmentType = TILTBACK_LV;
-		d->state = RUNNING_TILTBACK_LOW_VOLTAGE;
+			d->setpointAdjustmentType = TILTBACK_LV;
+			d->state = RUNNING_TILTBACK_LOW_VOLTAGE;
+		}
+		else {
+			d->setpointAdjustmentType = TILTBACK_NONE;
+			d->setpoint_target = 0;
+			d->state = RUNNING;
+		}
 	}else if(VESC_IF->mc_temp_fet_filtered() > d->mc_fet_start_temp){
 		if(d->erpm > 0){
 			d->setpoint_target = d->balance_conf.temp_tiltback_angle;
