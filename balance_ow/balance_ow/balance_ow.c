@@ -93,7 +93,7 @@ typedef struct {
 	float loop_time_seconds;
 	float startup_step_size;
 	float tiltback_duty_step_size, tiltback_hv_step_size, tiltback_lv_step_size, tiltback_return_step_size;
-	float torquetilt_on_step_size, torquetilt_off_step_size, turntilt_step_size;
+	float torquetilt_on_step_size, torquetilt_off_step_size;
 	float tiltback_variable, tiltback_variable_max_erpm, noseangling_step_size;
 
 	// Runtime values read from elsewhere
@@ -116,7 +116,6 @@ typedef struct {
 	float noseangling_interpolated;
 	float torquetilt_filtered_current, torquetilt_target, torquetilt_interpolated;
 	Biquad torquetilt_current_biquad;
-	float turntilt_target, turntilt_interpolated;
 	SetpointAdjustmentType setpointAdjustmentType;
 	float current_time, last_time, diff_time, loop_overshoot; // Seconds
 	float filtered_loop_overshoot, loop_overshoot_alpha, filtered_diff_time;
@@ -132,6 +131,17 @@ typedef struct {
 	// Reverse Stop
 	float reverse_stop_step_size, reverse_tolerance, reverse_total_erpm;
 	float reverse_timer;
+
+	// Roll turntilt
+	float roll_turntilt_target, roll_turntilt_interpolated;
+	float roll_turntilt_boost_per_erpm, roll_turntilt_strength;
+	float roll_turntilt_step_size;
+
+	// Yaw Turntilt
+	float last_yaw_angle, yaw_angle, abs_yaw_change, last_yaw_change, yaw_change, yaw_aggregate, yaw_aggregate_target;
+	float yaw_turntilt_target, yaw_turntilt_interpolated;
+	float yaw_turntilt_boost_per_erpm, yaw_turntilt_strength;
+	float yaw_turntilt_step_size;
 
 	// Debug values
 	int debug_render_1, debug_render_2;
@@ -187,7 +197,8 @@ static void configure(data *d) {
 	d->tiltback_return_step_size = d->balance_conf.tiltback_return_speed / d->balance_conf.hertz;
 	d->torquetilt_on_step_size = d->balance_conf.torquetilt_on_speed / d->balance_conf.hertz;
 	d->torquetilt_off_step_size = d->balance_conf.torquetilt_off_speed / d->balance_conf.hertz;
-	d->turntilt_step_size = d->balance_conf.turntilt_speed / d->balance_conf.hertz;
+	d->roll_turntilt_step_size = d->balance_conf.roll_turntilt_speed / d->balance_conf.hertz;
+	d->yaw_turntilt_step_size = d->balance_conf.yaw_turntilt_speed / d->balance_conf.hertz;
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
 
 	// Init Filters
@@ -221,6 +232,15 @@ static void configure(data *d) {
 	d->mc_fet_start_temp = VESC_IF->get_cfg_float(CFG_PARAM_l_temp_fet_start) - d->balance_conf.temp_tiltback_start_offset;
 	d->mc_mot_start_temp = VESC_IF->get_cfg_float(CFG_PARAM_l_temp_motor_start) - d->balance_conf.temp_tiltback_start_offset;
 	d->temp_tiltback_step_size = d->balance_conf.temp_tiltback_speed / d->balance_conf.hertz;
+
+	// Roll Turntilt
+	d->roll_turntilt_boost_per_erpm = (float)d->balance_conf.roll_turntilt_erpm_boost / 100.0 / (float)d->balance_conf.roll_turntilt_erpm_boost_end;
+	d->roll_turntilt_strength = d->balance_conf.roll_turntilt_strength;
+
+	// Yaw Turntilt
+	d->yaw_aggregate_target = fmaxf(50, d->balance_conf.yaw_turntilt_aggregate);
+	d->yaw_turntilt_boost_per_erpm = (float)d->balance_conf.yaw_turntilt_erpm_boost / 100.0 / (float)d->balance_conf.yaw_turntilt_erpm_boost_end;
+	d->yaw_turntilt_strength = d->balance_conf.yaw_turntilt_strength;
 }
 
 static void reset_vars(data *d) {
@@ -237,14 +257,22 @@ static void reset_vars(data *d) {
 	d->torquetilt_interpolated = 0;
 	d->torquetilt_filtered_current = 0;
 	biquad_reset(&d->torquetilt_current_biquad);
-	d->turntilt_target = 0;
-	d->turntilt_interpolated = 0;
 	d->setpointAdjustmentType = CENTERING;
 	d->state = RUNNING;
 	d->current_time = 0;
 	d->last_time = 0;
 	d->diff_time = 0;
 	d->brake_timeout = 0;
+
+	// Roll Turntilt:
+	d->roll_turntilt_target = 0;
+	d->roll_turntilt_interpolated = 0;
+
+	// Yaw Turntilt:
+	d->yaw_turntilt_target = 0;
+	d->yaw_turntilt_interpolated = 0;
+	d->last_yaw_angle = 0;
+	d->yaw_aggregate = 0;
 }
 
 static float get_setpoint_adjustment_step_size(data *d) {
@@ -529,47 +557,129 @@ static void apply_torquetilt(data *d) {
 	d->setpoint += d->torquetilt_interpolated;
 }
 
-static void apply_turntilt(data *d) {
-	// Calculate desired angle
-	d->turntilt_target = d->abs_roll_angle_sin * d->balance_conf.turntilt_strength;
+static float apply_roll_turntilt(data *d) {
+	if (d->roll_turntilt_strength == 0) {
+		return 0 ;
+	}
+
+	float turn_angle = d->abs_roll_angle; 
 
 	// Apply cutzone
-	if (d->abs_roll_angle < d->balance_conf.turntilt_start_angle) {
-		d->turntilt_target = 0;
+	if ((turn_angle < d->balance_conf.roll_turntilt_start_angle) || (d->state != RUNNING)) {
+		d->roll_turntilt_target = 0;
 	}
+	else {
+		// Calculate desired angle
+		float turn_change = d->abs_roll_angle_sin;
+		d->roll_turntilt_target = turn_change * d->roll_turntilt_strength;
 
-	// Disable below erpm threshold otherwise add directionality
-	if (d->abs_erpm < d->balance_conf.turntilt_start_erpm) {
-		d->turntilt_target = 0;
-	} else {
-		d->turntilt_target *= SIGN(d->erpm);
-	}
+		// Apply speed scaling
+		float boost;
+		if (d->abs_erpm < d->balance_conf.roll_turntilt_erpm_boost_end) {
+			boost = 1.0 + d->abs_erpm * d->roll_turntilt_boost_per_erpm;
+		} else {
+			boost = 1.0 + (float)d->balance_conf.roll_turntilt_erpm_boost / 100.0;
+		}
+		d->roll_turntilt_target *= boost;
 
-	// Apply speed scaling
-	if (d->abs_erpm < d->balance_conf.turntilt_erpm_boost_end) {
-		d->turntilt_target *= 1 + ((d->balance_conf.turntilt_erpm_boost / 100.0f) *
-				(d->abs_erpm / d->balance_conf.turntilt_erpm_boost_end));
-	} else {
-		d->turntilt_target *= 1 + (d->balance_conf.turntilt_erpm_boost / 100.0f);
-	}
+		// Limit angle to max angle
+		if (d->roll_turntilt_target > 0) {
+			d->roll_turntilt_target = fminf(d->roll_turntilt_target, d->balance_conf.roll_turntilt_angle_limit);
+		} else {
+			d->roll_turntilt_target = fmaxf(d->roll_turntilt_target, -d->balance_conf.roll_turntilt_angle_limit);
+		}
 
-	// Limit angle to max angle
-	if (d->turntilt_target > 0) {
-		d->turntilt_target = fminf(d->turntilt_target, d->balance_conf.turntilt_angle_limit);
-	} else {
-		d->turntilt_target = fmaxf(d->turntilt_target, -d->balance_conf.turntilt_angle_limit);
+		// Disable below erpm threshold otherwise add directionality
+		if (d->abs_erpm < d->balance_conf.roll_turntilt_start_erpm) {
+			d->roll_turntilt_target = 0;
+		} else {
+			d->roll_turntilt_target *= SIGN(d->erpm);
+		}
 	}
 
 	// Move towards target limited by max speed
-	if (fabsf(d->turntilt_target - d->turntilt_interpolated) < d->turntilt_step_size) {
-		d->turntilt_interpolated = d->turntilt_target;
-	} else if (d->turntilt_target - d->turntilt_interpolated > 0) {
-		d->turntilt_interpolated += d->turntilt_step_size;
+	if (fabsf(d->roll_turntilt_target - d->roll_turntilt_interpolated) < d->roll_turntilt_step_size) {
+		d->roll_turntilt_interpolated = d->roll_turntilt_target;
+	} else if (d->roll_turntilt_target - d->roll_turntilt_interpolated > 0) {
+		d->roll_turntilt_interpolated += d->roll_turntilt_step_size;
 	} else {
-		d->turntilt_interpolated -= d->turntilt_step_size;
+		d->roll_turntilt_interpolated -= d->roll_turntilt_step_size;
 	}
 
-	d->setpoint += d->turntilt_interpolated;
+	return d->roll_turntilt_interpolated;
+}
+
+static float apply_yaw_turntilt(data *d) {
+	if (d->yaw_turntilt_strength == 0) {
+		return 0;
+	}
+	float turn_angle = d->abs_yaw_change * 100;
+
+	// Apply cutzone
+	if ((turn_angle < d->balance_conf.yaw_turntilt_start_angle) || (d->state != RUNNING)) {
+		d->yaw_turntilt_target = 0;
+	}
+	else {
+		// Calculate desired angle
+		float turn_change = d->abs_yaw_change;
+		d->yaw_turntilt_target = turn_change * d->yaw_turntilt_strength;
+
+		// Apply speed scaling
+		float boost;
+		if (d->abs_erpm < d->balance_conf.yaw_turntilt_erpm_boost_end) {
+			boost = 1.0 + d->abs_erpm * d->yaw_turntilt_boost_per_erpm;
+		} else {
+			boost = 1.0 + (float)d->balance_conf.yaw_turntilt_erpm_boost / 100.0;
+		}
+		d->yaw_turntilt_target *= boost;
+
+		// Increase turntilt based on aggregate yaw change (at most: double it)
+		float aggregate_damper = 1.0;
+		if (d->abs_erpm < 2000) {
+			aggregate_damper = 0.5;
+		}
+		boost = 1 + aggregate_damper * fabsf(d->yaw_aggregate) / d->yaw_aggregate_target;
+		boost = fminf(boost, 2);
+		d->yaw_turntilt_target *= boost;
+
+		// Limit angle to max angle
+		if (d->yaw_turntilt_target > 0) {
+			d->yaw_turntilt_target = fminf(d->yaw_turntilt_target, d->balance_conf.yaw_turntilt_angle_limit);
+		} else {
+			d->yaw_turntilt_target = fmaxf(d->yaw_turntilt_target, -d->balance_conf.yaw_turntilt_angle_limit);
+		}
+
+		// Disable below erpm threshold otherwise add directionality
+		if (d->abs_erpm < d->balance_conf.yaw_turntilt_start_erpm) {
+			d->yaw_turntilt_target = 0;
+		} else {
+			d->yaw_turntilt_target *= SIGN(d->erpm);
+		}
+	}
+
+	// Move towards target limited by max speed
+	if (fabsf(d->yaw_turntilt_target - d->yaw_turntilt_interpolated) < d->yaw_turntilt_step_size) {
+		d->yaw_turntilt_interpolated = d->yaw_turntilt_target;
+	} else if (d->yaw_turntilt_target - d->yaw_turntilt_interpolated > 0) {
+		d->yaw_turntilt_interpolated += d->yaw_turntilt_step_size;
+	} else {
+		d->yaw_turntilt_interpolated -= d->yaw_turntilt_step_size;
+	}
+
+	return d->yaw_turntilt_interpolated;
+}
+
+static void apply_total_turntilt(data *d)
+{
+	float roll_turntilt = 0;
+	if (d->balance_conf.roll_turntilt_weight > 0.0)
+		roll_turntilt = apply_roll_turntilt(d) * d->balance_conf.roll_turntilt_weight;
+
+	float yaw_turntilt = 0;
+	if (d->balance_conf.yaw_turntilt_weight > 0.0)
+		yaw_turntilt = apply_yaw_turntilt(d) * d->balance_conf.yaw_turntilt_weight;
+
+	d->setpoint += roll_turntilt + yaw_turntilt;
 }
 
 static void brake(data *d) {
@@ -648,6 +758,30 @@ static void balance_thd(void *arg) {
 			d->adc2 = 0.0;
 		}
 
+		// Yaw Turn tilt:
+		d->yaw_angle = VESC_IF->imu_get_yaw() * 180.0f / M_PI;
+		float new_change = d->yaw_angle - d->last_yaw_angle;
+		bool unchanged = false;
+		if ((new_change == 0) // Exact 0's only happen when the IMU is not updating between loops
+			|| (fabsf(new_change) > 100)) // yaw flips signs at 180, ignore those changes
+		{
+			new_change = d->last_yaw_change;
+			unchanged = true;
+		}
+		d->last_yaw_change = new_change;
+		d->last_yaw_angle = d->yaw_angle;
+
+		// To avoid overreactions at low speed, limit change here:
+		new_change = fminf(new_change, 0.10);
+		new_change = fmaxf(new_change, -0.10);
+		d->yaw_change = d->yaw_change * 0.8 + 0.2 * (new_change);
+		// Clear the aggregate yaw whenever we change direction
+		if (SIGN(d->yaw_change) != SIGN(d->yaw_aggregate))
+			d->yaw_aggregate = 0;
+		d->abs_yaw_change = fabsf(d->yaw_change);
+		if ((d->abs_yaw_change > 0.04) && !unchanged)	// don't count tiny yaw changes towards aggregate
+			d->yaw_aggregate += d->yaw_change;
+
 		// Calculate switch state from ADC values
 		if (d->balance_conf.fault_adc1 == 0 && d->balance_conf.fault_adc2 == 0){ // No Switch
 			d->switch_state = ON;
@@ -704,7 +838,7 @@ static void balance_thd(void *arg) {
 			d->setpoint = d->setpoint_target_interpolated;
 			apply_noseangling(d);
 			apply_torquetilt(d);
-			apply_turntilt(d);
+			apply_total_turntilt(d);
 
 			// Do PID maths
 			d->proportional = d->setpoint - d->pitch_angle;
@@ -826,7 +960,7 @@ static float app_balance_get_debug(int index) {
 
 static void send_realtime_data(data *d){
 	int32_t ind = 0;
-	uint8_t send_buffer[50];
+	uint8_t send_buffer[100];
 //	send_buffer[ind++] = COMM_GET_DECODED_BALANCE;
 	buffer_append_float32_auto(send_buffer, d->pid_value, &ind);
 	buffer_append_float32_auto(send_buffer, d->pitch_angle, &ind);
