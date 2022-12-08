@@ -123,6 +123,11 @@ typedef struct {
 	float motor_timeout_seconds;
 	float brake_timeout; // Seconds
 
+	bool braking;
+	float disengage_timer; // Seconds
+	float tb_highvoltage_timer;
+	float pid_brake_increment; // Brake Amp Rate Limiting
+
 	// Temp tiltback
 	float mc_fet_start_temp;
 	float mc_mot_start_temp;
@@ -201,6 +206,12 @@ static void configure(data *d) {
 	d->yaw_turntilt_step_size = d->balance_conf.yaw_turntilt_speed / d->balance_conf.hertz;
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
 
+	// Maximum amps change when braking
+	d->pid_brake_increment = d->balance_conf.pid_brake_max_amp_change;
+	if (d->pid_brake_increment < 0.1) {
+		d->pid_brake_increment = 5;
+	}
+
 	// Init Filters
 	float loop_time_filter = 3.0; // Originally Parameter, now hard-coded
 	d->loop_overshoot_alpha = 2.0 * M_PI * ((float)1.0 / (float)d->balance_conf.hertz) *
@@ -263,6 +274,7 @@ static void reset_vars(data *d) {
 	d->last_time = 0;
 	d->diff_time = 0;
 	d->brake_timeout = 0;
+	d->pid_value = 0;
 
 	// Roll Turntilt:
 	d->roll_turntilt_target = 0;
@@ -295,6 +307,40 @@ static float get_setpoint_adjustment_step_size(data *d) {
 			;
 	}
 	return 0;
+}
+
+// Read ADCs and determine switch state
+static SwitchState check_adcs(data *d) {
+	SwitchState sw_state;
+
+	if (d->balance_conf.fault_adc1 == 0 && d->balance_conf.fault_adc2 == 0){ // No Switch
+		sw_state = ON;
+	} else if (d->balance_conf.fault_adc2 == 0) { // Single switch on ADC1
+		if (d->adc1 > d->balance_conf.fault_adc1) {
+			sw_state = ON;
+		} else {
+			sw_state = OFF;
+		}
+	} else if (d->balance_conf.fault_adc1 == 0) { // Single switch on ADC2
+		if (d->adc2 > d->balance_conf.fault_adc2) {
+			sw_state = ON;
+		} else {
+			sw_state = OFF;
+		}
+	} else { // Double switch
+		if (d->adc1 > d->balance_conf.fault_adc1 && d->adc2 > d->balance_conf.fault_adc2) {
+			sw_state = ON;
+		} else if (d->adc1 > d->balance_conf.fault_adc1 || d->adc2 > d->balance_conf.fault_adc2) {
+			if (d->balance_conf.fault_is_single_switch) {
+				sw_state = ON;
+			} else {
+				sw_state = HALF;
+			}
+		} else {
+			sw_state = OFF;
+		}
+	}
+	return sw_state;
 }
 
 // Fault checking order does not really matter. From a UX perspective, switch should be before angle.
@@ -368,16 +414,6 @@ static bool check_faults(data *d, bool ignoreTimers){
 		}
 	}
 
-	// Check pitch angle
-	if (fabsf(d->pitch_angle/*true_pitch_angle*/) > d->balance_conf.fault_pitch) {
-		if ((1000.0 * (d->current_time - d->fault_angle_pitch_timer)) > d->balance_conf.fault_delay_pitch || ignoreTimers) {
-			d->state = FAULT_ANGLE_PITCH;
-			return true;
-		}
-	} else {
-		d->fault_angle_pitch_timer = d->current_time;
-	}
-
 	// Check roll angle
 	if (fabsf(d->roll_angle) > d->balance_conf.fault_roll) {
 		if ((1000.0 * (d->current_time - d->fault_angle_roll_timer)) > d->balance_conf.fault_delay_roll || ignoreTimers) {
@@ -388,14 +424,31 @@ static bool check_faults(data *d, bool ignoreTimers){
 		d->fault_angle_roll_timer = d->current_time;
 	}
 
+	// Check pitch angle
+	if (fabsf(d->pitch_angle/*true_pitch_angle*/) > d->balance_conf.fault_pitch) {
+		if ((1000.0 * (d->current_time - d->fault_angle_pitch_timer)) > d->balance_conf.fault_delay_pitch || ignoreTimers) {
+			d->state = FAULT_ANGLE_PITCH;
+			return true;
+		}
+	} else {
+		d->fault_angle_pitch_timer = d->current_time;
+	}
+
 	return false;
 }
 
 static void calculate_setpoint_target(data *d) {
+	float input_voltage = VESC_IF->mc_get_input_voltage_filtered();
+	if (input_voltage < d->balance_conf.tiltback_hv) {
+		d->tb_highvoltage_timer = d->current_time;
+	}
+
 	if (d->setpointAdjustmentType == CENTERING && d->setpoint_target_interpolated != d->setpoint_target) {
 		// Ignore tiltback during centering sequence
 		d->state = RUNNING;
-	} else if (d->setpointAdjustmentType == REVERSESTOP) {
+	} 
+	// REVERSESTOP
+	else if (d->setpointAdjustmentType == REVERSESTOP) {
 		// accumalete erpms:
 		d->reverse_total_erpm += d->erpm;
 		if (fabsf(d->reverse_total_erpm) > d->reverse_tolerance) {
@@ -412,7 +465,9 @@ static void calculate_setpoint_target(data *d) {
 				}
 			}
 		}
-	} else if (d->abs_duty_cycle > d->balance_conf.tiltback_duty) {
+	} 
+	// tiltback_duty
+	else if (d->abs_duty_cycle > d->balance_conf.tiltback_duty) {
 		if (d->erpm > 0) {
 			d->setpoint_target = d->balance_conf.tiltback_duty_angle;
 		} else {
@@ -420,18 +475,31 @@ static void calculate_setpoint_target(data *d) {
 		}
 		d->setpointAdjustmentType = TILTBACK_DUTY;
 		d->state = RUNNING_TILTBACK_DUTY;
-	} else if (d->abs_duty_cycle > 0.05 && VESC_IF->mc_get_input_voltage_filtered() > d->balance_conf.tiltback_hv) {
-		if (d->erpm > 0){
-			d->setpoint_target = d->balance_conf.tiltback_hv_angle;
-		} else {
-			d->setpoint_target = -d->balance_conf.tiltback_hv_angle;
-		}
+	} 
+	// tiltback_hv
+	else if (d->abs_duty_cycle > 0.05 && input_voltage > d->balance_conf.tiltback_hv) {
+		if (((d->current_time - d->tb_highvoltage_timer) > .5) ||
+		   (input_voltage > d->balance_conf.tiltback_hv + 1)) {
+			// 500ms have passed or voltage is another volt higher, time for some tiltback
+			if (d->erpm > 0){
+				d->setpoint_target = d->balance_conf.tiltback_hv_angle;
+			} else {
+				d->setpoint_target = -d->balance_conf.tiltback_hv_angle;
+			}
 
-		d->setpointAdjustmentType = TILTBACK_HV;
-		d->state = RUNNING_TILTBACK_HIGH_VOLTAGE;
-	} else if (d->abs_duty_cycle > 0.05 && VESC_IF->mc_get_input_voltage_filtered() < d->balance_conf.tiltback_lv) {
+			d->setpointAdjustmentType = TILTBACK_HV;
+			d->state = RUNNING_TILTBACK_HIGH_VOLTAGE;
+		}
+		else {
+			// Was possibly just a short spike
+			d->setpointAdjustmentType = TILTBACK_NONE;
+			d->state = RUNNING;
+		}
+	} 
+	// tiltback_lv
+	else if (d->abs_duty_cycle > 0.05 && input_voltage < d->balance_conf.tiltback_lv) {
 		float abs_motor_current = fabsf(d->motor_current);
-		float vdelta = d->balance_conf.tiltback_lv - VESC_IF->mc_get_input_voltage_filtered();
+		float vdelta = d->balance_conf.tiltback_lv - input_voltage;
 		float ratio = vdelta * 20 / abs_motor_current;
 		// When to do LV tiltback:
 		// a) we're 2V below lv threshold
@@ -546,6 +614,12 @@ static void apply_torquetilt(data *d) {
 		step_size = d->torquetilt_on_step_size;
 	}
 
+	// when slow then erpm data is especially choppy, causing fake spikes in acceleration
+	// mellow down the reaction to reduce noticeable oscillations
+	if (d->abs_erpm < 500) {
+		step_size /= 2;
+	}
+
 	if (fabsf(d->torquetilt_target - d->torquetilt_interpolated) < step_size) {
 		d->torquetilt_interpolated = d->torquetilt_target;
 	} else if (d->torquetilt_target - d->torquetilt_interpolated > 0) {
@@ -553,6 +627,8 @@ static void apply_torquetilt(data *d) {
 	} else {
 		d->torquetilt_interpolated -= step_size;
 	}
+
+	// INSERT BRAKE TILT LOGIC
 
 	d->setpoint += d->torquetilt_interpolated;
 }
@@ -758,7 +834,7 @@ static void balance_thd(void *arg) {
 			d->adc2 = 0.0;
 		}
 
-		// Yaw Turn tilt:
+		// Yaw Turn Tilt:
 		d->yaw_angle = VESC_IF->imu_get_yaw() * 180.0f / M_PI;
 		float new_change = d->yaw_angle - d->last_yaw_angle;
 		bool unchanged = false;
@@ -783,33 +859,7 @@ static void balance_thd(void *arg) {
 			d->yaw_aggregate += d->yaw_change;
 
 		// Calculate switch state from ADC values
-		if (d->balance_conf.fault_adc1 == 0 && d->balance_conf.fault_adc2 == 0){ // No Switch
-			d->switch_state = ON;
-		} else if (d->balance_conf.fault_adc2 == 0) { // Single switch on ADC1
-			if (d->adc1 > d->balance_conf.fault_adc1) {
-				d->switch_state = ON;
-			} else {
-				d->switch_state = OFF;
-			}
-		} else if (d->balance_conf.fault_adc1 == 0) { // Single switch on ADC2
-			if (d->adc2 > d->balance_conf.fault_adc2) {
-				d->switch_state = ON;
-			} else {
-				d->switch_state = OFF;
-			}
-		} else { // Double switch
-			if (d->adc1 > d->balance_conf.fault_adc1 && d->adc2 > d->balance_conf.fault_adc2) {
-				d->switch_state = ON;
-			} else if (d->adc1 > d->balance_conf.fault_adc1 || d->adc2 > d->balance_conf.fault_adc2) {
-				if (d->balance_conf.fault_is_single_switch) {
-					d->switch_state = ON;
-				} else {
-					d->switch_state = HALF;
-				}
-			} else {
-				d->switch_state = OFF;
-			}
-		}
+		d->switch_state = check_adcs(d);
 
 		// Control Loop State Logic
 		switch(d->state) {
@@ -832,6 +882,8 @@ static void balance_thd(void *arg) {
 				break;
 			}
 
+			d->disengage_timer = d->current_time;
+
 			// Calculate setpoint and interpolation
 			calculate_setpoint_target(d);
 			calculate_setpoint_interpolated(d);
@@ -839,6 +891,16 @@ static void balance_thd(void *arg) {
 			apply_noseangling(d);
 			apply_torquetilt(d);
 			apply_total_turntilt(d);
+
+			if ((d->abs_erpm > 250) && (SIGN(d->torquetilt_filtered_current) != SIGN(d->erpm))) {
+				// current is negative, so we are braking or going downhill
+				// high currents downhill are less likely
+				//torquetilt_strength = tt_strength_downhill;
+				d->braking = true;
+			}
+			else {
+				d->braking = false;
+			}
 
 			// Do PID maths
 			d->proportional = d->setpoint - d->pitch_angle;
@@ -855,10 +917,10 @@ static void balance_thd(void *arg) {
 				d->integral = d->integral * 0.9;
 			}
 
-			d->pid_value = (d->balance_conf.kp * d->proportional) + d->balance_conf.ki * d->integral;
+			float new_pid_value = (d->balance_conf.kp * d->proportional) + d->balance_conf.ki * d->integral;
 
 			if (d->balance_conf.kp2 > 0) {
-				d->proportional2 = d->pid_value - d->gyro[1];
+				d->proportional2 = new_pid_value - d->gyro[1];
 				d->integral2 = d->integral2 + d->proportional2;
 
 				// Apply I term Filter
@@ -866,7 +928,7 @@ static void balance_thd(void *arg) {
 					d->integral2 = d->balance_conf.ki_limit / d->balance_conf.ki2 * SIGN(d->integral2);
 				}
 
-				d->pid_value = (d->balance_conf.kp2 * d->proportional2) +
+				new_pid_value = (d->balance_conf.kp2 * d->proportional2) +
 						(d->balance_conf.ki2 * d->integral2);
 			}
 
@@ -874,13 +936,39 @@ static void balance_thd(void *arg) {
 
 			// Apply Booster
 			d->abs_proportional = fabsf(d->proportional);
+			float booster_current = d->balance_conf.booster_current;
+
+			// Make booster a bit stronger at higher speed (up to 2x stronger when braking)
+			const float boost_min_erpm = 3000;
+			if (d->abs_erpm > boost_min_erpm) {
+				float speedstiffness = fminf(1, (d->abs_erpm - boost_min_erpm) / 10000);
+				if (d->braking)
+					booster_current += booster_current * speedstiffness;
+				else
+					booster_current += booster_current * speedstiffness / 2;
+			}
+
 			if (d->abs_proportional > d->balance_conf.booster_angle) {
 				if (d->abs_proportional - d->balance_conf.booster_angle < d->balance_conf.booster_ramp) {
-					d->pid_value += (d->balance_conf.booster_current * SIGN(d->proportional)) *
+					new_pid_value += (booster_current * SIGN(d->proportional)) *
 							((d->abs_proportional - d->balance_conf.booster_angle) / d->balance_conf.booster_ramp);
 				} else {
-					d->pid_value += d->balance_conf.booster_current * SIGN(d->proportional);
+					new_pid_value += booster_current * SIGN(d->proportional);
 				}
+			}
+
+			// Brake Amp Rate Limiting
+			if (d->braking && (fabsf(d->pid_value - new_pid_value) > d->pid_brake_increment)) {
+				if (new_pid_value > d->pid_value) {
+					d->pid_value += d->pid_brake_increment;
+				}
+				else {
+					d->pid_value -= d->pid_brake_increment;
+				}
+			}
+			else {
+				float pid_filtering_weight = d->balance_conf.pid_filtering_weight;
+				d->pid_value = d->pid_value * (1.0 - pid_filtering_weight) + new_pid_value * pid_filtering_weight;
 			}
 
 			// Output to motor

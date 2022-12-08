@@ -113,6 +113,29 @@ p, li { white-space: pre-wrap; }
             <suffix></suffix>
             <vTx>9</vTx>
         </ki2>
+        <pid_filtering_weight>
+            <longName>PID Filtering Weight</longName>
+            <type>1</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The lower the value, the smoother the PID will be, but react slower.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Higher value, higher reaction but PID less smooth.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_PID_FILTERING_WEIGHT</cDefine>
+            <editorDecimalsDouble>2</editorDecimalsDouble>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxDouble>1</maxDouble>
+            <minDouble>0.1</minDouble>
+            <showDisplay>0</showDisplay>
+            <stepDouble>0.01</stepDouble>
+            <valDouble>0.3</valDouble>
+            <vTxDoubleScale>1000</vTxDoubleScale>
+            <suffix> </suffix>
+            <vTx>9</vTx>
+        </pid_filtering_weight>
         <hertz>
             <longName>Loop Hertz</longName>
             <type>2</type>
@@ -749,6 +772,28 @@ p, li { white-space: pre-wrap; }
             <suffix> A</suffix>
             <vTx>9</vTx>
         </brake_current>
+        <pid_brake_max_amp_change>
+            <longName>Brake max amp change</longName>
+            <type>1</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Maximum amps change when braking. Hard coded to 5 if the value is less than 0.1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_PID_BRAKE_MAX_AMPS</cDefine>
+            <editorDecimalsDouble>2</editorDecimalsDouble>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxDouble>20</maxDouble>
+            <minDouble>0</minDouble>
+            <showDisplay>0</showDisplay>
+            <stepDouble>0.01</stepDouble>
+            <valDouble>5</valDouble>
+            <vTxDoubleScale>1000</vTxDoubleScale>
+            <suffix> A</suffix>
+            <vTx>9</vTx>
+        </pid_brake_max_amp_change>
         <ki_limit>
             <longName>I term limit</longName>
             <type>1</type>
@@ -1200,7 +1245,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>6</valDouble>
+            <valDouble>3</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>9</vTx>
@@ -1264,7 +1309,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.5</stepDouble>
-            <valDouble>4</valDouble>
+            <valDouble>5</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> °/s</suffix>
             <vTx>9</vTx>
@@ -1469,6 +1514,7 @@ p, li { white-space: pre-wrap; }
         <ser>ki</ser>
         <ser>kp2</ser>
         <ser>ki2</ser>
+        <ser>pid_filtering_weight</ser>
         <ser>hertz</ser>
         <ser>fault_pitch</ser>
         <ser>fault_roll</ser>
@@ -1499,6 +1545,7 @@ p, li { white-space: pre-wrap; }
         <ser>startup_roll_tolerance</ser>
         <ser>startup_speed</ser>
         <ser>brake_current</ser>
+        <ser>pid_brake_max_amp_change</ser>
         <ser>ki_limit</ser>
         <ser>booster_angle</ser>
         <ser>booster_ramp</ser>
@@ -1545,10 +1592,13 @@ p, li { white-space: pre-wrap; }
                     <param>ki</param>
                     <param>kp2</param>
                     <param>ki2</param>
+                    <param>pid_filtering_weight</param>
                     <param>::sep::Main Loop</param>
                     <param>hertz</param>
                     <param>::sep::Filters</param>
                     <param>ki_limit</param>
+                    <param>::sep::Brake (while riding)</param>
+                    <param>pid_brake_max_amp_change</param>
                     <param>::sep::Booster</param>
                     <param>booster_angle</param>
                     <param>booster_ramp</param>

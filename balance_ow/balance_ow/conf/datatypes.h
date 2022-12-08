@@ -28,6 +28,7 @@ typedef struct {
 	float ki;
 	float kp2;
 	float ki2;
+	float pid_filtering_weight;
 	uint16_t hertz;
 	float fault_pitch;
 	float fault_roll;
@@ -58,6 +59,7 @@ typedef struct {
 	float startup_roll_tolerance;
 	float startup_speed;
 	float brake_current;
+	float pid_brake_max_amp_change;
 	float ki_limit;
 	float booster_angle;
 	float booster_ramp;

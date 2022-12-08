@@ -14,6 +14,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->ki, &ind);
 	buffer_append_float32_auto(buffer, conf->kp2, &ind);
 	buffer_append_float32_auto(buffer, conf->ki2, &ind);
+	buffer_append_float32_auto(buffer, conf->pid_filtering_weight, &ind);
 	buffer_append_uint16(buffer, conf->hertz, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_roll, &ind);
@@ -44,6 +45,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->startup_roll_tolerance, &ind);
 	buffer_append_float32_auto(buffer, conf->startup_speed, &ind);
 	buffer_append_float32_auto(buffer, conf->brake_current, &ind);
+	buffer_append_float32_auto(buffer, conf->pid_brake_max_amp_change, &ind);
 	buffer_append_float32_auto(buffer, conf->ki_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_angle, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_ramp, &ind);
@@ -94,6 +96,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->ki = buffer_get_float32_auto(buffer, &ind);
 	conf->kp2 = buffer_get_float32_auto(buffer, &ind);
 	conf->ki2 = buffer_get_float32_auto(buffer, &ind);
+	conf->pid_filtering_weight = buffer_get_float32_auto(buffer, &ind);
 	conf->hertz = buffer_get_uint16(buffer, &ind);
 	conf->fault_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->fault_roll = buffer_get_float32_auto(buffer, &ind);
@@ -124,6 +127,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->startup_roll_tolerance = buffer_get_float32_auto(buffer, &ind);
 	conf->startup_speed = buffer_get_float32_auto(buffer, &ind);
 	conf->brake_current = buffer_get_float32_auto(buffer, &ind);
+	conf->pid_brake_max_amp_change = buffer_get_float32_auto(buffer, &ind);
 	conf->ki_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_angle = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_ramp = buffer_get_float32_auto(buffer, &ind);
@@ -167,6 +171,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->ki = APPCONF_BALANCE_KI;
 	conf->kp2 = APPCONF_BALANCE_KP2;
 	conf->ki2 = APPCONF_BALANCE_KI2;
+	conf->pid_filtering_weight = APPCONF_BALANCE_PID_FILTERING_WEIGHT;
 	conf->hertz = APPCONF_BALANCE_HERTZ;
 	conf->fault_pitch = APPCONF_BALANCE_FAULT_PITCH;
 	conf->fault_roll = APPCONF_BALANCE_FAULT_ROLL;
@@ -197,6 +202,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->startup_roll_tolerance = APPCONF_BALANCE_STARTUP_ROLL_TOLERANCE;
 	conf->startup_speed = APPCONF_BALANCE_STARTUP_SPEED;
 	conf->brake_current = APPCONF_BALANCE_BRAKE_CURRENT;
+	conf->pid_brake_max_amp_change = APPCONF_BALANCE_PID_BRAKE_MAX_AMPS;
 	conf->ki_limit = APPCONF_BALANCE_KI_LIMIT;
 	conf->booster_angle = APPCONF_BALANCE_BOOSTER_ANGLE;
 	conf->booster_ramp = APPCONF_BALANCE_BOOSTER_RAMP;
