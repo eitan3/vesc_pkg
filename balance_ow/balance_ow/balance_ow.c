@@ -148,6 +148,9 @@ typedef struct {
 	float yaw_turntilt_boost_per_erpm, yaw_turntilt_strength;
 	float yaw_turntilt_step_size;
 
+	// Startup Clicks
+	unsigned int start_counter_clicks, start_counter_clicks_max, start_click_current;
+
 	// Debug values
 	int debug_render_1, debug_render_2;
 	int debug_sample_field, debug_sample_count, debug_sample_index;
@@ -252,6 +255,10 @@ static void configure(data *d) {
 	d->yaw_aggregate_target = fmaxf(50, d->balance_conf.yaw_turntilt_aggregate);
 	d->yaw_turntilt_boost_per_erpm = (float)d->balance_conf.yaw_turntilt_erpm_boost / 100.0 / (float)d->balance_conf.yaw_turntilt_erpm_boost_end;
 	d->yaw_turntilt_strength = d->balance_conf.yaw_turntilt_strength;
+
+	// Startup Clicks
+	d->start_click_current = d->balance_conf.startup_click_current;
+	d->start_counter_clicks_max = d->balance_conf.startup_num_of_clicks;
 }
 
 static void reset_vars(data *d) {
@@ -285,6 +292,11 @@ static void reset_vars(data *d) {
 	d->yaw_turntilt_interpolated = 0;
 	d->last_yaw_angle = 0;
 	d->yaw_aggregate = 0;
+
+	// Startup Clicks
+	d->start_counter_clicks = d->start_counter_clicks_max;
+	if (d->start_click_current == 0)
+		d->start_counter_clicks = 0;
 }
 
 static float get_setpoint_adjustment_step_size(data *d) {
@@ -603,7 +615,7 @@ static void apply_torquetilt(data *d) {
 	// Take abs motor current, subtract start offset, and take the max of that with 0 to get the current above our start threshold (absolute).
 	// Then multiply it by "power" to get our desired angle, and min with the limit to respect boundaries.
 	// Finally multiply it by sign motor current to get directionality back
-	d->torquetilt_target = fminf(fmaxf((fabsf(d->torquetilt_filtered_current) - d->balance_conf.torquetilt_start_current), 0) *
+	d->torquetilt_target = fminf(fmaxf(fabsf(d->torquetilt_filtered_current) - d->balance_conf.torquetilt_start_current, 0) *
 			d->balance_conf.torquetilt_strength, d->balance_conf.torquetilt_angle_limit) * SIGN(d->torquetilt_filtered_current);
 
 	float step_size;
@@ -919,41 +931,45 @@ static void balance_thd(void *arg) {
 
 			float new_pid_value = (d->balance_conf.kp * d->proportional) + d->balance_conf.ki * d->integral;
 
-			if (d->balance_conf.kp2 > 0) {
-				d->proportional2 = new_pid_value - d->gyro[1];
-				d->integral2 = d->integral2 + d->proportional2;
+			d->last_proportional = d->proportional;
+			
+			// Start Rate PID and Booster portion a few cycles later, after the start clicks have been emitted
+			// this keeps the start smooth and predictable
+			if (d->start_counter_clicks == 0) {
+				if (d->balance_conf.kp2 > 0) {
+					d->proportional2 = new_pid_value - d->gyro[1];
+					d->integral2 = d->integral2 + d->proportional2;
 
-				// Apply I term Filter
-				if (d->balance_conf.ki_limit > 0 && fabsf(d->integral2 * d->balance_conf.ki2) > d->balance_conf.ki_limit) {
-					d->integral2 = d->balance_conf.ki_limit / d->balance_conf.ki2 * SIGN(d->integral2);
+					// Apply I term Filter
+					if (d->balance_conf.ki_limit > 0 && fabsf(d->integral2 * d->balance_conf.ki2) > d->balance_conf.ki_limit) {
+						d->integral2 = d->balance_conf.ki_limit / d->balance_conf.ki2 * SIGN(d->integral2);
+					}
+
+					new_pid_value = (d->balance_conf.kp2 * d->proportional2) +
+							(d->balance_conf.ki2 * d->integral2);
 				}
 
-				new_pid_value = (d->balance_conf.kp2 * d->proportional2) +
-						(d->balance_conf.ki2 * d->integral2);
-			}
+				// Apply Booster
+				d->abs_proportional = fabsf(d->proportional);
+				float booster_current = d->balance_conf.booster_current;
 
-			d->last_proportional = d->proportional;
+				// Make booster a bit stronger at higher speed (up to 2x stronger when braking)
+				const float boost_min_erpm = 3000;
+				if (d->abs_erpm > boost_min_erpm) {
+					float speedstiffness = fminf(1, (d->abs_erpm - boost_min_erpm) / 10000);
+					if (d->braking)
+						booster_current += booster_current * speedstiffness;
+					else
+						booster_current += booster_current * speedstiffness / 2;
+				}
 
-			// Apply Booster
-			d->abs_proportional = fabsf(d->proportional);
-			float booster_current = d->balance_conf.booster_current;
-
-			// Make booster a bit stronger at higher speed (up to 2x stronger when braking)
-			const float boost_min_erpm = 3000;
-			if (d->abs_erpm > boost_min_erpm) {
-				float speedstiffness = fminf(1, (d->abs_erpm - boost_min_erpm) / 10000);
-				if (d->braking)
-					booster_current += booster_current * speedstiffness;
-				else
-					booster_current += booster_current * speedstiffness / 2;
-			}
-
-			if (d->abs_proportional > d->balance_conf.booster_angle) {
-				if (d->abs_proportional - d->balance_conf.booster_angle < d->balance_conf.booster_ramp) {
-					new_pid_value += (booster_current * SIGN(d->proportional)) *
-							((d->abs_proportional - d->balance_conf.booster_angle) / d->balance_conf.booster_ramp);
-				} else {
-					new_pid_value += booster_current * SIGN(d->proportional);
+				if (d->abs_proportional > d->balance_conf.booster_angle) {
+					if (d->abs_proportional - d->balance_conf.booster_angle < d->balance_conf.booster_ramp) {
+						new_pid_value += (booster_current * SIGN(d->proportional)) *
+								((d->abs_proportional - d->balance_conf.booster_angle) / d->balance_conf.booster_ramp);
+					} else {
+						new_pid_value += booster_current * SIGN(d->proportional);
+					}
 				}
 			}
 
@@ -971,8 +987,19 @@ static void balance_thd(void *arg) {
 				d->pid_value = d->pid_value * (1.0 - pid_filtering_weight) + new_pid_value * pid_filtering_weight;
 			}
 
+
 			// Output to motor
-			set_current(d, d->pid_value);
+			if (d->start_counter_clicks && d->abs_erpm < 200) {
+				// Generate alternate pulses to produce distinct "click"
+				d->start_counter_clicks--;
+				if ((d->start_counter_clicks & 0x1) == 0)
+					set_current(d, d->pid_value - d->start_click_current);
+				else
+					set_current(d, d->pid_value + d->start_click_current);
+			}
+			else {
+				set_current(d, d->pid_value);
+			}
 			break;
 
 		case (FAULT_ANGLE_PITCH):

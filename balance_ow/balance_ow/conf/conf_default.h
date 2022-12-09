@@ -45,12 +45,12 @@
 
 // ADC1 Switch Voltage
 #ifndef APPCONF_BALANCE_FAULT_ADC1
-#define APPCONF_BALANCE_FAULT_ADC1 3.05
+#define APPCONF_BALANCE_FAULT_ADC1 3
 #endif
 
 // ADC2 Switch Voltage
 #ifndef APPCONF_BALANCE_FAULT_ADC2
-#define APPCONF_BALANCE_FAULT_ADC2 3.05
+#define APPCONF_BALANCE_FAULT_ADC2 3
 #endif
 
 // Pitch Fault Delay
@@ -351,6 +351,16 @@
 // Quickstop start angle
 #ifndef APPCONF_BALANCE_QUICKSTOP_ANGLE
 #define APPCONF_BALANCE_QUICKSTOP_ANGLE 14
+#endif
+
+// Startup Click Current
+#ifndef APPCONF_BALANCE_STARTUP_CLICK_CURRENT
+#define APPCONF_BALANCE_STARTUP_CLICK_CURRENT 5
+#endif
+
+// Number of clicks on startup
+#ifndef APPCONF_BALANCE_STARTUP_NUM_OF_CLICKS
+#define APPCONF_BALANCE_STARTUP_NUM_OF_CLICKS 3
 #endif
 
 // CONF_DEFAULT_H_

@@ -80,6 +80,8 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer[ind++] = conf->enable_quickstop;
 	buffer_append_uint16(buffer, conf->quickstop_erpm, &ind);
 	buffer_append_float32_auto(buffer, conf->quickstop_angle, &ind);
+	buffer_append_uint16(buffer, conf->startup_click_current, &ind);
+	buffer_append_uint16(buffer, conf->startup_num_of_clicks, &ind);
 
 	return ind;
 }
@@ -162,6 +164,8 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->enable_quickstop = buffer[ind++];
 	conf->quickstop_erpm = buffer_get_uint16(buffer, &ind);
 	conf->quickstop_angle = buffer_get_float32_auto(buffer, &ind);
+	conf->startup_click_current = buffer_get_uint16(buffer, &ind);
+	conf->startup_num_of_clicks = buffer_get_uint16(buffer, &ind);
 
 	return true;
 }
@@ -237,5 +241,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->enable_quickstop = APPCONF_BALANCE_ENABLE_QUICKSTOP;
 	conf->quickstop_erpm = APPCONF_BALANCE_QUICKSTOP_ERPM;
 	conf->quickstop_angle = APPCONF_BALANCE_QUICKSTOP_ANGLE;
+	conf->startup_click_current = APPCONF_BALANCE_STARTUP_CLICK_CURRENT;
+	conf->startup_num_of_clicks = APPCONF_BALANCE_STARTUP_NUM_OF_CLICKS;
 }
 

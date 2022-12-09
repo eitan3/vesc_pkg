@@ -9,6 +9,8 @@ Most things should be similar to the regular balance app, except some of the tim
 
 Recent features:
 
+Add Startup Clicks (thanks to surfdado).
+
 Yaw turntilt (thanks to nico).
 
 Added Temp tiltback.
