@@ -100,9 +100,12 @@ typedef struct {
 	float torquetilt_on_step_size, torquetilt_off_step_size;
 	float tiltback_variable, tiltback_variable_max_erpm, noseangling_step_size;
 
+	// Feature: True Pitch
+	ATTITUDE_INFO m_att_ref;
+
 	// Runtime values read from elsewhere
 	float pitch_angle, last_pitch_angle, roll_angle, abs_roll_angle, abs_roll_angle_sin, last_gyro_y;
-//  float true_pitch_angle; /*Used for Pitch Fault and ATR Features, requires modified "imu.c"*/
+    float true_pitch_angle;
 	float gyro[3];
 	float duty_cycle, abs_duty_cycle;
 	float erpm, abs_erpm, avg_erpm;
@@ -126,6 +129,7 @@ typedef struct {
 	float fault_angle_pitch_timer, fault_angle_roll_timer, fault_switch_timer, fault_switch_half_timer; // Seconds
 	float motor_timeout_seconds;
 	float brake_timeout; // Seconds
+	float applied_booster_current;
 
 	bool braking;
 	float disengage_timer; // Seconds
@@ -298,6 +302,7 @@ static void reset_vars(data *d) {
 	d->diff_time = 0;
 	d->brake_timeout = 0;
 	d->pid_value = 0;
+	d->applied_booster_current = 0;
 
 	// Acceleration:
 	// d->accel_gap = 0;
@@ -323,8 +328,8 @@ static void reset_vars(data *d) {
 		d->start_counter_clicks = 0;
 
 	// Wheel Slip
-	wheelslip_timer = 0;
-	wheelslip_end_timer = 0;
+	d->wheelslip_timer = 0;
+	d->wheelslip_end_timer = 0;
 }
 
 static float get_setpoint_adjustment_step_size(data *d) {
@@ -403,8 +408,8 @@ static bool check_faults(data *d, bool ignoreTimers){
 		// QUICK STOP
 		else if (d->balance_conf.enable_quickstop && 
 				 d->abs_erpm < d->balance_conf.quickstop_erpm && 
-				 fabsf(d->pitch_angle/*true_pitch_angle*/) > d->balance_conf.quickstop_angle && 
-				 SIGN(d->pitch_angle/*true_pitch_angle*/) == SIGN(d->erpm)) {
+				 fabsf(d->true_pitch_angle) > d->balance_conf.quickstop_angle && 
+				 SIGN(d->true_pitch_angle) == SIGN(d->erpm)) {
 			d->state = FAULT_QUICKSTOP;
 			return true;
 		}
@@ -419,17 +424,17 @@ static bool check_faults(data *d, bool ignoreTimers){
 			d->state = FAULT_SWITCH_FULL;
 			return true;
 		}
-		if (fabsf(d->pitch_angle/*true_pitch_angle*/) > 15) {
+		if (fabsf(d->true_pitch_angle) > 15) {
 			d->state = FAULT_REVERSE;
 			return true;
 		}
 		// Above 10 degrees for a half a second? Switch it off
-		if ((fabsf(d->pitch_angle/*true_pitch_angle*/) > 10) && (d->current_time - d->reverse_timer > 500)) {
+		if ((fabsf(d->true_pitch_angle) > 10) && (d->current_time - d->reverse_timer > 500)) {
 			d->state = FAULT_REVERSE;
 			return true;
 		}
 		// Above 5 degrees for a full second? Switch it off
-		if ((fabsf(d->pitch_angle/*true_pitch_angle*/) > 5) && (d->current_time - d->reverse_timer > 1000)) {
+		if ((fabsf(d->true_pitch_angle) > 5) && (d->current_time - d->reverse_timer > 1000)) {
 			d->state = FAULT_REVERSE;
 			return true;
 		}
@@ -437,7 +442,7 @@ static bool check_faults(data *d, bool ignoreTimers){
 			d->state = FAULT_REVERSE;
 			return true;
 		}
-		if (fabsf(d->pitch_angle/*true_pitch_angle*/) < 5) {
+		if (fabsf(d->true_pitch_angle) < 5) {
 			d->reverse_timer = d->current_time;
 		}
 	}
@@ -465,7 +470,7 @@ static bool check_faults(data *d, bool ignoreTimers){
 	}
 
 	// Check pitch angle
-	if (fabsf(d->pitch_angle/*true_pitch_angle*/) > d->balance_conf.fault_pitch) {
+	if (fabsf(d->true_pitch_angle) > d->balance_conf.fault_pitch) {
 		if ((1000.0 * (d->current_time - d->fault_angle_pitch_timer)) > d->balance_conf.fault_delay_pitch || ignoreTimers) {
 			d->state = FAULT_ANGLE_PITCH;
 			return true;
@@ -920,6 +925,11 @@ static void set_current(data *d, float current){
 	VESC_IF->mc_set_current(current);
 }
 
+static void imu_ref_callback(float *acc, float *gyro, float *mag, float dt) {
+	data *d = (data*)ARG;
+	VESC_IF->ahrs_update_mahony_imu(gyro, acc, dt, &d->m_att_ref);
+}
+
 static void balance_thd(void *arg) {
 	data *d = (data*)arg;
 
@@ -946,9 +956,10 @@ static void balance_thd(void *arg) {
 		d->last_gyro_y = d->gyro[1];
 
 		// Get the values we want
-		/*d->true_pitch_angle = RAD2DEG_f(VESC_IF->imu_ref_get_pitch());*/
+		// True pitch is derived from the secondary IMU filter running with kp=0.2
+		d->true_pitch_angle = RAD2DEG_f(VESC_IF->ahrs_get_pitch(&d->m_att_ref));
 		d->pitch_angle = RAD2DEG_f(VESC_IF->imu_get_pitch());
-		d->roll_angle = RAD2DEG_f(VESC_IF->imu_get_roll());
+		d->roll_angle = RAD2DEG_f(VESC_IF->ahrs_get_roll(&d->m_att_ref));
 		d->abs_roll_angle = fabsf(d->roll_angle);
 		d->abs_roll_angle_sin = sinf(DEG2RAD_f(d->abs_roll_angle));
 		VESC_IF->imu_get_gyro(d->gyro);
@@ -983,7 +994,7 @@ static void balance_thd(void *arg) {
 		d->acceleration = d->accelavg;
 
 		// Yaw Turn Tilt:
-		d->yaw_angle = VESC_IF->imu_get_yaw() * 180.0f / M_PI;
+		d->yaw_angle = VESC_IF->ahrs_get_yaw(&d->m_att_ref) * 180.0f / M_PI;
 		float new_change = d->yaw_angle - d->last_yaw_angle;
 		bool unchanged = false;
 		if ((new_change == 0) // Exact 0's only happen when the IMU is not updating between loops
@@ -1087,7 +1098,8 @@ static void balance_thd(void *arg) {
 				}
 
 				// Apply Booster
-				d->abs_proportional = fabsf(d->proportional);
+				float true_proportional = d->setpoint - d->true_pitch_angle;
+				d->abs_proportional = fabsf(true_proportional);
 				float booster_current = d->balance_conf.booster_current;
 
 				// Make booster a bit stronger at higher speed (up to 2x stronger when braking)
@@ -1102,11 +1114,12 @@ static void balance_thd(void *arg) {
 
 				if (d->abs_proportional > d->balance_conf.booster_angle) {
 					if (d->abs_proportional - d->balance_conf.booster_angle < d->balance_conf.booster_ramp) {
-						new_pid_value += (booster_current * SIGN(d->proportional)) *
+						d->applied_booster_current = (booster_current * SIGN(true_proportional)) *
 								((d->abs_proportional - d->balance_conf.booster_angle) / d->balance_conf.booster_ramp);
 					} else {
-						new_pid_value += booster_current * SIGN(d->proportional);
+						d->applied_booster_current = booster_current * SIGN(true_proportional);
 					}
+					new_pid_value += d->applied_booster_current;
 				}
 			}
 
@@ -1226,6 +1239,8 @@ static void send_realtime_data(data *d){
 	buffer_append_float32_auto(send_buffer, d->adc2, &ind);
 	buffer_append_float32_auto(send_buffer, app_balance_get_debug(d->debug_render_2), &ind);
 	buffer_append_float32_auto(send_buffer, d->acceleration, &ind);
+	buffer_append_float32_auto(send_buffer, d->true_pitch_angle, &ind);
+	buffer_append_float32_auto(send_buffer, d->applied_booster_current, &ind);
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 
@@ -1364,6 +1379,12 @@ INIT_FUN(lib_info *info) {
 	VESC_IF->conf_custom_add_config(get_cfg, set_cfg, get_cfg_xml);
 
 	configure(d);
+
+	VESC_IF->ahrs_init_attitude_info(&d->m_att_ref);
+	d->m_att_ref.acc_confidence_decay = 0.1;
+	d->m_att_ref.kp = 0.2;
+
+	VESC_IF->imu_set_read_callback(imu_ref_callback);
 
 	d->thread = VESC_IF->spawn(balance_thd, 2048, "Balance Main", d);
 

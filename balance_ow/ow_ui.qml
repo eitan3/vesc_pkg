@@ -81,6 +81,8 @@ Item {
             var adc2 = dv.getFloat32(ind); ind += 4;
             var debug2 = dv.getFloat32(ind); ind += 4;
             var acceleration = dv.getFloat32(ind); ind += 4;
+            var true_pitch = dv.getFloat32(ind); ind += 4;
+            var booster_current = dv.getFloat32(ind); ind += 4;
 
             var stateString
             if(state == 0){
@@ -131,9 +133,11 @@ Item {
             valText1.text =
                 "pid    : " + pid_value.toFixed(2) + "A\n" +
                 "pitch  : " + pitch.toFixed(2) + "°\n" +
+                "true pitch: " + true_pitch.toFixed(2) + "°\n" +
                 "roll   : " + roll.toFixed(2) + "°\n" +
                 "time   : " + (1/time_diff).toFixed(0) + "hz\n" +
                 "current: " + motor_current.toFixed(2) + "A\n" +
+                "booster current: " + booster_current.toFixed(2) + "A\n" +
                 "debug1 : " + debug1.toFixed(2) + "\n" +
                 "state  : " + stateString + "\n" +
                 "switch : " + switchString + "\n" +
