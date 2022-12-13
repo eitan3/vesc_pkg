@@ -80,6 +80,7 @@ Item {
             var adc1 = dv.getFloat32(ind); ind += 4;
             var adc2 = dv.getFloat32(ind); ind += 4;
             var debug2 = dv.getFloat32(ind); ind += 4;
+            var acceleration = dv.getFloat32(ind); ind += 4;
 
             var stateString
             if(state == 0){
@@ -103,13 +104,20 @@ Item {
             }else if(state == 9){
                 stateString = "FAULT_SWITCH_FULL"
             }else if(state == 10){
-                stateString = "Was FAULT_DUTY"
+                stateString = "Was FAULT_DUTY" // Can be remove
             }else if(state == 11){
                 stateString = "FAULT_STARTUP"
+            }else if(state == 12){
+                stateString = "FAULT_REVERSE"
+            }else if(state == 13){
+                stateString = "FAULT_QUICKSTOP"
+            }else if(state == 14){
+                stateString = "RUNNING_WHEELSLIP"
             }else{     
                 stateString = "UNKNOWN"
             }
             
+
             var switchString
             if(switch_state == 0){
                 switchString = "Off"
@@ -131,7 +139,8 @@ Item {
                 "switch : " + switchString + "\n" +
                 "adc1   : " + adc1.toFixed(2) + "V\n" +
                 "adc2   : " + adc2.toFixed(2) + "V\n" +
-                "debug2 : " + debug2.toFixed(2)
+                "debug2 : " + debug2.toFixed(2) + "\n" +
+                "acceleration : " + acceleration.toFixed(2)
         }
     }
 

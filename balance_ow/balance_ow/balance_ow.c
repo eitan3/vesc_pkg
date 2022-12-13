@@ -28,6 +28,9 @@
 #include <math.h>
 #include <string.h>
 
+// Acceleration average
+#define ACCEL_ARRAY_SIZE 40
+
 HEADER
 
 // Return the sign of the argument. -1.0 if negative, 1.0 if zero or positive.
@@ -50,7 +53,8 @@ typedef enum {
 	FAULT_SWITCH_FULL = 9,
 	FAULT_STARTUP = 11,
 	FAULT_REVERSE = 12,
-	FAULT_QUICKSTOP = 13
+	FAULT_QUICKSTOP = 13,
+	RUNNING_WHEELSLIP = 14
 } BalanceState;
 
 typedef enum {
@@ -127,6 +131,16 @@ typedef struct {
 	float disengage_timer; // Seconds
 	float tb_highvoltage_timer;
 	float pid_brake_increment; // Brake Amp Rate Limiting
+
+	float max_duty_with_margin;
+	float wheelslip_timer, wheelslip_end_timer;
+	float acceleration, last_erpm;
+	// float accel_gap;
+	float accelhist[ACCEL_ARRAY_SIZE];
+	float accelavg;
+	// float tt_accel_factor;
+	int accelidx;
+	// int direction_counter;
 
 	// Temp tiltback
 	float mc_fet_start_temp;
@@ -215,6 +229,8 @@ static void configure(data *d) {
 		d->pid_brake_increment = 5;
 	}
 
+	d->max_duty_with_margin = VESC_IF->get_cfg_float(CFG_PARAM_l_max_duty) - 0.1;
+
 	// Init Filters
 	float loop_time_filter = 3.0; // Originally Parameter, now hard-coded
 	d->loop_overshoot_alpha = 2.0 * M_PI * ((float)1.0 / (float)d->balance_conf.hertz) *
@@ -283,6 +299,14 @@ static void reset_vars(data *d) {
 	d->brake_timeout = 0;
 	d->pid_value = 0;
 
+	// Acceleration:
+	// d->accel_gap = 0;
+	// d->direction_counter = 0;
+	for (int i = 0; i < 40; i++)
+		d->accelhist[i] = 0;
+	d->accelidx = 0;
+	d->accelavg = 0;
+
 	// Roll Turntilt:
 	d->roll_turntilt_target = 0;
 	d->roll_turntilt_interpolated = 0;
@@ -297,6 +321,10 @@ static void reset_vars(data *d) {
 	d->start_counter_clicks = d->start_counter_clicks_max;
 	if (d->start_click_current == 0)
 		d->start_counter_clicks = 0;
+
+	// Wheel Slip
+	wheelslip_timer = 0;
+	wheelslip_end_timer = 0;
 }
 
 static float get_setpoint_adjustment_step_size(data *d) {
@@ -478,6 +506,27 @@ static void calculate_setpoint_target(data *d) {
 			}
 		}
 	} 
+	else if ((fabs(d->acceleration) > 10) &&					// this isn't normal, either wheelslip or wheel getting stuck
+			 (SIGN(d->acceleration) == SIGN(d->erpm)) &&		// we only act on wheelslip, not when the wheel gets stuck
+			 (d->abs_duty_cycle > 0.3) &&
+			 (d->abs_erpm > 1500))								// acceleration can jump a lot at very low speeds
+	{
+		d->state = RUNNING_WHEELSLIP;
+		d->setpointAdjustmentType = TILTBACK_NONE;
+		d->wheelslip_timer = d->current_time;
+	} 
+	else if (d->state == RUNNING_WHEELSLIP) {
+		// Remain in wheelslip state for at least 500ms to avoid any overreactions
+		if (d->abs_duty_cycle > d->max_duty_with_margin) {
+			d->wheelslip_timer = d->current_time;
+			d->setpoint_target = 0;
+		}
+		else if (d->current_time - d->wheelslip_timer > 0.5 && 
+				 d->abs_duty_cycle < 0.7) // Leave wheelslip state only if duty < 70%
+		{
+			d->state = RUNNING;
+		}
+	}
 	// tiltback_duty
 	else if (d->abs_duty_cycle > d->balance_conf.tiltback_duty) {
 		if (d->erpm > 0) {
@@ -578,28 +627,29 @@ static void calculate_setpoint_interpolated(data *d) {
 }
 
 static void apply_noseangling(data *d){
-	// Nose angle adjustment, add variable then constant tiltback
-	float noseangling_target = 0;
-	if (fabsf(d->erpm) > d->tiltback_variable_max_erpm) {
-		noseangling_target = fabsf(d->balance_conf.tiltback_variable_max) * SIGN(d->erpm);
-	} else {
-		noseangling_target = d->tiltback_variable * d->erpm;
-	}
+	if (d->state != RUNNING_WHEELSLIP) {
+		// Nose angle adjustment, add variable then constant tiltback
+		float noseangling_target = 0;
+		if (fabsf(d->erpm) > d->tiltback_variable_max_erpm) {
+			noseangling_target = fabsf(d->balance_conf.tiltback_variable_max) * SIGN(d->erpm);
+		} else {
+			noseangling_target = d->tiltback_variable * d->erpm;
+		}
 
-	if (d->erpm > d->balance_conf.tiltback_constant_erpm) {
-		noseangling_target += d->balance_conf.tiltback_constant;
-	} else if (d->erpm < -d->balance_conf.tiltback_constant_erpm){
-		noseangling_target += -d->balance_conf.tiltback_constant;
-	}
+		if (d->erpm > d->balance_conf.tiltback_constant_erpm) {
+			noseangling_target += d->balance_conf.tiltback_constant;
+		} else if (d->erpm < -d->balance_conf.tiltback_constant_erpm){
+			noseangling_target += -d->balance_conf.tiltback_constant;
+		}
 
-	if (fabsf(noseangling_target - d->noseangling_interpolated) < d->noseangling_step_size) {
-		d->noseangling_interpolated = noseangling_target;
-	} else if (noseangling_target - d->noseangling_interpolated > 0) {
-		d->noseangling_interpolated += d->noseangling_step_size;
-	} else {
-		d->noseangling_interpolated -= d->noseangling_step_size;
+		if (fabsf(noseangling_target - d->noseangling_interpolated) < d->noseangling_step_size) {
+			d->noseangling_interpolated = noseangling_target;
+		} else if (noseangling_target - d->noseangling_interpolated > 0) {
+			d->noseangling_interpolated += d->noseangling_step_size;
+		} else {
+			d->noseangling_interpolated -= d->noseangling_step_size;
+		}
 	}
-
 	d->setpoint += d->noseangling_interpolated;
 }
 
@@ -609,6 +659,28 @@ static void apply_torquetilt(data *d) {
 		d->torquetilt_filtered_current = biquad_process(&d->torquetilt_current_biquad, d->motor_current);
 	} else {
 		d->torquetilt_filtered_current = d->motor_current;
+	}
+
+	// Are we dealing with a free-spinning wheel?
+	// If yes, don't change the torquetilt till we got traction again
+	// instead slightly decrease it each cycle
+	if (d->state == RUNNING_WHEELSLIP || 
+	    (d->current_time - d->wheelslip_end_timer) * 1000 < 100 || // for 100ms after wheelslip we still don't do ATR to allow the wheel to decelerate
+		(fabsf(d->acceleration) > 10 && d->abs_erpm > 1000))
+	{
+		d->torquetilt_interpolated *= 0.995;
+		d->torquetilt_target *= 0.99;
+		/*d->braketilt_interpolated *= 0.995; // TO BE IMPLEMENTED
+		d->braketilt_target *= 0.99;*/
+		d->setpoint += d->torquetilt_interpolated /*+ d->braketilt_interpolated*/;
+		
+		if (d->state == RUNNING_WHEELSLIP && 
+			(d->current_time - d->wheelslip_end_timer) * 1000 >= 100 && 
+			(fabsf(d->acceleration) > 10 && d->abs_erpm > 1000) == false)
+		{
+			d->wheelslip_end_timer = d->current_time;
+		}
+		return;
 	}
 
 	// Wat is this line O_o
@@ -683,6 +755,27 @@ static float apply_roll_turntilt(data *d) {
 		} else {
 			d->roll_turntilt_target *= SIGN(d->erpm);
 		}
+
+		// ATR interference: Reduce turntilt_target during moments of high torque response
+		float atr_min = 2;
+		float atr_max = 5;
+		if (SIGN(d->torquetilt_target) != SIGN(d->roll_turntilt_target)) {
+			// further reduced turntilt during moderate to steep downhills
+			atr_min = 1;
+			atr_max = 4;
+		}
+		if (fabsf(d->torquetilt_target) > atr_min) {
+			// Start scaling turntilt when ATR>2, down to 0 turntilt for ATR > 5 degrees
+			float atr_scaling = (atr_max - fabsf(d->torquetilt_target)) / (atr_max-atr_min);
+			if (atr_scaling < 0) {
+				atr_scaling = 0;
+			}
+			d->roll_turntilt_target *= atr_scaling;
+		}
+		if (fabsf(d->pitch_angle - d->noseangling_interpolated) > 4) {
+			// no setpoint changes during heavy acceleration or braking
+			d->roll_turntilt_target = 0;
+		}
 	}
 
 	// Move towards target limited by max speed
@@ -742,6 +835,30 @@ static float apply_yaw_turntilt(data *d) {
 			d->yaw_turntilt_target = 0;
 		} else {
 			d->yaw_turntilt_target *= SIGN(d->erpm);
+		}
+
+		// ATR interference: Reduce turntilt_target during moments of high torque response
+		float atr_min = 2;
+		float atr_max = 5;
+		if (SIGN(d->torquetilt_target) != SIGN(d->yaw_turntilt_target)) {
+			// further reduced turntilt during moderate to steep downhills
+			atr_min = 1;
+			atr_max = 4;
+		}
+		if (fabsf(d->torquetilt_target) > atr_min) {
+			// Start scaling turntilt when ATR>2, down to 0 turntilt for ATR > 5 degrees
+			float atr_scaling = (atr_max - fabsf(d->torquetilt_target)) / (atr_max-atr_min);
+			if (atr_scaling < 0) {
+				atr_scaling = 0;
+				// during heavy torque response clear the yaw aggregate too
+				d->yaw_aggregate = 0;
+			}
+			d->yaw_turntilt_target *= atr_scaling;
+		}
+		if (fabsf(d->pitch_angle - d->noseangling_interpolated) > 4) {
+			// no setpoint changes during heavy acceleration or braking
+			d->yaw_turntilt_target = 0;
+			d->yaw_aggregate = 0;
 		}
 	}
 
@@ -846,6 +963,25 @@ static void balance_thd(void *arg) {
 			d->adc2 = 0.0;
 		}
 
+		// Torque Tilt:
+
+		/* FW SUPPORT NEEDED FOR SMOOTH ERPM //////////////////////////
+		float smooth_erpm = erpm_sign * mcpwm_foc_get_smooth_erpm();
+		float acceleration_raw = smooth_erpm - last_erpm;
+		d->last_erpm = smooth_erpm;
+		////////////////////////// FW SUPPORT NEEDED FOR SMOOTH ERPM */
+
+		float acceleration_raw = d->erpm - d->last_erpm;
+		d->last_erpm = d->erpm;
+
+		d->accelavg += (acceleration_raw - d->accelhist[d->accelidx]) / ACCEL_ARRAY_SIZE;
+		d->accelhist[d->accelidx] = acceleration_raw;
+		d->accelidx++;
+		if (d->accelidx == ACCEL_ARRAY_SIZE)
+			d->accelidx = 0;
+
+		d->acceleration = d->accelavg;
+
 		// Yaw Turn Tilt:
 		d->yaw_angle = VESC_IF->imu_get_yaw() * 180.0f / M_PI;
 		float new_change = d->yaw_angle - d->last_yaw_angle;
@@ -889,6 +1025,7 @@ static void balance_thd(void *arg) {
 		case (RUNNING_TILTBACK_HIGH_VOLTAGE):
 		case (RUNNING_TILTBACK_LOW_VOLTAGE):
 		case (RUNNING_TILTBACK_TEMP):
+		case (RUNNING_WHEELSLIP):
 			// Check for faults
 			if (check_faults(d, false)) {
 				break;
@@ -1088,6 +1225,7 @@ static void send_realtime_data(data *d){
 	buffer_append_float32_auto(send_buffer, d->adc1, &ind);
 	buffer_append_float32_auto(send_buffer, d->adc2, &ind);
 	buffer_append_float32_auto(send_buffer, app_balance_get_debug(d->debug_render_2), &ind);
+	buffer_append_float32_auto(send_buffer, d->acceleration, &ind);
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 
