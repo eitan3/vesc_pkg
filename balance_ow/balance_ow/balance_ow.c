@@ -108,7 +108,8 @@ typedef struct {
     float true_pitch_angle;
 	float gyro[3];
 	float duty_cycle, abs_duty_cycle;
-	float erpm, abs_erpm, avg_erpm;
+	float erpm, abs_erpm, last_erpm, smooth_erpm;
+	Biquad smooth_erpm_biquad;
 	float motor_current;
 	float motor_position;
 	float adc1, adc2;
@@ -117,7 +118,7 @@ typedef struct {
 	// Rumtime state values
 	BalanceState state;
 	float proportional, integral, proportional2, integral2;
-	float last_proportional, abs_proportional;
+	float abs_proportional;
 	float pid_value;
 	float setpoint, setpoint_target, setpoint_target_interpolated;
 	float noseangling_interpolated;
@@ -138,12 +139,11 @@ typedef struct {
 
 	float max_duty_with_margin;
 	float wheelslip_timer, wheelslip_end_timer;
-	float acceleration, last_erpm;
-	// float accel_gap;
-	float accelhist[ACCEL_ARRAY_SIZE];
-	float accelavg;
-	// float tt_accel_factor;
+	float acceleration;
 	int accelidx;
+	float accelhist[ACCEL_ARRAY_SIZE];
+	// float accel_gap;
+	// float tt_accel_factor;
 	// int direction_counter;
 
 	// Temp tiltback
@@ -246,6 +246,9 @@ static void configure(data *d) {
 		biquad_config(&d->torquetilt_current_biquad, BQ_LOWPASS, Fc);
 	}
 
+	// Smooth erpm biquad
+	biquad_config(&d->smooth_erpm_biquad, BQ_LOWPASS, 90.0 / d->balance_conf.hertz);
+
 	// Variable nose angle adjustment / tiltback (setting is per 1000erpm, convert to per erpm)
 	d->tiltback_variable = d->balance_conf.tiltback_variable / 1000;
 	if (d->tiltback_variable > 0) {
@@ -278,13 +281,12 @@ static void configure(data *d) {
 
 	// Startup Clicks
 	d->start_click_current = d->balance_conf.startup_click_current;
-	d->start_counter_clicks_max = d->balance_conf.startup_num_of_clicks;
+	d->start_counter_clicks_max = 3;
 }
 
 static void reset_vars(data *d) {
 	// Clear accumulated values.
 	d->integral = 0;
-	d->last_proportional = 0;
 	d->integral2 = 0;
 	// Set values for startup
 	d->setpoint = d->pitch_angle;
@@ -303,14 +305,16 @@ static void reset_vars(data *d) {
 	d->brake_timeout = 0;
 	d->pid_value = 0;
 	d->applied_booster_current = 0;
+	biquad_reset(&d->smooth_erpm_biquad);
+	d->smooth_erpm = 0;
 
 	// Acceleration:
 	// d->accel_gap = 0;
 	// d->direction_counter = 0;
-	for (int i = 0; i < 40; i++)
-		d->accelhist[i] = 0;
+	d->acceleration = 0;
 	d->accelidx = 0;
-	d->accelavg = 0;
+	for (int i = 0; i < ACCEL_ARRAY_SIZE; i++)
+		d->accelhist[i] = 0;
 
 	// Roll Turntilt:
 	d->roll_turntilt_target = 0;
@@ -330,28 +334,6 @@ static void reset_vars(data *d) {
 	// Wheel Slip
 	d->wheelslip_timer = 0;
 	d->wheelslip_end_timer = 0;
-}
-
-static float get_setpoint_adjustment_step_size(data *d) {
-	switch(d->setpointAdjustmentType){
-		case (CENTERING):
-			return d->startup_step_size;
-		case (TILTBACK_DUTY):
-			return d->tiltback_duty_step_size;
-		case (TILTBACK_TEMP):
-			return d->temp_tiltback_step_size;
-		case (TILTBACK_HV):
-			return d->tiltback_hv_step_size;
-		case (TILTBACK_LV):
-			return d->tiltback_lv_step_size;
-		case (TILTBACK_NONE):
-			return d->tiltback_return_step_size;
-		case (REVERSESTOP):
-			return d->reverse_stop_step_size;
-		default:
-			;
-	}
-	return 0;
 }
 
 // Read ADCs and determine switch state
@@ -482,7 +464,31 @@ static bool check_faults(data *d, bool ignoreTimers){
 	return false;
 }
 
-static void calculate_setpoint_target(data *d) {
+// Get the step size relative to each state
+static float get_setpoint_adjustment_step_size(data *d) {
+	switch(d->setpointAdjustmentType){
+		case (CENTERING):
+			return d->startup_step_size;
+		case (TILTBACK_DUTY):
+			return d->tiltback_duty_step_size;
+		case (TILTBACK_TEMP):
+			return d->temp_tiltback_step_size;
+		case (TILTBACK_HV):
+			return d->tiltback_hv_step_size;
+		case (TILTBACK_LV):
+			return d->tiltback_lv_step_size;
+		case (TILTBACK_NONE):
+			return d->tiltback_return_step_size;
+		case (REVERSESTOP):
+			return d->reverse_stop_step_size;
+		default:
+			;
+	}
+	return 0;
+}
+
+// Calculate current state and setpoint
+static void calculate_state_and_setpoint(data *d) {
 	float input_voltage = VESC_IF->mc_get_input_voltage_filtered();
 	if (input_voltage < d->balance_conf.tiltback_hv) {
 		d->tb_highvoltage_timer = d->current_time;
@@ -492,7 +498,30 @@ static void calculate_setpoint_target(data *d) {
 		// Ignore tiltback during centering sequence
 		d->state = RUNNING;
 	} 
-	// REVERSESTOP
+	// Entering wheelslip
+	else if ((fabs(d->acceleration) > 10) &&					// this isn't normal, either wheelslip or wheel getting stuck
+			 (SIGN(d->acceleration) == SIGN(d->erpm)) &&		// we only act on wheelslip, not when the wheel gets stuck
+			 (d->abs_duty_cycle > 0.3) &&
+			 (d->abs_erpm > 1500))								// acceleration can jump a lot at very low speeds
+	{
+		d->state = RUNNING_WHEELSLIP;
+		d->setpointAdjustmentType = TILTBACK_NONE;
+		d->wheelslip_timer = d->current_time;
+	} 
+	// Exit wheelslip
+	else if (d->state == RUNNING_WHEELSLIP) {
+		// Remain in wheelslip state for at least 500ms to avoid any overreactions
+		if (d->abs_duty_cycle > d->max_duty_with_margin) {
+			d->wheelslip_timer = d->current_time;
+			d->setpoint_target = 0;
+		}
+		else if (d->current_time - d->wheelslip_timer > 0.5 && 
+				 d->abs_duty_cycle < 0.7) // Leave wheelslip state only if duty < 70%
+		{
+			d->state = RUNNING;
+		}
+	}
+	// Reverse stop
 	else if (d->setpointAdjustmentType == REVERSESTOP) {
 		// accumalete erpms:
 		d->reverse_total_erpm += d->erpm;
@@ -511,28 +540,15 @@ static void calculate_setpoint_target(data *d) {
 			}
 		}
 	} 
-	else if ((fabs(d->acceleration) > 10) &&					// this isn't normal, either wheelslip or wheel getting stuck
-			 (SIGN(d->acceleration) == SIGN(d->erpm)) &&		// we only act on wheelslip, not when the wheel gets stuck
-			 (d->abs_duty_cycle > 0.3) &&
-			 (d->abs_erpm > 1500))								// acceleration can jump a lot at very low speeds
-	{
-		d->state = RUNNING_WHEELSLIP;
-		d->setpointAdjustmentType = TILTBACK_NONE;
-		d->wheelslip_timer = d->current_time;
+	// Go to reverse stop state
+	else if (d->balance_conf.enable_reverse_stop && (d->erpm < -200)) {
+		d->setpointAdjustmentType = REVERSESTOP;
+		d->reverse_timer = d->current_time;
+		d->reverse_total_erpm = 0;
+		d->setpoint_target = 0;
+		d->state = RUNNING;
 	} 
-	else if (d->state == RUNNING_WHEELSLIP) {
-		// Remain in wheelslip state for at least 500ms to avoid any overreactions
-		if (d->abs_duty_cycle > d->max_duty_with_margin) {
-			d->wheelslip_timer = d->current_time;
-			d->setpoint_target = 0;
-		}
-		else if (d->current_time - d->wheelslip_timer > 0.5 && 
-				 d->abs_duty_cycle < 0.7) // Leave wheelslip state only if duty < 70%
-		{
-			d->state = RUNNING;
-		}
-	}
-	// tiltback_duty
+	// Duty cycle tiltback
 	else if (d->abs_duty_cycle > d->balance_conf.tiltback_duty) {
 		if (d->erpm > 0) {
 			d->setpoint_target = d->balance_conf.tiltback_duty_angle;
@@ -542,7 +558,7 @@ static void calculate_setpoint_target(data *d) {
 		d->setpointAdjustmentType = TILTBACK_DUTY;
 		d->state = RUNNING_TILTBACK_DUTY;
 	} 
-	// tiltback_hv
+	// High voltage tiltback
 	else if (d->abs_duty_cycle > 0.05 && input_voltage > d->balance_conf.tiltback_hv) {
 		if (((d->current_time - d->tb_highvoltage_timer) > .5) ||
 		   (input_voltage > d->balance_conf.tiltback_hv + 1)) {
@@ -562,7 +578,7 @@ static void calculate_setpoint_target(data *d) {
 			d->state = RUNNING;
 		}
 	} 
-	// tiltback_lv
+	// Low voltage tiltback
 	else if (d->abs_duty_cycle > 0.05 && input_voltage < d->balance_conf.tiltback_lv) {
 		float abs_motor_current = fabsf(d->motor_current);
 		float vdelta = d->balance_conf.tiltback_lv - input_voltage;
@@ -586,7 +602,9 @@ static void calculate_setpoint_target(data *d) {
 			d->setpoint_target = 0;
 			d->state = RUNNING;
 		}
-	}else if(VESC_IF->mc_temp_fet_filtered() > d->mc_fet_start_temp){
+	}
+	// Temp (fet) tiltback
+	else if(VESC_IF->mc_temp_fet_filtered() > d->mc_fet_start_temp){
 		if(d->erpm > 0){
 			d->setpoint_target = d->balance_conf.temp_tiltback_angle;
 		} else {
@@ -594,7 +612,9 @@ static void calculate_setpoint_target(data *d) {
 		}
 		d->setpointAdjustmentType = TILTBACK_TEMP;
 		d->state = RUNNING_TILTBACK_TEMP;
-	}else if(VESC_IF->mc_temp_motor_filtered() > d->mc_mot_start_temp){
+	}
+	// Temp (motor) tiltback
+	else if(VESC_IF->mc_temp_motor_filtered() > d->mc_mot_start_temp){
 		if(d->erpm > 0){
 			d->setpoint_target = d->balance_conf.temp_tiltback_angle;
 		} else {
@@ -602,31 +622,24 @@ static void calculate_setpoint_target(data *d) {
 		}
 		d->setpointAdjustmentType = TILTBACK_TEMP;
 		d->state = RUNNING_TILTBACK_TEMP;
-	} else {
-		// Go to reverse stop state
-		if (d->balance_conf.enable_reverse_stop && (d->erpm < -200)) {
-			d->setpointAdjustmentType = REVERSESTOP;
-			d->reverse_timer = d->current_time;
-			d->reverse_total_erpm = 0;
-		}
-		// Normal run
-		else {
-			d->setpointAdjustmentType = TILTBACK_NONE;
-		}
+	}
+	// Normal run
+	else {
+		d->setpointAdjustmentType = TILTBACK_NONE;
 		d->setpoint_target = 0;
 		d->state = RUNNING;
 	}
-}
 
-static void calculate_setpoint_interpolated(data *d) {
+	// Calculate setpoint interpolation
 	if (d->setpoint_target_interpolated != d->setpoint_target) {
+		float step_size = get_setpoint_adjustment_step_size(d);
 		// If we are less than one step size away, go all the way
-		if (fabsf(d->setpoint_target - d->setpoint_target_interpolated) < get_setpoint_adjustment_step_size(d)) {
+		if (fabsf(d->setpoint_target - d->setpoint_target_interpolated) < step_size) {
 			d->setpoint_target_interpolated = d->setpoint_target;
 		} else if (d->setpoint_target - d->setpoint_target_interpolated > 0) {
-			d->setpoint_target_interpolated += get_setpoint_adjustment_step_size(d);
+			d->setpoint_target_interpolated += step_size;
 		} else {
-			d->setpoint_target_interpolated -= get_setpoint_adjustment_step_size(d);
+			d->setpoint_target_interpolated -= step_size;
 		}
 	}
 }
@@ -659,13 +672,6 @@ static void apply_noseangling(data *d){
 }
 
 static void apply_torquetilt(data *d) {
-	// Filter current (Biquad)
-	if (d->balance_conf.torquetilt_filter > 0) {
-		d->torquetilt_filtered_current = biquad_process(&d->torquetilt_current_biquad, d->motor_current);
-	} else {
-		d->torquetilt_filtered_current = d->motor_current;
-	}
-
 	// Are we dealing with a free-spinning wheel?
 	// If yes, don't change the torquetilt till we got traction again
 	// instead slightly decrease it each cycle
@@ -724,19 +730,22 @@ static void apply_torquetilt(data *d) {
 
 static float apply_roll_turntilt(data *d) {
 	if (d->roll_turntilt_strength == 0) {
-		return 0 ;
+		return 0;
 	}
 
 	float turn_angle = d->abs_roll_angle; 
 
 	// Apply cutzone
-	if ((turn_angle < d->balance_conf.roll_turntilt_start_angle) || (d->state != RUNNING)) {
-		d->roll_turntilt_target = 0;
+	if ((d->state != RUNNING) || // Apply turntilt only when RUNNING
+		(turn_angle < d->balance_conf.roll_turntilt_start_angle) || // Need to be above certain angle to apply turntilt
+		(d->abs_erpm < d->balance_conf.roll_turntilt_start_erpm) || // Need to be above certain erpm to apply turntilt
+		(fabsf(d->pitch_angle - d->noseangling_interpolated) > 4)) // No setpoint changes during heavy acceleration or braking
+	{
+		d->roll_turntilt_target = 0.9 * d->roll_turntilt_target;
 	}
 	else {
 		// Calculate desired angle
-		float turn_change = d->abs_roll_angle_sin;
-		d->roll_turntilt_target = turn_change * d->roll_turntilt_strength;
+		d->roll_turntilt_target = d->abs_roll_angle_sin * d->roll_turntilt_strength;
 
 		// Apply speed scaling
 		float boost;
@@ -754,12 +763,8 @@ static float apply_roll_turntilt(data *d) {
 			d->roll_turntilt_target = fmaxf(d->roll_turntilt_target, -d->balance_conf.roll_turntilt_angle_limit);
 		}
 
-		// Disable below erpm threshold otherwise add directionality
-		if (d->abs_erpm < d->balance_conf.roll_turntilt_start_erpm) {
-			d->roll_turntilt_target = 0;
-		} else {
-			d->roll_turntilt_target *= SIGN(d->erpm);
-		}
+		// Add directionality
+		d->roll_turntilt_target *= SIGN(d->erpm);
 
 		// ATR interference: Reduce turntilt_target during moments of high torque response
 		float atr_min = 2;
@@ -776,10 +781,6 @@ static float apply_roll_turntilt(data *d) {
 				atr_scaling = 0;
 			}
 			d->roll_turntilt_target *= atr_scaling;
-		}
-		if (fabsf(d->pitch_angle - d->noseangling_interpolated) > 4) {
-			// no setpoint changes during heavy acceleration or braking
-			d->roll_turntilt_target = 0;
 		}
 	}
 
@@ -802,13 +803,16 @@ static float apply_yaw_turntilt(data *d) {
 	float turn_angle = d->abs_yaw_change * 100;
 
 	// Apply cutzone
-	if ((turn_angle < d->balance_conf.yaw_turntilt_start_angle) || (d->state != RUNNING)) {
-		d->yaw_turntilt_target = 0;
+	if ((d->state != RUNNING) || // Apply turntilt only when RUNNING
+		(turn_angle < d->balance_conf.yaw_turntilt_start_angle) || // Need to be above certain angle to apply turntilt
+		(d->abs_erpm < d->balance_conf.yaw_turntilt_start_erpm) || // Need to be above certain erpm to apply turntilt
+		(fabsf(d->pitch_angle - d->noseangling_interpolated) > 4)) // No setpoint changes during heavy acceleration or braking
+	{
+		d->yaw_turntilt_target = 0.9 * d->yaw_turntilt_target;
 	}
 	else {
 		// Calculate desired angle
-		float turn_change = d->abs_yaw_change;
-		d->yaw_turntilt_target = turn_change * d->yaw_turntilt_strength;
+		d->yaw_turntilt_target = d->abs_yaw_change * d->yaw_turntilt_strength;
 
 		// Apply speed scaling
 		float boost;
@@ -835,12 +839,8 @@ static float apply_yaw_turntilt(data *d) {
 			d->yaw_turntilt_target = fmaxf(d->yaw_turntilt_target, -d->balance_conf.yaw_turntilt_angle_limit);
 		}
 
-		// Disable below erpm threshold otherwise add directionality
-		if (d->abs_erpm < d->balance_conf.yaw_turntilt_start_erpm) {
-			d->yaw_turntilt_target = 0;
-		} else {
-			d->yaw_turntilt_target *= SIGN(d->erpm);
-		}
+		// Add directionality
+		d->yaw_turntilt_target *= SIGN(d->erpm);
 
 		// ATR interference: Reduce turntilt_target during moments of high torque response
 		float atr_min = 2;
@@ -860,11 +860,11 @@ static float apply_yaw_turntilt(data *d) {
 			}
 			d->yaw_turntilt_target *= atr_scaling;
 		}
-		if (fabsf(d->pitch_angle - d->noseangling_interpolated) > 4) {
-			// no setpoint changes during heavy acceleration or braking
-			d->yaw_turntilt_target = 0;
-			d->yaw_aggregate = 0;
-		}
+	}
+
+	// Reset yaw_aggregate during heavy acceleration or braking
+	if (fabsf(d->pitch_angle - d->noseangling_interpolated) > 4) {
+		d->yaw_aggregate = 0;
 	}
 
 	// Move towards target limited by max speed
@@ -888,6 +888,8 @@ static void apply_total_turntilt(data *d)
 	float yaw_turntilt = 0;
 	if (d->balance_conf.yaw_turntilt_weight > 0.0)
 		yaw_turntilt = apply_yaw_turntilt(d) * d->balance_conf.yaw_turntilt_weight;
+
+	// Add new ways to calculate setpoint (current implementation only support addition, we can add min, max avg)
 
 	d->setpoint += roll_turntilt + yaw_turntilt;
 }
@@ -939,59 +941,64 @@ static void balance_thd(void *arg) {
 		if (d->last_time == 0) {
 			d->last_time = d->current_time;
 		}
-
 		d->diff_time = d->current_time - d->last_time;
-		d->filtered_diff_time = 0.03 * d->diff_time + 0.97 * d->filtered_diff_time; // Purely a metric
 		d->last_time = d->current_time;
-
+		d->filtered_diff_time = 0.03 * d->diff_time + 0.97 * d->filtered_diff_time; // Purely a metric
 		d->loop_overshoot = d->diff_time - (d->loop_time_seconds - roundf(d->filtered_loop_overshoot));
 		d->filtered_loop_overshoot = d->loop_overshoot_alpha * d->loop_overshoot + (1.0 - d->loop_overshoot_alpha) * d->filtered_loop_overshoot;
 
-		// Read values for GUI
+		// Get motor values
 		d->motor_current = VESC_IF->mc_get_tot_current_directional_filtered();
 		d->motor_position = VESC_IF->mc_get_pid_pos_now();
+		if (d->balance_conf.torquetilt_filter > 0) {
+			// Filter current (Biquad)
+			d->torquetilt_filtered_current = biquad_process(&d->torquetilt_current_biquad, d->motor_current);
+		} else {
+			d->torquetilt_filtered_current = d->motor_current;
+		}
 
-		// Set "last" values to previous loops values
+		// Get pitch & true pitch (true pitch is derived from the secondary IMU filter running with kp=0.2)
 		d->last_pitch_angle = d->pitch_angle;
-		d->last_gyro_y = d->gyro[1];
-
-		// Get the values we want
-		// True pitch is derived from the secondary IMU filter running with kp=0.2
 		d->true_pitch_angle = RAD2DEG_f(VESC_IF->ahrs_get_pitch(&d->m_att_ref));
 		d->pitch_angle = RAD2DEG_f(VESC_IF->imu_get_pitch());
+
+		// Get roll
 		d->roll_angle = RAD2DEG_f(VESC_IF->ahrs_get_roll(&d->m_att_ref));
 		d->abs_roll_angle = fabsf(d->roll_angle);
 		d->abs_roll_angle_sin = sinf(DEG2RAD_f(d->abs_roll_angle));
+
+		// Get gyro
+		d->last_gyro_y = d->gyro[1];
 		VESC_IF->imu_get_gyro(d->gyro);
+
+		// Get duty cycle
 		d->duty_cycle = VESC_IF->mc_get_duty_cycle_now();
 		d->abs_duty_cycle = fabsf(d->duty_cycle);
+
+		// Get erpm
+		d->last_erpm = d->smooth_erpm;
 		d->erpm = VESC_IF->mc_get_rpm();
 		d->abs_erpm = fabsf(d->erpm);
+		d->smooth_erpm = biquad_process(&d->smooth_erpm_biquad, d->erpm);
 
-		d->adc1 = VESC_IF->io_read_analog(VESC_PIN_ADC1);
-		d->adc2 = VESC_IF->io_read_analog(VESC_PIN_ADC2); // Returns -1.0 if the pin is missing on the hardware
-		if (d->adc2 < 0.0) {
-			d->adc2 = 0.0;
-		}
-
-		// Torque Tilt:
-
-		/* FW SUPPORT NEEDED FOR SMOOTH ERPM //////////////////////////
-		float smooth_erpm = erpm_sign * mcpwm_foc_get_smooth_erpm();
-		float acceleration_raw = smooth_erpm - last_erpm;
-		d->last_erpm = smooth_erpm;
-		////////////////////////// FW SUPPORT NEEDED FOR SMOOTH ERPM */
-
-		float acceleration_raw = d->erpm - d->last_erpm;
-		d->last_erpm = d->erpm;
-
-		d->accelavg += (acceleration_raw - d->accelhist[d->accelidx]) / ACCEL_ARRAY_SIZE;
-		d->accelhist[d->accelidx] = acceleration_raw;
+		// Calculate erpm acceleration
+		float erpm_acceleration_raw = d->smooth_erpm - d->last_erpm;
+		d->acceleration += (erpm_acceleration_raw - d->accelhist[d->accelidx]) / ACCEL_ARRAY_SIZE;
+		d->accelhist[d->accelidx] = erpm_acceleration_raw;
 		d->accelidx++;
 		if (d->accelidx == ACCEL_ARRAY_SIZE)
 			d->accelidx = 0;
 
-		d->acceleration = d->accelavg;
+		// Get ADC1 & ADC2
+		d->adc1 = VESC_IF->io_read_analog(VESC_PIN_ADC1);
+		d->adc2 = VESC_IF->io_read_analog(VESC_PIN_ADC2);
+		if (d->adc2 < 0.0) {
+			// Returns -1.0 if the pin is missing on the hardware
+			d->adc2 = d->adc1;
+		}
+
+		// Calculate switch state from ADC values
+		d->switch_state = check_adcs(d);
 
 		// Yaw Turn Tilt:
 		d->yaw_angle = VESC_IF->ahrs_get_yaw(&d->m_att_ref) * 180.0f / M_PI;
@@ -1017,9 +1024,6 @@ static void balance_thd(void *arg) {
 		if ((d->abs_yaw_change > 0.04) && !unchanged)	// don't count tiny yaw changes towards aggregate
 			d->yaw_aggregate += d->yaw_change;
 
-		// Calculate switch state from ADC values
-		d->switch_state = check_adcs(d);
-
 		// Control Loop State Logic
 		switch(d->state) {
 		case (STARTUP):
@@ -1042,16 +1046,8 @@ static void balance_thd(void *arg) {
 				break;
 			}
 
+			//Initialize variables
 			d->disengage_timer = d->current_time;
-
-			// Calculate setpoint and interpolation
-			calculate_setpoint_target(d);
-			calculate_setpoint_interpolated(d);
-			d->setpoint = d->setpoint_target_interpolated;
-			apply_noseangling(d);
-			apply_torquetilt(d);
-			apply_total_turntilt(d);
-
 			if ((d->abs_erpm > 250) && (SIGN(d->torquetilt_filtered_current) != SIGN(d->erpm))) {
 				// current is negative, so we are braking or going downhill
 				// high currents downhill are less likely
@@ -1061,6 +1057,14 @@ static void balance_thd(void *arg) {
 			else {
 				d->braking = false;
 			}
+
+			// Calculate setpoint and interpolation
+			calculate_state_and_setpoint(d);
+			d->setpoint = d->setpoint_target_interpolated;
+			
+			apply_noseangling(d);
+			apply_torquetilt(d);
+			apply_total_turntilt(d);
 
 			// Do PID maths
 			d->proportional = d->setpoint - d->pitch_angle;
@@ -1073,13 +1077,13 @@ static void balance_thd(void *arg) {
 				d->integral = d->balance_conf.ki_limit / d->balance_conf.ki * SIGN(d->integral);
 			}
 
+			// Lowering the integral while reverse stop
 			if (d->setpointAdjustmentType == REVERSESTOP) {
 				d->integral = d->integral * 0.9;
 			}
 
+			// Calculate new PID
 			float new_pid_value = (d->balance_conf.kp * d->proportional) + d->balance_conf.ki * d->integral;
-
-			d->last_proportional = d->proportional;
 			
 			// Start Rate PID and Booster portion a few cycles later, after the start clicks have been emitted
 			// this keeps the start smooth and predictable
@@ -1241,6 +1245,7 @@ static void send_realtime_data(data *d){
 	buffer_append_float32_auto(send_buffer, d->acceleration, &ind);
 	buffer_append_float32_auto(send_buffer, d->true_pitch_angle, &ind);
 	buffer_append_float32_auto(send_buffer, d->applied_booster_current, &ind);
+	buffer_append_uint16(send_buffer, d->braking, &ind);
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 

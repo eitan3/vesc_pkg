@@ -83,6 +83,7 @@ Item {
             var acceleration = dv.getFloat32(ind); ind += 4;
             var true_pitch = dv.getFloat32(ind); ind += 4;
             var booster_current = dv.getFloat32(ind); ind += 4;
+            var braking = dv.getInt16(ind); ind += 2;
 
             var stateString
             if(state == 0){
@@ -144,7 +145,8 @@ Item {
                 "adc1   : " + adc1.toFixed(2) + "V\n" +
                 "adc2   : " + adc2.toFixed(2) + "V\n" +
                 "debug2 : " + debug2.toFixed(2) + "\n" +
-                "acceleration : " + acceleration.toFixed(2)
+                "acceleration : " + acceleration.toFixed(2) + "\n" +
+                "braking: " + braking;
         }
     }
 

@@ -95,7 +95,6 @@ typedef struct {
 	uint16_t quickstop_erpm;
 	float quickstop_angle;
 	uint16_t startup_click_current;
-	uint16_t startup_num_of_clicks;
 } balance_config;
 
 // DATATYPES_H_
