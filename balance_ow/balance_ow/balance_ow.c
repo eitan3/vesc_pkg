@@ -155,6 +155,9 @@ typedef struct {
 	float reverse_stop_step_size, reverse_tolerance, reverse_total_erpm;
 	float reverse_timer;
 
+	// Total turntilt
+	float total_turntilt_interpolated;
+
 	// Roll turntilt
 	float roll_turntilt_target, roll_turntilt_interpolated;
 	float roll_turntilt_boost_per_erpm, roll_turntilt_strength;
@@ -315,6 +318,9 @@ static void reset_vars(data *d) {
 	d->accelidx = 0;
 	for (int i = 0; i < ACCEL_ARRAY_SIZE; i++)
 		d->accelhist[i] = 0;
+
+	// Total Turntilt:
+	d->total_turntilt_interpolated = 0;
 
 	// Roll Turntilt:
 	d->roll_turntilt_target = 0;
@@ -644,56 +650,33 @@ static void calculate_state_and_setpoint(data *d) {
 	}
 }
 
-static void apply_noseangling(data *d){
-	if (d->state != RUNNING_WHEELSLIP) {
-		// Nose angle adjustment, add variable then constant tiltback
-		float noseangling_target = 0;
-		if (fabsf(d->erpm) > d->tiltback_variable_max_erpm) {
-			noseangling_target = fabsf(d->balance_conf.tiltback_variable_max) * SIGN(d->erpm);
-		} else {
-			noseangling_target = d->tiltback_variable * d->erpm;
-		}
-
-		if (d->erpm > d->balance_conf.tiltback_constant_erpm) {
-			noseangling_target += d->balance_conf.tiltback_constant;
-		} else if (d->erpm < -d->balance_conf.tiltback_constant_erpm){
-			noseangling_target += -d->balance_conf.tiltback_constant;
-		}
-
-		if (fabsf(noseangling_target - d->noseangling_interpolated) < d->noseangling_step_size) {
-			d->noseangling_interpolated = noseangling_target;
-		} else if (noseangling_target - d->noseangling_interpolated > 0) {
-			d->noseangling_interpolated += d->noseangling_step_size;
-		} else {
-			d->noseangling_interpolated -= d->noseangling_step_size;
-		}
+// Noseangling calculation
+static void calc_noseangling_interpolation(data *d){
+	// Nose angle adjustment, add variable then constant tiltback
+	float noseangling_target = 0;
+	if (fabsf(d->erpm) > d->tiltback_variable_max_erpm) {
+		noseangling_target = fabsf(d->balance_conf.tiltback_variable_max) * SIGN(d->erpm);
+	} else {
+		noseangling_target = d->tiltback_variable * d->erpm;
 	}
-	d->setpoint += d->noseangling_interpolated;
+
+	if (d->erpm > d->balance_conf.tiltback_constant_erpm) {
+		noseangling_target += d->balance_conf.tiltback_constant;
+	} else if (d->erpm < -d->balance_conf.tiltback_constant_erpm){
+		noseangling_target += -d->balance_conf.tiltback_constant;
+	}
+
+	if (fabsf(noseangling_target - d->noseangling_interpolated) < d->noseangling_step_size) {
+		d->noseangling_interpolated = noseangling_target;
+	} else if (noseangling_target - d->noseangling_interpolated > 0) {
+		d->noseangling_interpolated += d->noseangling_step_size;
+	} else {
+		d->noseangling_interpolated -= d->noseangling_step_size;
+	}
 }
 
-static void apply_torquetilt(data *d) {
-	// Are we dealing with a free-spinning wheel?
-	// If yes, don't change the torquetilt till we got traction again
-	// instead slightly decrease it each cycle
-	if (d->state == RUNNING_WHEELSLIP || 
-	    (d->current_time - d->wheelslip_end_timer) * 1000 < 100 || // for 100ms after wheelslip we still don't do ATR to allow the wheel to decelerate
-		(fabsf(d->acceleration) > 10 && d->abs_erpm > 1000))
-	{
-		d->torquetilt_interpolated *= 0.995;
-		d->torquetilt_target *= 0.99;
-		/*d->braketilt_interpolated *= 0.995; // TO BE IMPLEMENTED
-		d->braketilt_target *= 0.99;*/
-		d->setpoint += d->torquetilt_interpolated /*+ d->braketilt_interpolated*/;
-		
-		if (d->state == RUNNING_WHEELSLIP && 
-			(d->current_time - d->wheelslip_end_timer) * 1000 >= 100 && 
-			(fabsf(d->acceleration) > 10 && d->abs_erpm > 1000) == false)
-		{
-			d->wheelslip_end_timer = d->current_time;
-		}
-		return;
-	}
-
+// Torquetilt calculation
+static void calc_torquetilt_interpolation(data *d) {
 	// Wat is this line O_o
 	// Take abs motor current, subtract start offset, and take the max of that with 0 to get the current above our start threshold (absolute).
 	// Then multiply it by "power" to get our desired angle, and min with the limit to respect boundaries.
@@ -722,17 +705,14 @@ static void apply_torquetilt(data *d) {
 	} else {
 		d->torquetilt_interpolated -= step_size;
 	}
-
-	// INSERT BRAKE TILT LOGIC
-
-	d->setpoint += d->torquetilt_interpolated;
 }
 
-static float apply_roll_turntilt(data *d) {
+// Rool turntilt calculation
+static void calc_roll_turntilt_interpolation(data *d) {
 	if (d->roll_turntilt_strength == 0) {
-		return 0;
+		d->roll_turntilt_interpolated = 0;
+		return;
 	}
-
 	float turn_angle = d->abs_roll_angle; 
 
 	// Apply cutzone
@@ -792,13 +772,13 @@ static float apply_roll_turntilt(data *d) {
 	} else {
 		d->roll_turntilt_interpolated -= d->roll_turntilt_step_size;
 	}
-
-	return d->roll_turntilt_interpolated;
 }
 
-static float apply_yaw_turntilt(data *d) {
+// Yaw turntilt calculation
+static void calc_yaw_turntilt_interpolation(data *d) {
 	if (d->yaw_turntilt_strength == 0) {
-		return 0;
+		d->yaw_turntilt_interpolated = 0;
+		return;
 	}
 	float turn_angle = d->abs_yaw_change * 100;
 
@@ -875,23 +855,42 @@ static float apply_yaw_turntilt(data *d) {
 	} else {
 		d->yaw_turntilt_interpolated -= d->yaw_turntilt_step_size;
 	}
-
-	return d->yaw_turntilt_interpolated;
 }
 
-static void apply_total_turntilt(data *d)
+// Calculate the total turntilt interpolation
+static void calc_total_turntilt_interpolation(data *d)
 {
 	float roll_turntilt = 0;
-	if (d->balance_conf.roll_turntilt_weight > 0.0)
-		roll_turntilt = apply_roll_turntilt(d) * d->balance_conf.roll_turntilt_weight;
+	if (d->balance_conf.roll_turntilt_weight > 0.0) {
+		calc_roll_turntilt_interpolation(d);
+		roll_turntilt = d->roll_turntilt_interpolated * d->balance_conf.roll_turntilt_weight;
+	}
 
 	float yaw_turntilt = 0;
-	if (d->balance_conf.yaw_turntilt_weight > 0.0)
-		yaw_turntilt = apply_yaw_turntilt(d) * d->balance_conf.yaw_turntilt_weight;
+	if (d->balance_conf.yaw_turntilt_weight > 0.0){
+		calc_yaw_turntilt_interpolation(d);
+		yaw_turntilt = d->yaw_turntilt_interpolated * d->balance_conf.yaw_turntilt_weight;
+	}
 
 	// Add new ways to calculate setpoint (current implementation only support addition, we can add min, max avg)
+	d->total_turntilt_interpolated = roll_turntilt + yaw_turntilt;
+}
 
-	d->setpoint += roll_turntilt + yaw_turntilt;
+// Are we detected wheelslip?
+static bool is_wheelslip(data *d) {
+	if (d->state == RUNNING_WHEELSLIP || 
+	    (d->current_time - d->wheelslip_end_timer) * 1000 < 100 || // allow the wheel decelerate for 100ms
+		(fabsf(d->acceleration) > 10 && d->abs_erpm > 1000))
+	{
+		if (d->state == RUNNING_WHEELSLIP && 
+			(d->current_time - d->wheelslip_end_timer) * 1000 >= 100 && 
+			(fabsf(d->acceleration) <= 10 || d->abs_erpm <= 1000))
+		{
+			d->wheelslip_end_timer = d->current_time;
+		}
+		return true;
+	}
+	return false;
 }
 
 static void brake(data *d) {
@@ -1062,9 +1061,30 @@ static void balance_thd(void *arg) {
 			calculate_state_and_setpoint(d);
 			d->setpoint = d->setpoint_target_interpolated;
 			
-			apply_noseangling(d);
-			apply_torquetilt(d);
-			apply_total_turntilt(d);
+			if (!is_wheelslip(d)) {
+				calc_noseangling_interpolation(d);
+				calc_torquetilt_interpolation(d);
+				calc_total_turntilt_interpolation(d);
+			}
+			else{
+				// Are we dealing with a free-spinning wheel?
+				// If yes, don't change the tiltback till we got traction again
+				// instead slightly decrease it each cycle
+				d->noseangling_interpolated *= 0.995;
+				d->torquetilt_interpolated *= 0.995;
+				d->yaw_turntilt_interpolated *= 0.995;
+				d->roll_turntilt_interpolated *= 0.995;
+				d->total_turntilt_interpolated *= 0.995;
+				// d->braketilt_interpolated *= 0.995;
+				d->torquetilt_target *= 0.99;
+				d->yaw_turntilt_target *= 0.99;
+				d->roll_turntilt_target *= 0.99;
+				//d->braketilt_target *= 0.99;
+			}
+			d->setpoint += d->noseangling_interpolated;
+			d->setpoint += d->torquetilt_interpolated;
+			d->setpoint += d->total_turntilt_interpolated;
+			// d->setpoint += d->braketilt_interpolated;
 
 			// Do PID maths
 			d->proportional = d->setpoint - d->pitch_angle;
