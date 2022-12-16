@@ -493,8 +493,8 @@ static float get_setpoint_adjustment_step_size(data *d) {
 	return 0;
 }
 
-// Calculate current state and setpoint
-static void calculate_state_and_setpoint(data *d) {
+// Calculate current state and initial setpoint
+static void calculate_state_and_initial_setpoint(data *d) {
 	float input_voltage = VESC_IF->mc_get_input_voltage_filtered();
 	if (input_voltage < d->balance_conf.tiltback_hv) {
 		d->tb_highvoltage_timer = d->current_time;
@@ -876,6 +876,15 @@ static void calc_total_turntilt_interpolation(data *d)
 	d->total_turntilt_interpolated = roll_turntilt + yaw_turntilt;
 }
 
+// Calculate final setpoint with all modifiers
+static void calc_final_setpoint(data* d){
+	d->setpoint = d->setpoint_target_interpolated;
+	d->setpoint += d->noseangling_interpolated;
+	d->setpoint += d->torquetilt_interpolated;
+	d->setpoint += d->total_turntilt_interpolated;
+	// d->setpoint += d->braketilt_interpolated;
+}
+
 // Are we detected wheelslip?
 static bool is_wheelslip(data *d) {
 	if (d->state == RUNNING_WHEELSLIP || 
@@ -1058,9 +1067,7 @@ static void balance_thd(void *arg) {
 			}
 
 			// Calculate setpoint and interpolation
-			calculate_state_and_setpoint(d);
-			d->setpoint = d->setpoint_target_interpolated;
-			
+			calculate_state_and_initial_setpoint(d);
 			if (!is_wheelslip(d)) {
 				calc_noseangling_interpolation(d);
 				calc_torquetilt_interpolation(d);
@@ -1081,10 +1088,7 @@ static void balance_thd(void *arg) {
 				d->roll_turntilt_target *= 0.99;
 				//d->braketilt_target *= 0.99;
 			}
-			d->setpoint += d->noseangling_interpolated;
-			d->setpoint += d->torquetilt_interpolated;
-			d->setpoint += d->total_turntilt_interpolated;
-			// d->setpoint += d->braketilt_interpolated;
+			calc_final_setpoint(d);
 
 			// Do PID maths
 			d->proportional = d->setpoint - d->pitch_angle;
