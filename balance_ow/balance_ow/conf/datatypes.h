@@ -23,6 +23,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef enum {
+	ADDITION = 0,
+	MEAN = 1,
+	MAX = 2
+} TURNTILT_MIXING_MODE;
+
 typedef struct {
 	float kp;
 	float ki;
@@ -71,6 +77,7 @@ typedef struct {
 	float torquetilt_strength;
 	float torquetilt_strength_regen;
 	float torquetilt_filter;
+	TURNTILT_MIXING_MODE turntilt_mixing_mode;
 	float roll_turntilt_weight;
 	float roll_turntilt_strength;
 	float roll_turntilt_angle_limit;

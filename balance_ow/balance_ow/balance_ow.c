@@ -714,11 +714,10 @@ static void calc_roll_turntilt_interpolation(data *d) {
 		d->roll_turntilt_interpolated = 0;
 		return;
 	}
-	float turn_angle = d->abs_roll_angle; 
 
 	// Apply cutzone
 	if ((d->state != RUNNING) || // Apply turntilt only when RUNNING
-		(turn_angle < d->balance_conf.roll_turntilt_start_angle) || // Need to be above certain angle to apply turntilt
+		(d->abs_roll_angle < d->balance_conf.roll_turntilt_start_angle) || // Need to be above certain angle to apply turntilt
 		(d->abs_erpm < d->balance_conf.roll_turntilt_start_erpm) || // Need to be above certain erpm to apply turntilt
 		(fabsf(d->pitch_angle - d->noseangling_interpolated) > 4)) // No setpoint changes during heavy acceleration or braking
 	{
@@ -781,9 +780,9 @@ static void calc_yaw_turntilt_interpolation(data *d) {
 		d->yaw_turntilt_interpolated = 0;
 		return;
 	}
-	float turn_angle = d->abs_yaw_change * 100;
 
 	// Apply cutzone
+	float turn_angle = d->abs_yaw_change * 100;
 	if ((d->state != RUNNING) || // Apply turntilt only when RUNNING
 		(turn_angle < d->balance_conf.yaw_turntilt_start_angle) || // Need to be above certain angle to apply turntilt
 		(d->abs_erpm < d->balance_conf.yaw_turntilt_start_erpm) || // Need to be above certain erpm to apply turntilt
@@ -873,8 +872,22 @@ static void calc_total_turntilt_interpolation(data *d)
 		yaw_turntilt = d->yaw_turntilt_interpolated * d->balance_conf.yaw_turntilt_weight;
 	}
 
-	// Add new ways to calculate setpoint (current implementation only support addition, we can add min, max avg)
-	d->total_turntilt_interpolated = roll_turntilt + yaw_turntilt;
+	if (d->balance_conf.turntilt_mixing_mode == ADDITION)
+		d->total_turntilt_interpolated = roll_turntilt + yaw_turntilt;
+	else if (d->balance_conf.turntilt_mixing_mode == MEAN)
+		d->total_turntilt_interpolated = (roll_turntilt + yaw_turntilt) / 2.0;
+	else if (d->balance_conf.turntilt_mixing_mode == MAX) {
+		if (SIGN(yaw_turntilt) == SIGN(roll_turntilt)) {
+			float max = fmaxf(fabsf(yaw_turntilt), fabsf(roll_turntilt)) * SIGN(yaw_turntilt);
+			d->total_turntilt_interpolated = max;
+		}
+		else {
+			float decrease_by = (d->balance_conf.hertz - 10.0) / d->balance_conf.hertz;
+			d->yaw_turntilt_interpolated *= decrease_by;
+			d->roll_turntilt_interpolated *= decrease_by;
+			d->total_turntilt_interpolated *= decrease_by;
+		}
+	}
 }
 
 // Calculate final setpoint with all modifiers

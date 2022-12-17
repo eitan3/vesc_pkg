@@ -57,6 +57,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->torquetilt_strength, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_strength_regen, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_filter, &ind);
+	buffer[ind++] = conf->turntilt_mixing_mode;
 	buffer_append_float32_auto(buffer, conf->roll_turntilt_weight, &ind);
 	buffer_append_float32_auto(buffer, conf->roll_turntilt_strength, &ind);
 	buffer_append_float32_auto(buffer, conf->roll_turntilt_angle_limit, &ind);
@@ -141,6 +142,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->torquetilt_strength = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_strength_regen = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_filter = buffer_get_float32_auto(buffer, &ind);
+	conf->turntilt_mixing_mode = buffer[ind++];
 	conf->roll_turntilt_weight = buffer_get_float32_auto(buffer, &ind);
 	conf->roll_turntilt_strength = buffer_get_float32_auto(buffer, &ind);
 	conf->roll_turntilt_angle_limit = buffer_get_float32_auto(buffer, &ind);
@@ -218,6 +220,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->torquetilt_strength = APPCONF_BALANCE_TORQUETILT_STRENGTH;
 	conf->torquetilt_strength_regen = APPCONF_BALANCE_TORQUETILT_STRENGTH_REGEN;
 	conf->torquetilt_filter = APPCONF_BALANCE_TORQUETILT_FILTER;
+	conf->turntilt_mixing_mode = APPCONF_BALANCE_TURNTILT_MIXING_MODE;
 	conf->roll_turntilt_weight = APPCONF_BALANCE_ROLL_TURNTILT_WEIGHT;
 	conf->roll_turntilt_strength = APPCONF_BALANCE_ROLL_TURNTILT_STRENGTH;
 	conf->roll_turntilt_angle_limit = APPCONF_BALANCE_ROLL_TURNTILT_ANGLE_LIMIT;
