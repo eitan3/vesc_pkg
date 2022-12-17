@@ -69,6 +69,7 @@ typedef struct {
 	float torquetilt_on_speed;
 	float torquetilt_off_speed;
 	float torquetilt_strength;
+	float torquetilt_strength_regen;
 	float torquetilt_filter;
 	float roll_turntilt_weight;
 	float roll_turntilt_strength;

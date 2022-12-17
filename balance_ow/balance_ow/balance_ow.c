@@ -681,8 +681,9 @@ static void calc_torquetilt_interpolation(data *d) {
 	// Take abs motor current, subtract start offset, and take the max of that with 0 to get the current above our start threshold (absolute).
 	// Then multiply it by "power" to get our desired angle, and min with the limit to respect boundaries.
 	// Finally multiply it by sign motor current to get directionality back
+	float torquetilt_strength = d->torquetilt_filtered_current > 0 ? d->balance_conf.torquetilt_strength : d->balance_conf.torquetilt_strength_regen;
 	d->torquetilt_target = fminf(fmaxf(fabsf(d->torquetilt_filtered_current) - d->balance_conf.torquetilt_start_current, 0) *
-			d->balance_conf.torquetilt_strength, d->balance_conf.torquetilt_angle_limit) * SIGN(d->torquetilt_filtered_current);
+			torquetilt_strength, d->balance_conf.torquetilt_angle_limit) * SIGN(d->torquetilt_filtered_current);
 
 	float step_size;
 	if ((d->torquetilt_interpolated - d->torquetilt_target > 0 && d->torquetilt_target > 0) ||
