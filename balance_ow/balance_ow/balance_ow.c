@@ -681,7 +681,7 @@ static void calc_torquetilt_interpolation(data *d) {
 	// Take abs motor current, subtract start offset, and take the max of that with 0 to get the current above our start threshold (absolute).
 	// Then multiply it by "power" to get our desired angle, and min with the limit to respect boundaries.
 	// Finally multiply it by sign motor current to get directionality back
-	float torquetilt_strength = d->torquetilt_filtered_current > 0 ? d->balance_conf.torquetilt_strength : d->balance_conf.torquetilt_strength_regen;
+	float torquetilt_strength = d->braking == false ? d->balance_conf.torquetilt_strength : d->balance_conf.torquetilt_strength_regen;
 	d->torquetilt_target = fminf(fmaxf(fabsf(d->torquetilt_filtered_current) - d->balance_conf.torquetilt_start_current, 0) *
 			torquetilt_strength, d->balance_conf.torquetilt_angle_limit) * SIGN(d->torquetilt_filtered_current);
 
@@ -1330,6 +1330,9 @@ static int get_cfg(uint8_t *buffer, bool is_default) {
 
 static bool set_cfg(uint8_t *buffer) {
 	data *d = (data*)ARG;
+	if (d->state != FAULT_STARTUP)
+		return false;
+
 	bool res = confparser_deserialize_balance_config(buffer, &(d->balance_conf));
 
 	// Store to EEPROM
