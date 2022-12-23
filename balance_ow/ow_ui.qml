@@ -25,6 +25,8 @@ import Vedder.vesc.utility 1.0
 import Vedder.vesc.commands 1.0
 import Vedder.vesc.configparams 1.0
 
+import Vedder.vesc.logwriter 1.0
+
 // This example shows how to read and write settings using the custom
 // config. It is also possible to send and receive custom data using
 // send_app_data and set_app_data_handler on the euc-side and Commands
@@ -38,13 +40,22 @@ Item {
     property Commands mCommands: VescIf.commands()
     property ConfigParams mMcConf: VescIf.mcConfig()
     property ConfigParams mCustomConf: VescIf.customConfig(0)
+    property var enableDlaCaliDumping: 0
     
     Component.onCompleted: {
         // params.addEditorCustom("pid_mode", 0)
         // params.addEditorCustom("kp", 0)
         // params.addEditorCustom("fault_delay_pitch", 0)
     }
+
+    Component.onDestruction: {
+        
+    }
     
+    LogWriter {
+        id: mLogWriter
+    }
+
     Timer {
         running: true
         repeat: true
@@ -147,6 +158,13 @@ Item {
                 "debug2 : " + debug2.toFixed(2) + "\n" +
                 "acceleration : " + acceleration.toFixed(2) + "\n" +
                 "braking: " + braking;
+
+            if (enableDlaCaliDumping == 0) {
+                toggleDlaCalibDump.text = "Enable DLA Calib Csv Dump"
+            }
+            else {
+                toggleDlaCalibDump.text = "Disable DLA Calib Csv Dump"
+            }
         }
     }
 
@@ -189,9 +207,42 @@ Item {
 //            }
         }
         
-//        RowLayout {
-//            Layout.fillWidth: true
-//            
+        ColumnLayout {
+            Layout.fillWidth: true
+
+            Text{
+                text: "Dla calibration file name"
+            }
+
+            TextInput {
+                id: csvFilePath
+                text: "/storage/emulated/0/Documents/logs/"
+            }
+
+            TextInput {
+                id: csvFileName
+                text: "log_file.csv"
+            }
+
+            Button {
+                id: toggleDlaCalibDump
+                text: "Null"
+                Layout.fillWidth: true
+                
+                onClicked: {
+                    if (enableDlaCaliDumping == 0) {
+                        enableDlaCaliDumping = 1
+                        mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
+                        mLogWriter.writeToLogFile("ERPM,Current\n")
+                    }
+                    else {
+                        enableDlaCaliDumping = 0
+                        // Close file when done to ensure that all data is written.
+                        mLogWriter.closeLogFile()
+                    }
+                }
+            }
+
 //            Button {
 //                text: "Read"
 //                Layout.fillWidth: true
@@ -218,6 +269,6 @@ Item {
 //                    mCommands.customConfigSet(0, mCustomConf)
 //                }
 //            }
-//        }
+        }
     }
 }
