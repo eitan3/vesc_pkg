@@ -1269,21 +1269,20 @@ static void send_realtime_data(data *d){
 	int32_t ind = 0;
 	uint8_t send_buffer[100];
 //	send_buffer[ind++] = COMM_GET_DECODED_BALANCE;
+	buffer_append_float32_auto(send_buffer, d->diff_time, &ind);
+	buffer_append_uint16(send_buffer, d->state, &ind);
+	buffer_append_float32_auto(send_buffer, d->motor_current, &ind);
+	buffer_append_float32_auto(send_buffer, d->torquetilt_filtered_current, &ind);
+	buffer_append_float32_auto(send_buffer, d->erpm, &ind);
+	buffer_append_float32_auto(send_buffer, d->acceleration, &ind);
+	buffer_append_uint16(send_buffer, d->braking, &ind);
 	buffer_append_float32_auto(send_buffer, d->pid_value, &ind);
+	buffer_append_float32_auto(send_buffer, d->true_pitch_angle, &ind);
 	buffer_append_float32_auto(send_buffer, d->pitch_angle, &ind);
 	buffer_append_float32_auto(send_buffer, d->roll_angle, &ind);
-	buffer_append_float32_auto(send_buffer, d->diff_time, &ind);
-	buffer_append_float32_auto(send_buffer, d->motor_current, &ind);
-	buffer_append_float32_auto(send_buffer, app_balance_get_debug(d->debug_render_1), &ind);
-	buffer_append_uint16(send_buffer, d->state, &ind);
 	buffer_append_uint16(send_buffer, d->switch_state, &ind);
 	buffer_append_float32_auto(send_buffer, d->adc1, &ind);
 	buffer_append_float32_auto(send_buffer, d->adc2, &ind);
-	buffer_append_float32_auto(send_buffer, app_balance_get_debug(d->debug_render_2), &ind);
-	buffer_append_float32_auto(send_buffer, d->acceleration, &ind);
-	buffer_append_float32_auto(send_buffer, d->true_pitch_angle, &ind);
-	buffer_append_float32_auto(send_buffer, d->applied_booster_current, &ind);
-	buffer_append_uint16(send_buffer, d->braking, &ind);
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 

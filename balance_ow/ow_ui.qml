@@ -40,12 +40,13 @@ Item {
     property Commands mCommands: VescIf.commands()
     property ConfigParams mMcConf: VescIf.mcConfig()
     property ConfigParams mCustomConf: VescIf.customConfig(0)
+    
+    //property var parentTabBar: parent.tabBarItem
     property var enableDlaCaliDumping: 0
     
     Component.onCompleted: {
-        // params.addEditorCustom("pid_mode", 0)
-        // params.addEditorCustom("kp", 0)
-        // params.addEditorCustom("fault_delay_pitch", 0)
+        //parentTabBar.visible = true
+        //parentTabBar.enabled = true
     }
 
     Component.onDestruction: {
@@ -69,6 +70,148 @@ Item {
             mCommands.sendCustomAppData(buffer)
         }
     }
+
+    ColumnLayout {
+        anchors.fill: parent
+
+        TabBar {
+            id: localTabBar
+            // parent: parentTabBar
+            anchors.fill: parent
+            currentIndex: swipeView.currentIndex
+            
+            background: Rectangle {
+                opacity: 1
+                color: Utility.getAppHexColor("lightBackground")
+            }
+            
+            property int buttonWidth: Math.max(120, localTabBar.width / (rep.model.length))
+
+            Repeater {
+                id: rep
+                model: ["Info", "DLA"]
+                
+                TabButton {
+                    text: modelData
+                    width: localTabBar.buttonWidth
+                }
+            }
+        }
+        
+        SwipeView {
+            id: swipeView
+            currentIndex: localTabBar.currentIndex
+            anchors.fill: parent
+            clip: true
+            
+            Page {
+                ColumnLayout {
+                    anchors.fill: parent
+
+                    ScrollView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        
+                        ColumnLayout {
+                            Text {
+                                id: header
+                                color: Utility.getAppHexColor("lightText")
+                                font.family: "DejaVu Sans Mono"
+                                Layout.margins: 0
+                                Layout.leftMargin: 0
+                                Layout.fillWidth: true
+                                text: "Balance OW App RT Data"
+                                font.underline: true
+                                font.weight: Font.Black
+                            }
+                            Text {
+                                id: valText1
+                                color: Utility.getAppHexColor("lightText")
+                                font.family: "DejaVu Sans Mono"
+                                Layout.margins: 0
+                                Layout.leftMargin: 5
+                                Layout.preferredWidth: parent.width/3
+                                text: "App not connected"
+                            }
+                        }
+                        
+                    }
+                }
+            }
+            
+    //        Page {
+    //            ColumnLayout {
+    //                anchors.fill: parent
+    //
+    //                ScrollView {
+    //                    Layout.fillWidth: true
+    //                    Layout.fillHeight: true
+    //                    clip: true
+                        
+    //                    ParamList {
+    //                        id: params
+    //                        anchors.fill: parent
+    //                    }
+    //                }
+    //            }
+    //        }
+            
+            Page {
+                ColumnLayout {
+                    anchors.fill: parent
+
+                    ScrollView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        
+                        ColumnLayout {
+                            id: gaugeColumn
+                            anchors.fill: parent
+                            
+                            ColumnLayout {
+                                Layout.fillWidth: true
+
+                                Text{
+                                    text: "Dla calibration file name"
+                                }
+
+                                TextInput {
+                                    id: csvFilePath
+                                    text: "/storage/emulated/0/Documents/logs/"
+                                }
+
+                                TextInput {
+                                    id: csvFileName
+                                    text: "log_file.csv"
+                                }
+
+                                Button {
+                                    id: toggleDlaCalibDump
+                                    text: "Null"
+                                    Layout.fillWidth: true
+                                    
+                                    onClicked: {
+                                        if (enableDlaCaliDumping == 0) {
+                                            enableDlaCaliDumping = 1
+                                            mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
+                                            mLogWriter.writeToLogFile("ERPM,Current,Acceleration,Brake\n")
+                                        }
+                                        else {
+                                            enableDlaCaliDumping = 0
+                                            // Close file when done to ensure that all data is written.
+                                            mLogWriter.closeLogFile()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     Connections {
         target: mCommands
@@ -80,21 +223,20 @@ Item {
             // Ints and floats can be extracted like this from the data
             var dv = new DataView(data, 0)
             var ind = 0
+            var time_diff = dv.getFloat32(ind); ind += 4;
+            var state = dv.getInt16(ind); ind += 2;
+            var motor_current = dv.getFloat32(ind); ind += 4;
+            var filtered_current = dv.getFloat32(ind); ind += 4;
+            var erpm = dv.getFloat32(ind); ind += 4;
+            var acceleration = dv.getFloat32(ind); ind += 4;
+            var braking = dv.getInt16(ind); ind += 2;
             var pid_value = dv.getFloat32(ind); ind += 4;
+            var true_pitch = dv.getFloat32(ind); ind += 4;
             var pitch = dv.getFloat32(ind); ind += 4;
             var roll = dv.getFloat32(ind); ind += 4;
-            var time_diff = dv.getFloat32(ind); ind += 4;
-            var motor_current = dv.getFloat32(ind); ind += 4;
-            var debug1 = dv.getFloat32(ind); ind += 4;
-            var state = dv.getInt16(ind); ind += 2;
             var switch_state = dv.getInt16(ind); ind += 2;
             var adc1 = dv.getFloat32(ind); ind += 4;
             var adc2 = dv.getFloat32(ind); ind += 4;
-            var debug2 = dv.getFloat32(ind); ind += 4;
-            var acceleration = dv.getFloat32(ind); ind += 4;
-            var true_pitch = dv.getFloat32(ind); ind += 4;
-            var booster_current = dv.getFloat32(ind); ind += 4;
-            var braking = dv.getInt16(ind); ind += 2;
 
             var stateString
             if(state == 0){
@@ -143,132 +285,29 @@ Item {
             
             
             valText1.text =
-                "pid    : " + pid_value.toFixed(2) + "A\n" +
-                "pitch  : " + pitch.toFixed(2) + "°\n" +
-                "true pitch: " + true_pitch.toFixed(2) + "°\n" +
-                "roll   : " + roll.toFixed(2) + "°\n" +
-                "time   : " + (1/time_diff).toFixed(0) + "hz\n" +
-                "current: " + motor_current.toFixed(2) + "A\n" +
-                "booster current: " + booster_current.toFixed(2) + "A\n" +
-                "debug1 : " + debug1.toFixed(2) + "\n" +
-                "state  : " + stateString + "\n" +
-                "switch : " + switchString + "\n" +
-                "adc1   : " + adc1.toFixed(2) + "V\n" +
-                "adc2   : " + adc2.toFixed(2) + "V\n" +
-                "debug2 : " + debug2.toFixed(2) + "\n" +
-                "acceleration : " + acceleration.toFixed(2) + "\n" +
-                "braking: " + braking;
+                "time             : " + (1/time_diff).toFixed(0) + " hz\n" +
+                "state            : " + stateString + "\n" +
+                "current          : " + motor_current.toFixed(2) + " A\n" +
+                "filtered current : " + filtered_current.toFixed(2) + " A\n" +
+                "erpm             : " + (erpm / 1000).toFixed(3) + " / 1000 \n" +
+                "acceleration     : " + acceleration.toFixed(2) + "\n" +
+                "braking          : " + braking + "\n" + 
+                "pid              : " + pid_value.toFixed(2) + " A\n" +
+                "true pitch       : " + true_pitch.toFixed(2) + "°\n" +
+                "pitch            : " + pitch.toFixed(2) + "°\n" +
+                "roll             : " + roll.toFixed(2) + "°\n" +
+                "switch           : " + switchString + "\n" +
+                "adc1             : " + adc1.toFixed(2) + " V \n" +
+                "adc2             : " + adc2.toFixed(2) + " V \n";
 
             if (enableDlaCaliDumping == 0) {
                 toggleDlaCalibDump.text = "Enable DLA Calib Csv Dump"
             }
             else {
                 toggleDlaCalibDump.text = "Disable DLA Calib Csv Dump"
+                mLogWriter.writeToLogFile(erpm.toFixed(0) + "," + filtered_current.toFixed(2) + "," + 
+                                          acceleration.toFixed(3) + "," + braking + "\n")
             }
-        }
-    }
-
-    ColumnLayout {
-        id: gaugeColumn
-        anchors.fill: parent
-        
-        ScrollView {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            clip: true
-            
-            ColumnLayout {
-                Text {
-                    id: header
-                    color: Utility.getAppHexColor("lightText")
-                    font.family: "DejaVu Sans Mono"
-                    Layout.margins: 0
-                    Layout.leftMargin: 0
-                    Layout.fillWidth: true
-                    text: "Balance OW App RT Data"
-                    font.underline: true
-                    font.weight: Font.Black
-                }
-                Text {
-                    id: valText1
-                    color: Utility.getAppHexColor("lightText")
-                    font.family: "DejaVu Sans Mono"
-                    Layout.margins: 0
-                    Layout.leftMargin: 5
-                    Layout.preferredWidth: parent.width/3
-                    text: "App not connected"
-                }
-            }
-            
-            
-//            ParamList {
-//                id: params
-//                anchors.fill: parent
-//            }
-        }
-        
-        ColumnLayout {
-            Layout.fillWidth: true
-
-            Text{
-                text: "Dla calibration file name"
-            }
-
-            TextInput {
-                id: csvFilePath
-                text: "/storage/emulated/0/Documents/logs/"
-            }
-
-            TextInput {
-                id: csvFileName
-                text: "log_file.csv"
-            }
-
-            Button {
-                id: toggleDlaCalibDump
-                text: "Null"
-                Layout.fillWidth: true
-                
-                onClicked: {
-                    if (enableDlaCaliDumping == 0) {
-                        enableDlaCaliDumping = 1
-                        mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
-                        mLogWriter.writeToLogFile("ERPM,Current\n")
-                    }
-                    else {
-                        enableDlaCaliDumping = 0
-                        // Close file when done to ensure that all data is written.
-                        mLogWriter.closeLogFile()
-                    }
-                }
-            }
-
-//            Button {
-//                text: "Read"
-//                Layout.fillWidth: true
-//                
-//                onClicked: {
-//                    mCommands.customConfigGet(0, false)
-//                }
-//            }
-//            
-//            Button {
-//                text: "Read Default"
-//                Layout.fillWidth: true
-//                
-//                onClicked: {
-//                    mCommands.customConfigGet(0, true)
-//                }
-//            }
-//            
-//            Button {
-//                text: "Write"
-//                Layout.fillWidth: true
-//                
-//                onClicked: {
-//                    mCommands.customConfigSet(0, mCustomConf)
-//                }
-//            }
         }
     }
 }
