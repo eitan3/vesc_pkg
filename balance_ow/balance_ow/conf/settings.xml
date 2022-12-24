@@ -439,7 +439,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>1</stepDouble>
-            <valDouble>8</valDouble>
+            <valDouble>5</valDouble>
             <vTxDoubleScale>100</vTxDoubleScale>
             <suffix> °</suffix>
             <vTx>7</vTx>
@@ -1702,25 +1702,6 @@ p, li { white-space: pre-wrap; }
                 <subgroupParams>
                     <param>::sep::General Config</param>
                     <param>tiltback_return_speed</param>
-                    <param>::sep::Nose Angling</param>
-                    <param>tiltback_constant</param>
-                    <param>tiltback_constant_erpm</param>
-                    <param>tiltback_variable</param>
-                    <param>tiltback_variable_max</param>
-                    <param>noseangling_speed</param>
-                    <param>::sep::Torque Tiltback</param>
-                    <param>torquetilt_strength</param>
-                    <param>torquetilt_strength_regen</param>
-                    <param>torquetilt_start_current</param>
-                    <param>torquetilt_angle_limit</param>
-                    <param>torquetilt_on_speed</param>
-                    <param>torquetilt_off_speed</param>
-                    <param>torquetilt_filter</param>
-                </subgroupParams>
-            </subgroup>
-            <subgroup>
-                <subgroupName>Tiltback 2</subgroupName>
-                <subgroupParams>
                     <param>::sep::Duty Cycle Tiltback</param>
                     <param>tiltback_duty</param>
                     <param>tiltback_duty_angle</param>
@@ -1737,6 +1718,25 @@ p, li { white-space: pre-wrap; }
                     <param>temp_tiltback_start_offset</param>
                     <param>temp_tiltback_speed</param>
                     <param>temp_tiltback_angle</param>
+                </subgroupParams>
+            </subgroup>
+            <subgroup>
+                <subgroupName>Tiltback 2</subgroupName>
+                <subgroupParams>
+                    <param>::sep::Nose Angling</param>
+                    <param>tiltback_constant</param>
+                    <param>tiltback_constant_erpm</param>
+                    <param>tiltback_variable</param>
+                    <param>tiltback_variable_max</param>
+                    <param>noseangling_speed</param>
+                    <param>::sep::Torque Tiltback</param>
+                    <param>torquetilt_strength</param>
+                    <param>torquetilt_strength_regen</param>
+                    <param>torquetilt_start_current</param>
+                    <param>torquetilt_angle_limit</param>
+                    <param>torquetilt_on_speed</param>
+                    <param>torquetilt_off_speed</param>
+                    <param>torquetilt_filter</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>
