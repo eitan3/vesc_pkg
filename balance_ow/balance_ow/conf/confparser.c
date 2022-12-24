@@ -11,10 +11,13 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_uint32(buffer, BALANCE_CONFIG_SIGNATURE, &ind);
 
 	buffer_append_float32_auto(buffer, conf->kp, &ind);
+	buffer_append_float32_auto(buffer, conf->kp_brake, &ind);
 	buffer_append_float32_auto(buffer, conf->ki, &ind);
 	buffer_append_float32_auto(buffer, conf->kp2, &ind);
 	buffer_append_float32_auto(buffer, conf->ki2, &ind);
 	buffer_append_float32_auto(buffer, conf->pid_filtering_weight, &ind);
+	buffer_append_float32_auto(buffer, conf->pid_filtering_weight_brake, &ind);
+	buffer_append_float32(buffer, conf->pid_transition_speed, 100, &ind);
 	buffer_append_uint16(buffer, conf->hertz, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_roll, &ind);
@@ -96,10 +99,13 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	}
 
 	conf->kp = buffer_get_float32_auto(buffer, &ind);
+	conf->kp_brake = buffer_get_float32_auto(buffer, &ind);
 	conf->ki = buffer_get_float32_auto(buffer, &ind);
 	conf->kp2 = buffer_get_float32_auto(buffer, &ind);
 	conf->ki2 = buffer_get_float32_auto(buffer, &ind);
 	conf->pid_filtering_weight = buffer_get_float32_auto(buffer, &ind);
+	conf->pid_filtering_weight_brake = buffer_get_float32_auto(buffer, &ind);
+	conf->pid_transition_speed = buffer_get_float32(buffer, 100, &ind);
 	conf->hertz = buffer_get_uint16(buffer, &ind);
 	conf->fault_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->fault_roll = buffer_get_float32_auto(buffer, &ind);
@@ -174,10 +180,13 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 
 void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->kp = APPCONF_BALANCE_KP;
+	conf->kp_brake = APPCONF_BALANCE_KP_BRAKE;
 	conf->ki = APPCONF_BALANCE_KI;
 	conf->kp2 = APPCONF_BALANCE_KP2;
 	conf->ki2 = APPCONF_BALANCE_KI2;
 	conf->pid_filtering_weight = APPCONF_BALANCE_PID_FILTERING_WEIGHT;
+	conf->pid_filtering_weight_brake = APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE;
+	conf->pid_transition_speed = APPCONF_BALANCE_PID_TRANSITION_SPEED;
 	conf->hertz = APPCONF_BALANCE_HERTZ;
 	conf->fault_pitch = APPCONF_BALANCE_FAULT_PITCH;
 	conf->fault_roll = APPCONF_BALANCE_FAULT_ROLL;

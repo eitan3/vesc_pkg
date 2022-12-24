@@ -99,6 +99,7 @@ typedef struct {
 	float tiltback_duty_step_size, tiltback_hv_step_size, tiltback_lv_step_size, tiltback_return_step_size;
 	float torquetilt_on_step_size, torquetilt_off_step_size;
 	float tiltback_variable, tiltback_variable_max_erpm, noseangling_step_size;
+	float pid_transition_step_size;
 
 	// Feature: True Pitch
 	ATTITUDE_INFO m_att_ref;
@@ -117,6 +118,8 @@ typedef struct {
 
 	// Rumtime state values
 	BalanceState state;
+	bool running;
+	float kp_interpolated, pid_filtering_weight_interpolated;
 	float proportional, integral, proportional2, integral2;
 	float abs_proportional;
 	float pid_value;
@@ -229,6 +232,7 @@ static void configure(data *d) {
 	d->roll_turntilt_step_size = d->balance_conf.roll_turntilt_speed / d->balance_conf.hertz;
 	d->yaw_turntilt_step_size = d->balance_conf.yaw_turntilt_speed / d->balance_conf.hertz;
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
+	d->pid_transition_step_size = d->balance_conf.pid_transition_speed / d->balance_conf.hertz;
 
 	// Maximum amps change when braking
 	d->pid_brake_increment = d->balance_conf.pid_brake_max_amp_change;
@@ -288,6 +292,7 @@ static void configure(data *d) {
 }
 
 static void reset_vars(data *d) {
+	d->running = false;
 	// Clear accumulated values.
 	d->integral = 0;
 	d->integral2 = 0;
@@ -310,6 +315,8 @@ static void reset_vars(data *d) {
 	d->applied_booster_current = 0;
 	biquad_reset(&d->smooth_erpm_biquad);
 	d->smooth_erpm = 0;
+	d->kp_interpolated = d->balance_conf.kp;
+	d->pid_filtering_weight_interpolated = d->balance_conf.pid_filtering_weight;
 
 	// Acceleration:
 	// d->accel_gap = 0;
@@ -1067,6 +1074,7 @@ static void balance_thd(void *arg) {
 			if (check_faults(d, false)) {
 				break;
 			}
+			d->running = true;
 
 			//Initialize variables
 			d->disengage_timer = d->current_time;
@@ -1120,8 +1128,18 @@ static void balance_thd(void *arg) {
 				d->integral = d->integral * 0.9;
 			}
 
+			// Calculate KP
+			float kp_target = d->braking == false ? d->balance_conf.kp : d->balance_conf.kp_brake;
+			if (fabsf(kp_target - d->kp_interpolated) <= d->pid_transition_step_size) {
+				d->kp_interpolated = kp_target;
+			} else if (kp_target - d->kp_interpolated > 0) {
+				d->kp_interpolated += d->pid_transition_step_size;
+			} else {
+				d->kp_interpolated -= d->pid_transition_step_size;
+			}
+
 			// Calculate new PID
-			float new_pid_value = (d->balance_conf.kp * d->proportional) + d->balance_conf.ki * d->integral;
+			float new_pid_value = (d->kp_interpolated * d->proportional) + d->balance_conf.ki * d->integral;
 			
 			// Start Rate PID and Booster portion a few cycles later, after the start clicks have been emitted
 			// this keeps the start smooth and predictable
@@ -1175,7 +1193,18 @@ static void balance_thd(void *arg) {
 				}
 			}
 			else {
-				float pid_filtering_weight = d->balance_conf.pid_filtering_weight;
+				// Calculate new filtering weight
+				float filtering_target = d->braking == false ? d->balance_conf.pid_filtering_weight : d->balance_conf.pid_filtering_weight_brake;
+				if (fabsf(filtering_target - d->pid_filtering_weight_interpolated) <= d->pid_transition_step_size) {
+					d->pid_filtering_weight_interpolated = filtering_target;
+				} else if (filtering_target - d->pid_filtering_weight_interpolated > 0) {
+					d->pid_filtering_weight_interpolated += d->pid_transition_step_size;
+				} else {
+					d->pid_filtering_weight_interpolated -= d->pid_transition_step_size;
+				}
+
+				// Apply PID Filtering
+				float pid_filtering_weight = d->pid_filtering_weight_interpolated;
 				d->pid_value = d->pid_value * (1.0 - pid_filtering_weight) + new_pid_value * pid_filtering_weight;
 			}
 
@@ -1201,6 +1230,8 @@ static void balance_thd(void *arg) {
 		case (FAULT_SWITCH_HALF):
 		case (FAULT_SWITCH_FULL):
 		case (FAULT_STARTUP):
+			d->running = false;
+
 			// Check for valid startup position and switch state
 			if (fabsf(d->pitch_angle) < d->balance_conf.startup_pitch_tolerance &&
 					fabsf(d->roll_angle) < d->balance_conf.startup_roll_tolerance && d->switch_state == ON) {
@@ -1329,7 +1360,7 @@ static int get_cfg(uint8_t *buffer, bool is_default) {
 
 static bool set_cfg(uint8_t *buffer) {
 	data *d = (data*)ARG;
-	if (d->state != FAULT_STARTUP)
+	if (d->running)
 		return false;
 
 	bool res = confparser_deserialize_balance_config(buffer, &(d->balance_conf));

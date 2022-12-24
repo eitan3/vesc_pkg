@@ -8,6 +8,11 @@
 #define APPCONF_BALANCE_KP 25
 #endif
 
+// Angle P (Braking)
+#ifndef APPCONF_BALANCE_KP_BRAKE
+#define APPCONF_BALANCE_KP_BRAKE 25
+#endif
+
 // Angle I
 #ifndef APPCONF_BALANCE_KI
 #define APPCONF_BALANCE_KI 0.005
@@ -26,6 +31,16 @@
 // PID Filtering Weight
 #ifndef APPCONF_BALANCE_PID_FILTERING_WEIGHT
 #define APPCONF_BALANCE_PID_FILTERING_WEIGHT 0.3
+#endif
+
+// PID Filtering Weight (Braking)
+#ifndef APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE
+#define APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE 0.3
+#endif
+
+// PID Transition Speed
+#ifndef APPCONF_BALANCE_PID_TRANSITION_SPEED
+#define APPCONF_BALANCE_PID_TRANSITION_SPEED 1
 #endif
 
 // Loop Hertz

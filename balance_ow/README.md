@@ -9,7 +9,9 @@ Most things should be similar to the regular balance app, except some of the tim
 
 Recent features:
 
-Add Startup Clicks (thanks to surfdado).
+Added Angle P for normal riding and Angle P for braking.
+
+Added Startup Clicks (thanks to surfdado).
 
 Yaw turntilt (thanks to nico).
 

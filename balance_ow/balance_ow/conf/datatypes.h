@@ -31,10 +31,13 @@ typedef enum {
 
 typedef struct {
 	float kp;
+	float kp_brake;
 	float ki;
 	float kp2;
 	float ki2;
 	float pid_filtering_weight;
+	float pid_filtering_weight_brake;
+	float pid_transition_speed;
 	uint16_t hertz;
 	float fault_pitch;
 	float fault_roll;
