@@ -232,7 +232,7 @@ static void configure(data *d) {
 	d->roll_turntilt_step_size = d->balance_conf.roll_turntilt_speed / d->balance_conf.hertz;
 	d->yaw_turntilt_step_size = d->balance_conf.yaw_turntilt_speed / d->balance_conf.hertz;
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
-	d->pid_transition_step_size = d->balance_conf.pid_transition_speed / d->balance_conf.hertz;
+	d->pid_transition_step_size = (1.0 / d->balance_conf.pid_transition_speed) / d->balance_conf.hertz;
 
 	// Maximum amps change when braking
 	d->pid_brake_increment = d->balance_conf.pid_brake_max_amp_change;
