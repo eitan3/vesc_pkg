@@ -1681,6 +1681,23 @@ p, li { white-space: pre-wrap; }
                 </subgroupParams>
             </subgroup>
             <subgroup>
+                <subgroupName>Fault</subgroupName>
+                <subgroupParams>
+                    <param>::sep::Angle Faults</param>
+                    <param>fault_pitch</param>
+                    <param>fault_delay_pitch</param>
+                    <param>fault_roll</param>
+                    <param>fault_delay_roll</param>
+                    <param>::sep::Switches</param>
+                    <param>fault_adc1</param>
+                    <param>fault_adc2</param>
+                    <param>fault_delay_switch_half</param>
+                    <param>fault_delay_switch_full</param>
+                    <param>fault_adc_half_erpm</param>
+                    <param>fault_is_single_switch</param>
+                </subgroupParams>
+            </subgroup>
+            <subgroup>
                 <subgroupName>Tiltback 1</subgroupName>
                 <subgroupParams>
                     <param>::sep::General Config</param>
@@ -1746,23 +1763,6 @@ p, li { white-space: pre-wrap; }
                     <param>yaw_turntilt_erpm_boost</param>
                     <param>yaw_turntilt_erpm_boost_end</param>
                     <param>yaw_turntilt_aggregate</param>
-                </subgroupParams>
-            </subgroup>
-            <subgroup>
-                <subgroupName>Fault</subgroupName>
-                <subgroupParams>
-                    <param>::sep::Angle Faults</param>
-                    <param>fault_pitch</param>
-                    <param>fault_delay_pitch</param>
-                    <param>fault_roll</param>
-                    <param>fault_delay_roll</param>
-                    <param>::sep::Switches</param>
-                    <param>fault_adc1</param>
-                    <param>fault_adc2</param>
-                    <param>fault_delay_switch_half</param>
-                    <param>fault_delay_switch_full</param>
-                    <param>fault_adc_half_erpm</param>
-                    <param>fault_is_single_switch</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>
