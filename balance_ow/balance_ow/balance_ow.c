@@ -99,7 +99,7 @@ typedef struct {
 	float tiltback_duty_step_size, tiltback_hv_step_size, tiltback_lv_step_size, tiltback_return_step_size;
 	float torquetilt_on_step_size, torquetilt_off_step_size;
 	float tiltback_variable, tiltback_variable_max_erpm, noseangling_step_size;
-	float pid_transition_step_size;
+	float pid_transition_step_size_on, pid_transition_step_size_off;
 
 	// Feature: True Pitch
 	ATTITUDE_INFO m_att_ref;
@@ -232,7 +232,8 @@ static void configure(data *d) {
 	d->roll_turntilt_step_size = d->balance_conf.roll_turntilt_speed / d->balance_conf.hertz;
 	d->yaw_turntilt_step_size = d->balance_conf.yaw_turntilt_speed / d->balance_conf.hertz;
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
-	d->pid_transition_step_size = (1.0 / d->balance_conf.pid_transition_speed) / d->balance_conf.hertz;
+	d->pid_transition_step_size_on = (1.0 / d->balance_conf.pid_transition_speed_on) / d->balance_conf.hertz;
+	d->pid_transition_step_size_off = (1.0 / d->balance_conf.pid_transition_speed_off) / d->balance_conf.hertz;
 
 	// Maximum amps change when braking
 	d->pid_brake_increment = d->balance_conf.pid_brake_max_amp_change;
@@ -1130,12 +1131,13 @@ static void balance_thd(void *arg) {
 
 			// Calculate KP
 			float kp_target = d->braking == false ? d->balance_conf.kp : d->balance_conf.kp_brake;
-			if (fabsf(kp_target - d->kp_interpolated) <= d->pid_transition_step_size) {
+			float pidtss = d->braking ? d->pid_transition_step_size_on : d->pid_transition_step_size_off;
+			if (fabsf(kp_target - d->kp_interpolated) <= pidtss) {
 				d->kp_interpolated = kp_target;
 			} else if (kp_target - d->kp_interpolated > 0) {
-				d->kp_interpolated += d->pid_transition_step_size;
+				d->kp_interpolated += pidtss;
 			} else {
-				d->kp_interpolated -= d->pid_transition_step_size;
+				d->kp_interpolated -= pidtss;
 			}
 
 			// Calculate new PID
@@ -1195,12 +1197,12 @@ static void balance_thd(void *arg) {
 			else {
 				// Calculate new filtering weight
 				float filtering_target = d->braking == false ? d->balance_conf.pid_filtering_weight : d->balance_conf.pid_filtering_weight_brake;
-				if (fabsf(filtering_target - d->pid_filtering_weight_interpolated) <= d->pid_transition_step_size) {
+				if (fabsf(filtering_target - d->pid_filtering_weight_interpolated) <= pidtss) {
 					d->pid_filtering_weight_interpolated = filtering_target;
 				} else if (filtering_target - d->pid_filtering_weight_interpolated > 0) {
-					d->pid_filtering_weight_interpolated += d->pid_transition_step_size;
+					d->pid_filtering_weight_interpolated += pidtss;
 				} else {
-					d->pid_filtering_weight_interpolated -= d->pid_transition_step_size;
+					d->pid_filtering_weight_interpolated -= pidtss;
 				}
 
 				// Apply PID Filtering

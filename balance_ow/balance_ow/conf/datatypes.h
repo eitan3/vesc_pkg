@@ -37,7 +37,8 @@ typedef struct {
 	float ki2;
 	float pid_filtering_weight;
 	float pid_filtering_weight_brake;
-	float pid_transition_speed;
+	float pid_transition_speed_on;
+	float pid_transition_speed_off;
 	uint16_t hertz;
 	float fault_pitch;
 	float fault_roll;
