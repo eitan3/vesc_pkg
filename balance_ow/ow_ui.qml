@@ -196,7 +196,7 @@ Item {
                                         if (enableDlaCaliDumping == 0) {
                                             enableDlaCaliDumping = 1
                                             mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
-                                            mLogWriter.writeToLogFile("ERPM,Current,Acceleration,Brake\n")
+                                            mLogWriter.writeToLogFile("Brake,ERPM,Acceleration,Current,PID,Current Pid Ratio\n")
                                         }
                                         else {
                                             enableDlaCaliDumping = 0
@@ -223,6 +223,7 @@ Item {
             // Ints and floats can be extracted like this from the data
             var dv = new DataView(data, 0)
             var ind = 0
+            var running = dv.getInt16(ind); ind += 2;
             var time_diff = dv.getFloat32(ind); ind += 4;
             var state = dv.getInt16(ind); ind += 2;
             var motor_current = dv.getFloat32(ind); ind += 4;
@@ -298,15 +299,19 @@ Item {
                 "roll             : " + roll.toFixed(2) + "°\n" +
                 "switch           : " + switchString + "\n" +
                 "adc1             : " + adc1.toFixed(2) + " V \n" +
-                "adc2             : " + adc2.toFixed(2) + " V \n";
+                "adc2             : " + adc2.toFixed(2) + " V \n" +
+                "Torque PID Ratio : " + (filtered_current / pid_value).toFixed(4) + "\n";
 
             if (enableDlaCaliDumping == 0) {
                 toggleDlaCalibDump.text = "Enable DLA Calib Csv Dump"
             }
             else {
                 toggleDlaCalibDump.text = "Disable DLA Calib Csv Dump"
-                mLogWriter.writeToLogFile(erpm.toFixed(0) + "," + filtered_current.toFixed(2) + "," + 
-                                          acceleration.toFixed(3) + "," + braking + "\n")
+                if (running == 1) {
+                    mLogWriter.writeToLogFile(braking + "," + erpm.toFixed(0) + "," + acceleration.toFixed(3) + "," + 
+                                            filtered_current.toFixed(2) + "," + pid_value.toFixed(2) + "," + 
+                                            (filtered_current / pid_value).toFixed(4) + "\n")
+                }
             }
         }
     }

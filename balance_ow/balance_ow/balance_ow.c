@@ -1130,8 +1130,13 @@ static void balance_thd(void *arg) {
 			}
 
 			// Calculate KP
-			float kp_target = d->braking == false ? d->balance_conf.kp : d->balance_conf.kp_brake;
 			float pidtss = d->braking ? d->pid_transition_step_size_on : d->pid_transition_step_size_off;
+			float kp_target = d->balance_conf.kp;
+			if (d->braking) {
+				float acc_coeff = fminf(fmaxf(fabsf(d->acceleration) - 0.5, 0.0), 2.0) / 2.0;
+				kp_target *= (1.0 - acc_coeff);
+				kp_target += d->balance_conf.kp_brake * acc_coeff;
+			}
 			if (fabsf(kp_target - d->kp_interpolated) <= pidtss) {
 				d->kp_interpolated = kp_target;
 			} else if (kp_target - d->kp_interpolated > 0) {
@@ -1196,7 +1201,12 @@ static void balance_thd(void *arg) {
 			}
 			else {
 				// Calculate new filtering weight
-				float filtering_target = d->braking == false ? d->balance_conf.pid_filtering_weight : d->balance_conf.pid_filtering_weight_brake;
+				float filtering_target = d->balance_conf.pid_filtering_weight;
+				if (d->braking) {
+					float acc_coeff = fminf(fmaxf(fabsf(d->acceleration) - 0.5, 0.0), 2.0) / 2.0;
+					filtering_target *= (1.0 - acc_coeff);
+					filtering_target += d->balance_conf.pid_filtering_weight_brake * acc_coeff;
+				}
 				if (fabsf(filtering_target - d->pid_filtering_weight_interpolated) <= pidtss) {
 					d->pid_filtering_weight_interpolated = filtering_target;
 				} else if (filtering_target - d->pid_filtering_weight_interpolated > 0) {
@@ -1302,6 +1312,7 @@ static void send_realtime_data(data *d){
 	int32_t ind = 0;
 	uint8_t send_buffer[100];
 //	send_buffer[ind++] = COMM_GET_DECODED_BALANCE;
+	buffer_append_uint16(send_buffer, d->running, &ind);
 	buffer_append_float32_auto(send_buffer, d->diff_time, &ind);
 	buffer_append_uint16(send_buffer, d->state, &ind);
 	buffer_append_float32_auto(send_buffer, d->motor_current, &ind);
