@@ -115,7 +115,7 @@ Item {
                         
                         ColumnLayout {
                             Text {
-                                id: header
+                                id: header1
                                 color: Utility.getAppHexColor("lightText")
                                 font.family: "DejaVu Sans Mono"
                                 Layout.margins: 0
@@ -126,7 +126,28 @@ Item {
                                 font.weight: Font.Black
                             }
                             Text {
-                                id: valText1
+                                id: rt_data_text
+                                color: Utility.getAppHexColor("lightText")
+                                font.family: "DejaVu Sans Mono"
+                                Layout.margins: 0
+                                Layout.leftMargin: 5
+                                Layout.preferredWidth: parent.width/3
+                                text: "App not connected"
+                            }
+
+                            Text {
+                                id: header2
+                                color: Utility.getAppHexColor("lightText")
+                                font.family: "DejaVu Sans Mono"
+                                Layout.margins: 0
+                                Layout.leftMargin: 0
+                                Layout.fillWidth: true
+                                text: "Setpoints"
+                                font.underline: true
+                                font.weight: Font.Black
+                            }
+                            Text {
+                                id: setpoints_text
                                 color: Utility.getAppHexColor("lightText")
                                 font.family: "DejaVu Sans Mono"
                                 Layout.margins: 0
@@ -239,6 +260,14 @@ Item {
             var adc1 = dv.getFloat32(ind); ind += 4;
             var adc2 = dv.getFloat32(ind); ind += 4;
 
+            var start_setpoint = dv.getFloat32(ind); ind += 4;
+            var noseangling_setpoint = dv.getFloat32(ind); ind += 4;
+            var torque_setpoint = dv.getFloat32(ind); ind += 4;
+            var yaw_setpoint = dv.getFloat32(ind); ind += 4;
+            var roll_setpoint = dv.getFloat32(ind); ind += 4;
+            var turntilt_setpoint = dv.getFloat32(ind); ind += 4;
+            var kp_interpolated = dv.getFloat32(ind); ind += 4;
+
             var stateString
             if(state == 0){
                 stateString = "STARTUP"
@@ -285,22 +314,30 @@ Item {
             }
             
             
-            valText1.text =
-                "time             : " + (1/time_diff).toFixed(0) + " hz\n" +
-                "state            : " + stateString + "\n" +
-                "current          : " + motor_current.toFixed(2) + " A\n" +
-                "filtered current : " + filtered_current.toFixed(2) + " A\n" +
-                "erpm             : " + (erpm / 1000).toFixed(3) + " / 1000 \n" +
-                "acceleration     : " + acceleration.toFixed(2) + "\n" +
-                "braking          : " + braking + "\n" + 
-                "pid              : " + pid_value.toFixed(2) + " A\n" +
-                "true pitch       : " + true_pitch.toFixed(2) + "°\n" +
-                "pitch            : " + pitch.toFixed(2) + "°\n" +
-                "roll             : " + roll.toFixed(2) + "°\n" +
-                "switch           : " + switchString + "\n" +
-                "adc1             : " + adc1.toFixed(2) + " V \n" +
-                "adc2             : " + adc2.toFixed(2) + " V \n" +
-                "Torque PID Ratio : " + (filtered_current / pid_value).toFixed(4) + "\n";
+            rt_data_text.text =
+                "Time              : " + (1/time_diff).toFixed(0) + " hz\n" +
+                "State             : " + stateString + "\n" +
+                "Current (Request) : " + pid_value.toFixed(2) + " A\n" +
+                "Current (Motor)   : " + motor_current.toFixed(2) + " A\n" +
+                "Current (Filtered): " + filtered_current.toFixed(2) + " A\n" +
+                "ERPM              : " + (erpm / 1000).toFixed(3) + " / 1000 \n" +
+                "Acceleration      : " + acceleration.toFixed(2) + "\n" +
+                "Braking           : " + braking + "\n" + 
+                "True Pitch        : " + true_pitch.toFixed(2) + "°\n" +
+                "Pitch             : " + pitch.toFixed(2) + "°\n" +
+                "Roll              : " + roll.toFixed(2) + "°\n" +
+                "Switch            : " + switchString + "\n" +
+                "ADC1 / ADC2       : " + adc1.toFixed(2) + "V / " + adc2.toFixed(2) + "V \n" +
+                "Torque PID Ratio  : " + (motor_current / pid_value).toFixed(4) + "\n" +
+                "KP Interpolated   : " + kp_interpolated.toFixed(2) + "\n";
+            
+            setpoints_text.text =
+                "Start Setpoint    : " + start_setpoint.toFixed(2) + "\n" +
+                "Noseangling SP    : " + noseangling_setpoint.toFixed(2) + "\n" +
+                "Torquetilt SP     : " + torque_setpoint.toFixed(2) + "\n" +
+                "Yaw Turntilt SP   : " + yaw_setpoint.toFixed(2) + "\n" +
+                "Roll Turntilt SP  : " + roll_setpoint.toFixed(2) + "\n" +
+                "Total Turntilt SP : " + turntilt_setpoint.toFixed(4) + "\n";
 
             if (enableDlaCaliDumping == 0) {
                 toggleDlaCalibDump.text = "Enable DLA Calib Csv Dump"
@@ -309,8 +346,8 @@ Item {
                 toggleDlaCalibDump.text = "Disable DLA Calib Csv Dump"
                 if (running == 1) {
                     mLogWriter.writeToLogFile(braking + "," + erpm.toFixed(0) + "," + acceleration.toFixed(3) + "," + 
-                                            filtered_current.toFixed(2) + "," + pid_value.toFixed(2) + "," + 
-                                            (filtered_current / pid_value).toFixed(4) + "\n")
+                                            motor_current.toFixed(2) + "," + pid_value.toFixed(2) + "," + 
+                                            (motor_current / pid_value).toFixed(4) + "\n")
                 }
             }
         }

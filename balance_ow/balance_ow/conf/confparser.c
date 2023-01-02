@@ -51,6 +51,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->brake_current, &ind);
 	buffer_append_float32_auto(buffer, conf->pid_brake_max_amp_change, &ind);
 	buffer_append_float32_auto(buffer, conf->ki_limit, &ind);
+	buffer_append_float32_auto(buffer, conf->ki_limit2, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_angle, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_ramp, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_current, &ind);
@@ -87,6 +88,8 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_uint16(buffer, conf->quickstop_erpm, &ind);
 	buffer_append_float32_auto(buffer, conf->quickstop_angle, &ind);
 	buffer_append_uint16(buffer, conf->startup_click_current, &ind);
+	buffer[ind++] = conf->enable_traction_control;
+	buffer_append_float32_auto(buffer, conf->traction_control_mul_by, &ind);
 
 	return ind;
 }
@@ -140,6 +143,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->brake_current = buffer_get_float32_auto(buffer, &ind);
 	conf->pid_brake_max_amp_change = buffer_get_float32_auto(buffer, &ind);
 	conf->ki_limit = buffer_get_float32_auto(buffer, &ind);
+	conf->ki_limit2 = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_angle = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_ramp = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_current = buffer_get_float32_auto(buffer, &ind);
@@ -176,6 +180,8 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->quickstop_erpm = buffer_get_uint16(buffer, &ind);
 	conf->quickstop_angle = buffer_get_float32_auto(buffer, &ind);
 	conf->startup_click_current = buffer_get_uint16(buffer, &ind);
+	conf->enable_traction_control = buffer[ind++];
+	conf->traction_control_mul_by = buffer_get_float32_auto(buffer, &ind);
 
 	return true;
 }
@@ -222,6 +228,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->brake_current = APPCONF_BALANCE_BRAKE_CURRENT;
 	conf->pid_brake_max_amp_change = APPCONF_BALANCE_PID_BRAKE_MAX_AMPS;
 	conf->ki_limit = APPCONF_BALANCE_KI_LIMIT;
+	conf->ki_limit2 = APPCONF_BALANCE_KI_LIMIT2;
 	conf->booster_angle = APPCONF_BALANCE_BOOSTER_ANGLE;
 	conf->booster_ramp = APPCONF_BALANCE_BOOSTER_RAMP;
 	conf->booster_current = APPCONF_BALANCE_BOOSTER_CURRENT;
@@ -258,5 +265,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->quickstop_erpm = APPCONF_BALANCE_QUICKSTOP_ERPM;
 	conf->quickstop_angle = APPCONF_BALANCE_QUICKSTOP_ANGLE;
 	conf->startup_click_current = APPCONF_BALANCE_STARTUP_CLICK_CURRENT;
+	conf->enable_traction_control = APPCONF_BALANCE_ENABLE_TRACTION_CONTROL;
+	conf->traction_control_mul_by = APPCONF_BALANCE_TRACTION_CONTROL_MUL_BY;
 }
 

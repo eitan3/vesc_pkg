@@ -9,6 +9,8 @@ Most things should be similar to the regular balance app, except some of the tim
 
 Recent features:
 
+Added Traction Control (thanks to surfdado).
+
 Added Angle P for normal riding and Angle P for braking.
 
 Added Startup Clicks (thanks to surfdado).

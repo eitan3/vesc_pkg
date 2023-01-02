@@ -71,6 +71,7 @@ typedef struct {
 	float brake_current;
 	float pid_brake_max_amp_change;
 	float ki_limit;
+	float ki_limit2;
 	float booster_angle;
 	float booster_ramp;
 	float booster_current;
@@ -107,6 +108,8 @@ typedef struct {
 	uint16_t quickstop_erpm;
 	float quickstop_angle;
 	uint16_t startup_click_current;
+	bool enable_traction_control;
+	float traction_control_mul_by;
 } balance_config;
 
 // DATATYPES_H_

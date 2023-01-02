@@ -134,9 +134,9 @@ typedef struct {
 	float motor_timeout_seconds;
 	float brake_timeout; // Seconds
 	float applied_booster_current;
+	bool traction_control;
 
 	bool braking;
-	float disengage_timer; // Seconds
 	float tb_highvoltage_timer;
 	float pid_brake_increment; // Brake Amp Rate Limiting
 
@@ -345,9 +345,10 @@ static void reset_vars(data *d) {
 	if (d->start_click_current == 0)
 		d->start_counter_clicks = 0;
 
-	// Wheel Slip
+	// Wheel Slip & Traction Control
 	d->wheelslip_timer = 0;
 	d->wheelslip_end_timer = 0;
+	d->traction_control = false;
 }
 
 // Read ADCs and determine switch state
@@ -508,7 +509,8 @@ static void calculate_state_and_initial_setpoint(data *d) {
 		d->tb_highvoltage_timer = d->current_time;
 	}
 
-	if (d->setpointAdjustmentType == CENTERING && d->setpoint_target_interpolated != d->setpoint_target) {
+	if (d->setpointAdjustmentType == CENTERING && 
+		d->setpoint_target_interpolated != d->setpoint_target) {
 		// Ignore tiltback during centering sequence
 		d->state = RUNNING;
 	} 
@@ -521,9 +523,15 @@ static void calculate_state_and_initial_setpoint(data *d) {
 		d->state = RUNNING_WHEELSLIP;
 		d->setpointAdjustmentType = TILTBACK_NONE;
 		d->wheelslip_timer = d->current_time;
+		d->traction_control = true;
 	} 
 	// Exit wheelslip
 	else if (d->state == RUNNING_WHEELSLIP) {
+		if (fabsf(d->acceleration) < 10) {
+			// acceleration is slowing down, traction control seems to have worked
+			d->traction_control = false;
+		}
+
 		// Remain in wheelslip state for at least 500ms to avoid any overreactions
 		if (d->abs_duty_cycle > d->max_duty_with_margin) {
 			d->wheelslip_timer = d->current_time;
@@ -533,6 +541,7 @@ static void calculate_state_and_initial_setpoint(data *d) {
 				 d->abs_duty_cycle < 0.7) // Leave wheelslip state only if duty < 70%
 		{
 			d->state = RUNNING;
+			d->traction_control = false;
 		}
 	}
 	// Reverse stop
@@ -890,10 +899,7 @@ static void calc_total_turntilt_interpolation(data *d)
 			d->total_turntilt_interpolated = max;
 		}
 		else {
-			float decrease_by = (d->balance_conf.hertz - 10.0) / d->balance_conf.hertz;
-			d->yaw_turntilt_interpolated *= decrease_by;
-			d->roll_turntilt_interpolated *= decrease_by;
-			d->total_turntilt_interpolated *= decrease_by;
+			d->total_turntilt_interpolated = roll_turntilt + yaw_turntilt;
 		}
 	}
 }
@@ -904,7 +910,6 @@ static void calc_final_setpoint(data* d){
 	d->setpoint += d->noseangling_interpolated;
 	d->setpoint += d->torquetilt_interpolated;
 	d->setpoint += d->total_turntilt_interpolated;
-	// d->setpoint += d->braketilt_interpolated;
 }
 
 // Are we detected wheelslip?
@@ -1078,7 +1083,6 @@ static void balance_thd(void *arg) {
 			d->running = true;
 
 			//Initialize variables
-			d->disengage_timer = d->current_time;
 			if ((d->abs_erpm > 250) && (SIGN(d->torquetilt_filtered_current) != SIGN(d->erpm))) {
 				// current is negative, so we are braking or going downhill
 				// high currents downhill are less likely
@@ -1105,11 +1109,9 @@ static void balance_thd(void *arg) {
 				d->yaw_turntilt_interpolated *= 0.995;
 				d->roll_turntilt_interpolated *= 0.995;
 				d->total_turntilt_interpolated *= 0.995;
-				// d->braketilt_interpolated *= 0.995;
 				d->torquetilt_target *= 0.99;
 				d->yaw_turntilt_target *= 0.99;
 				d->roll_turntilt_target *= 0.99;
-				//d->braketilt_target *= 0.99;
 			}
 			calc_final_setpoint(d);
 
@@ -1156,8 +1158,8 @@ static void balance_thd(void *arg) {
 					d->integral2 = d->integral2 + d->proportional2;
 
 					// Apply I term Filter
-					if (d->balance_conf.ki_limit > 0 && fabsf(d->integral2 * d->balance_conf.ki2) > d->balance_conf.ki_limit) {
-						d->integral2 = d->balance_conf.ki_limit / d->balance_conf.ki2 * SIGN(d->integral2);
+					if (d->balance_conf.ki_limit2 > 0 && fabsf(d->integral2 * d->balance_conf.ki2) > d->balance_conf.ki_limit2) {
+						d->integral2 = d->balance_conf.ki_limit2 / d->balance_conf.ki2 * SIGN(d->integral2);
 					}
 
 					new_pid_value = (d->balance_conf.kp2 * d->proportional2) +
@@ -1179,6 +1181,15 @@ static void balance_thd(void *arg) {
 						booster_current += booster_current * speedstiffness / 2;
 				}
 
+				// Limit booster while duty cycle
+				if (d->abs_duty_cycle > d->balance_conf.tiltback_duty) {
+						float dc_coeff = (d->abs_duty_cycle - d->balance_conf.tiltback_duty);
+						dc_coeff = dc_coeff / (1.0 - d->balance_conf.tiltback_duty);
+						dc_coeff = fminf(fmaxf(dc_coeff, 0.0), 1.0);
+						dc_coeff = 1.0 - dc_coeff;
+						booster_current *= dc_coeff;
+				}
+
 				if (d->abs_proportional > d->balance_conf.booster_angle) {
 					if (d->abs_proportional - d->balance_conf.booster_angle < d->balance_conf.booster_ramp) {
 						d->applied_booster_current = (booster_current * SIGN(true_proportional)) *
@@ -1190,8 +1201,12 @@ static void balance_thd(void *arg) {
 				}
 			}
 
+			if (d->traction_control && d->balance_conf.enable_traction_control) {
+				// freewheel while traction loss is detected
+				d->pid_value = d->pid_value * d->balance_conf.traction_control_mul_by;
+			}
 			// Brake Amp Rate Limiting
-			if (d->braking && (fabsf(d->pid_value - new_pid_value) > d->pid_brake_increment)) {
+			else if (d->braking && (fabsf(d->pid_value - new_pid_value) > d->pid_brake_increment)) {
 				if (new_pid_value > d->pid_value) {
 					d->pid_value += d->pid_brake_increment;
 				}
@@ -1327,6 +1342,13 @@ static void send_realtime_data(data *d){
 	buffer_append_uint16(send_buffer, d->switch_state, &ind);
 	buffer_append_float32_auto(send_buffer, d->adc1, &ind);
 	buffer_append_float32_auto(send_buffer, d->adc2, &ind);
+	buffer_append_float32_auto(send_buffer, d->setpoint_target_interpolated, &ind);
+	buffer_append_float32_auto(send_buffer, d->noseangling_interpolated, &ind);
+	buffer_append_float32_auto(send_buffer, d->torquetilt_interpolated, &ind);
+	buffer_append_float32_auto(send_buffer, d->yaw_turntilt_interpolated * d->balance_conf.yaw_turntilt_weight, &ind);
+	buffer_append_float32_auto(send_buffer, d->roll_turntilt_interpolated * d->balance_conf.roll_turntilt_weight, &ind);
+	buffer_append_float32_auto(send_buffer, d->total_turntilt_interpolated, &ind);
+	buffer_append_float32_auto(send_buffer, d->kp_interpolated, &ind);
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 
