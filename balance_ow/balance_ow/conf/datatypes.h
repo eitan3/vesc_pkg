@@ -35,6 +35,7 @@ typedef struct {
 	float ki;
 	float kp2;
 	float ki2;
+	float ki2_decay;
 	float pid_filtering_weight;
 	float pid_filtering_weight_brake;
 	float pid_transition_speed_on;

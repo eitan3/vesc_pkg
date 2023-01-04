@@ -3,34 +3,39 @@
 #ifndef CONF_DEFAULT_H_
 #define CONF_DEFAULT_H_
 
-// Angle P
+// Pitch Throttle
 #ifndef APPCONF_BALANCE_KP
 #define APPCONF_BALANCE_KP 25
 #endif
 
-// Angle P (Braking)
+// Pitch Throttle (Braking)
 #ifndef APPCONF_BALANCE_KP_BRAKE
 #define APPCONF_BALANCE_KP_BRAKE 45
 #endif
 
-// Angle I
+// Pitch Throttle Integral
 #ifndef APPCONF_BALANCE_KI
 #define APPCONF_BALANCE_KI 0.005
 #endif
 
-// Rate P
+// Gyro Throttle
 #ifndef APPCONF_BALANCE_KP2
 #define APPCONF_BALANCE_KP2 0.6
 #endif
 
-// Rate I
+// Gyro Throttle Integral
 #ifndef APPCONF_BALANCE_KI2
 #define APPCONF_BALANCE_KI2 0
 #endif
 
+// Gyro Throttle Integral Decay
+#ifndef APPCONF_BALANCE_KI2_DECAY
+#define APPCONF_BALANCE_KI2_DECAY 0
+#endif
+
 // PID Filtering Weight
 #ifndef APPCONF_BALANCE_PID_FILTERING_WEIGHT
-#define APPCONF_BALANCE_PID_FILTERING_WEIGHT 0.4
+#define APPCONF_BALANCE_PID_FILTERING_WEIGHT 0.5
 #endif
 
 // PID Filtering Weight (Braking)
@@ -45,7 +50,7 @@
 
 // PID Transition Speed (Off)
 #ifndef APPCONF_BALANCE_PID_TRANSITION_SPEED_OFF
-#define APPCONF_BALANCE_PID_TRANSITION_SPEED_OFF 2.5
+#define APPCONF_BALANCE_PID_TRANSITION_SPEED_OFF 1
 #endif
 
 // Loop Hertz
@@ -275,7 +280,7 @@
 
 // Strength
 #ifndef APPCONF_BALANCE_ROLL_TURNTILT_STRENGTH
-#define APPCONF_BALANCE_ROLL_TURNTILT_STRENGTH 6
+#define APPCONF_BALANCE_ROLL_TURNTILT_STRENGTH 3
 #endif
 
 // Tilitback Angle Limit
@@ -400,7 +405,7 @@
 
 // Decrease Current While TC
 #ifndef APPCONF_BALANCE_TRACTION_CONTROL_MUL_BY
-#define APPCONF_BALANCE_TRACTION_CONTROL_MUL_BY 0
+#define APPCONF_BALANCE_TRACTION_CONTROL_MUL_BY 0.75
 #endif
 
 // CONF_DEFAULT_H_

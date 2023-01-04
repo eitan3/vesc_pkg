@@ -1086,7 +1086,6 @@ static void balance_thd(void *arg) {
 			if ((d->abs_erpm > 250) && (SIGN(d->torquetilt_filtered_current) != SIGN(d->erpm))) {
 				// current is negative, so we are braking or going downhill
 				// high currents downhill are less likely
-				//torquetilt_strength = tt_strength_downhill;
 				d->braking = true;
 			}
 			else {
@@ -1095,7 +1094,8 @@ static void balance_thd(void *arg) {
 
 			// Calculate setpoint and interpolation
 			calculate_state_and_initial_setpoint(d);
-			if (!is_wheelslip(d)) {
+			bool is_wheelslip_var = is_wheelslip(d);
+			if (!is_wheelslip_var) {
 				calc_noseangling_interpolation(d);
 				calc_torquetilt_interpolation(d);
 				calc_total_turntilt_interpolation(d);
@@ -1154,15 +1154,16 @@ static void balance_thd(void *arg) {
 			// this keeps the start smooth and predictable
 			if (d->start_counter_clicks == 0) {
 				if (d->balance_conf.kp2 > 0) {
-					d->proportional2 = new_pid_value - d->gyro[1];
+					d->proportional2 = -d->gyro[1];
 					d->integral2 = d->integral2 + d->proportional2;
 
 					// Apply I term Filter
 					if (d->balance_conf.ki_limit2 > 0 && fabsf(d->integral2 * d->balance_conf.ki2) > d->balance_conf.ki_limit2) {
 						d->integral2 = d->balance_conf.ki_limit2 / d->balance_conf.ki2 * SIGN(d->integral2);
 					}
+					d->integral2 = d->integral2 * d->balance_conf.ki2_decay;
 
-					new_pid_value = (d->balance_conf.kp2 * d->proportional2) +
+					new_pid_value += (d->balance_conf.kp2 * d->proportional2) +
 							(d->balance_conf.ki2 * d->integral2);
 				}
 

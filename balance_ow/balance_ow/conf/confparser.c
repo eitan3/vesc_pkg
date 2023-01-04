@@ -15,6 +15,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->ki, &ind);
 	buffer_append_float32_auto(buffer, conf->kp2, &ind);
 	buffer_append_float32_auto(buffer, conf->ki2, &ind);
+	buffer_append_float32_auto(buffer, conf->ki2_decay, &ind);
 	buffer_append_float32_auto(buffer, conf->pid_filtering_weight, &ind);
 	buffer_append_float32_auto(buffer, conf->pid_filtering_weight_brake, &ind);
 	buffer_append_float32(buffer, conf->pid_transition_speed_on, 100, &ind);
@@ -107,6 +108,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->ki = buffer_get_float32_auto(buffer, &ind);
 	conf->kp2 = buffer_get_float32_auto(buffer, &ind);
 	conf->ki2 = buffer_get_float32_auto(buffer, &ind);
+	conf->ki2_decay = buffer_get_float32_auto(buffer, &ind);
 	conf->pid_filtering_weight = buffer_get_float32_auto(buffer, &ind);
 	conf->pid_filtering_weight_brake = buffer_get_float32_auto(buffer, &ind);
 	conf->pid_transition_speed_on = buffer_get_float32(buffer, 100, &ind);
@@ -192,6 +194,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->ki = APPCONF_BALANCE_KI;
 	conf->kp2 = APPCONF_BALANCE_KP2;
 	conf->ki2 = APPCONF_BALANCE_KI2;
+	conf->ki2_decay = APPCONF_BALANCE_KI2_DECAY;
 	conf->pid_filtering_weight = APPCONF_BALANCE_PID_FILTERING_WEIGHT;
 	conf->pid_filtering_weight_brake = APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE;
 	conf->pid_transition_speed_on = APPCONF_BALANCE_PID_TRANSITION_SPEED_ON;
