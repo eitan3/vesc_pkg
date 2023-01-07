@@ -175,6 +175,11 @@ typedef struct {
 	// Startup Clicks
 	unsigned int start_counter_clicks, start_counter_clicks_max, start_click_current;
 
+	// Odometer
+	float odo_timer;
+	int odometer_dirty;
+	uint64_t odometer;
+
 	// Debug values
 	int debug_render_1, debug_render_2;
 	int debug_sample_field, debug_sample_count, debug_sample_index;
@@ -290,6 +295,10 @@ static void configure(data *d) {
 	// Startup Clicks
 	d->start_click_current = d->balance_conf.startup_click_current;
 	d->start_counter_clicks_max = 3;
+
+	// Odometer
+	d->odometer_dirty = 0;
+	d->odometer = VESC_IF->mc_get_odometer();
 }
 
 static void reset_vars(data *d) {
@@ -349,6 +358,28 @@ static void reset_vars(data *d) {
 	d->wheelslip_timer = 0;
 	d->wheelslip_end_timer = 0;
 	d->traction_control = false;
+}
+
+/**
+ *	check_odometer: see if we need to write back the odometer during fault state
+ */
+static void check_odometer(data *d)
+{
+	// Make odometer persistent if we've gone 200m or more
+	if (d->odometer_dirty > 0) {
+		if (VESC_IF->mc_get_odometer() > d->odometer + 200) {
+			if (d->odometer_dirty == 1) {
+				// Wait 10 seconds before writing to avoid writing if immediately continuing to ride
+				d->odo_timer = d->current_time;
+				d->odometer_dirty++;
+			}
+			else if ((d->current_time - d->odo_timer) > 10) {
+				VESC_IF->store_backup_data();
+				d->odometer = VESC_IF->mc_get_odometer();
+				d->odometer_dirty = 0;
+			}
+		}
+	}
 }
 
 // Read ADCs and determine switch state
@@ -1081,6 +1112,7 @@ static void balance_thd(void *arg) {
 				break;
 			}
 			d->running = true;
+			d->odometer_dirty = 1;
 
 			//Initialize variables
 			if ((d->abs_erpm > 250) && (SIGN(d->torquetilt_filtered_current) != SIGN(d->erpm))) {
@@ -1259,6 +1291,7 @@ static void balance_thd(void *arg) {
 		case (FAULT_SWITCH_FULL):
 		case (FAULT_STARTUP):
 			d->running = false;
+			check_odometer(d);
 
 			// Check for valid startup position and switch state
 			if (fabsf(d->pitch_angle) < d->balance_conf.startup_pitch_tolerance &&
