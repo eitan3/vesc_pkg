@@ -180,6 +180,12 @@ typedef struct {
 	int odometer_dirty;
 	uint64_t odometer;
 
+	// Feature: RC Move (control via app while idle)
+	int rc_steps;
+	int rc_counter;
+	float rc_current_target;
+	float rc_current;
+
 	// Debug values
 	int debug_render_1, debug_render_2;
 	int debug_sample_field, debug_sample_count, debug_sample_index;
@@ -358,6 +364,10 @@ static void reset_vars(data *d) {
 	d->wheelslip_timer = 0;
 	d->wheelslip_end_timer = 0;
 	d->traction_control = false;
+
+	// RC Move:
+	d->rc_steps = 0;
+	d->rc_current = 0;
 }
 
 /**
@@ -993,6 +1003,30 @@ static void set_current(data *d, float current){
 	VESC_IF->mc_set_current(current);
 }
 
+/**
+ *  do_rc_move: perform motor movement while board is idle
+ */
+static void do_rc_move(data *d)
+{
+	if (d->rc_steps > 0) {
+		d->rc_current = d->rc_current * 0.95 + d->rc_current_target * 0.05;
+		if (d->abs_erpm > 800)
+			d->rc_current = 0;
+		set_current(d, d->rc_current);
+		d->rc_steps--;
+		d->rc_counter++;
+		if ((d->rc_counter == 500) && (d->rc_current_target > 2)) {
+			d->rc_current_target /= 2;
+		}
+	}
+	else {
+		d->rc_counter = 0;
+		d->rc_current = 0;
+		// Disable output
+		brake(d);
+	}
+}
+
 static void imu_ref_callback(float *acc, float *gyro, float *mag, float dt) {
 	data *d = (data*)ARG;
 	VESC_IF->ahrs_update_mahony_imu(gyro, acc, dt, &d->m_att_ref);
@@ -1150,12 +1184,15 @@ static void balance_thd(void *arg) {
 			// Do PID maths
 			d->proportional = d->setpoint - d->pitch_angle;
 
-			// Resume real PID maths
-			d->integral = d->integral + d->proportional;
-
-			// Apply I term Filter
-			if (d->balance_conf.ki_limit > 0 && fabsf(d->integral * d->balance_conf.ki) > d->balance_conf.ki_limit) {
-				d->integral = d->balance_conf.ki_limit / d->balance_conf.ki * SIGN(d->integral);
+			// Apply integral and limiter
+			if (d->abs_erpm > 250) {
+				d->integral = d->integral + d->proportional;
+				if (d->balance_conf.ki_limit > 0 && fabsf(d->integral * d->balance_conf.ki) > d->balance_conf.ki_limit) {
+					d->integral = d->balance_conf.ki_limit / d->balance_conf.ki * SIGN(d->integral);
+				}
+			}
+			else {
+				d->integral = d->integral * 0.99;
 			}
 
 			// Lowering the integral while reverse stop
@@ -1187,11 +1224,13 @@ static void balance_thd(void *arg) {
 			if (d->start_counter_clicks == 0) {
 				if (d->balance_conf.kp2 > 0) {
 					d->proportional2 = -d->gyro[1];
-					d->integral2 = d->integral2 + d->proportional2;
 
-					// Apply I term Filter
-					if (d->balance_conf.ki_limit2 > 0 && fabsf(d->integral2 * d->balance_conf.ki2) > d->balance_conf.ki_limit2) {
-						d->integral2 = d->balance_conf.ki_limit2 / d->balance_conf.ki2 * SIGN(d->integral2);
+					// Apply integral2 and limiter
+					if (d->abs_erpm > 250) {
+						d->integral2 = d->integral2 + d->proportional2;
+						if (d->balance_conf.ki_limit2 > 0 && fabsf(d->integral2 * d->balance_conf.ki2) > d->balance_conf.ki_limit2) {
+							d->integral2 = d->balance_conf.ki_limit2 / d->balance_conf.ki2 * SIGN(d->integral2);
+						}
 					}
 					d->integral2 = d->integral2 * d->balance_conf.ki2_decay;
 
@@ -1300,8 +1339,8 @@ static void balance_thd(void *arg) {
 				break;
 			}
 
-			// Disable output
-			brake(d);
+			// Set RC current or maintain brake current (and keep WDT happy!)
+			do_rc_move(d);
 			break;
 		}
 
@@ -1360,7 +1399,7 @@ static float app_balance_get_debug(int index) {
 static void send_realtime_data(data *d){
 	int32_t ind = 0;
 	uint8_t send_buffer[100];
-//	send_buffer[ind++] = COMM_GET_DECODED_BALANCE;
+	send_buffer[ind++] = 101;
 	buffer_append_uint16(send_buffer, d->running, &ind);
 	buffer_append_float32_auto(send_buffer, d->diff_time, &ind);
 	buffer_append_uint16(send_buffer, d->state, &ind);
@@ -1386,17 +1425,64 @@ static void send_realtime_data(data *d){
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 
+void cmd_rc_move(data *d, unsigned char *cfg)//int amps, int time)
+{
+	int ind = 0;
+	int direction = cfg[ind++];
+	int current = cfg[ind++];
+	int time = cfg[ind++];
+	int sum = cfg[ind++];
+	if (sum != time+current) {
+		current = 0;
+	}
+	else if (direction == 0) {
+		current = -current;
+	}
+
+	if (!d->running) {
+		d->rc_counter = 0;
+		if (current == 0) {
+			d->rc_steps = 1;
+			d->rc_current_target = 0;
+			d->rc_current = 0;
+		}
+		else {
+			d->rc_steps = time * 100;
+			d->rc_current_target = current / 10.0;
+			if (d->rc_current_target > 8) {
+				d->rc_current_target = 2;
+			}
+		}
+	}
+}
+
 // Handler for incoming app commands
 static void on_command_recieved(unsigned char *buffer, unsigned int len) {
 	data *d = (data*)ARG;
+	if(len < 2){
+		VESC_IF->printf("Balance OW: Missing Args\n");
+		return;
+	}
 
-	if(len > 0){
-		uint8_t command = buffer[0];
-		if(command == 0x01){
-			send_realtime_data(d);
-		}else{
-			VESC_IF->printf("Unknown command received %d", command);
+	uint8_t magicnr = buffer[0];
+	if (magicnr != 101) {
+		VESC_IF->printf("Balance OW: Wrong magic number %d\n", magicnr);
+		return;
+	}
+
+	uint8_t command = buffer[1];
+	if(command == 0x01){ // RT Data
+		send_realtime_data(d);
+	}
+	else if(command == 7){ // RC Move
+		if (len == 6) {
+			cmd_rc_move(d, &buffer[2]);
 		}
+		else {
+			VESC_IF->printf("Balance OW: Command length incorrect (%d)\n", len);
+		}
+	}else{
+		VESC_IF->printf("Unknown command received %d", command);
 	}
 }
 

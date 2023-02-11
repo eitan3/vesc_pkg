@@ -20,8 +20,9 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.3
-import Vedder.vesc.utility 1.0
+import Qt.labs.settings 1.0
 
+import Vedder.vesc.utility 1.0
 import Vedder.vesc.commands 1.0
 import Vedder.vesc.configparams 1.0
 
@@ -40,13 +41,15 @@ Item {
     property Commands mCommands: VescIf.commands()
     property ConfigParams mMcConf: VescIf.mcConfig()
     property ConfigParams mCustomConf: VescIf.customConfig(0)
-    
-    //property var parentTabBar: parent.tabBarItem
+    property var dialogParent: ApplicationWindow.overlay
     property var enableDlaCaliDumping: 0
     
+    Settings {
+        id: settingStorage
+    }
+    
     Component.onCompleted: {
-        //parentTabBar.visible = true
-        //parentTabBar.enabled = true
+        displaySavedTunes()
     }
 
     Component.onDestruction: {
@@ -57,173 +60,544 @@ Item {
         id: mLogWriter
     }
 
+    // Timer 1, 10hz for ble comms
     Timer {
         running: true
         repeat: true
         interval: 100
         
         onTriggered: {
-            var buffer = new ArrayBuffer(1)
+            var buffer = new ArrayBuffer(2)
             var dv = new DataView(buffer)
             var ind = 0
+            dv.setUint8(ind, 101); ind += 1; // Balance OW Package
             dv.setUint8(ind, 0x01); ind += 1
             mCommands.sendCustomAppData(buffer)
+
+            // Process Controls
+            if(reverseButton.pressed){
+                var buffer = new ArrayBuffer(6)
+                var dv = new DataView(buffer)
+                var ind = 0
+                dv.setUint8(ind, 101); ind += 1; // Balance OW Package
+                dv.setUint8(ind, 7); ind += 1; // Command ID: RC Move
+                dv.setUint8(ind, 0); ind += 1; // Direction
+                dv.setUint8(ind, movementStrengthSlider.value); ind += 1; // Current
+                dv.setUint8(ind, 1); ind += 1; // Time
+                dv.setUint8(ind, movementStrengthSlider.value + 1); ind += 1; // Sum = time + current
+                mCommands.sendCustomAppData(buffer)
+            }
+            if(forwardButton.pressed){
+                var buffer = new ArrayBuffer(6)
+                var dv = new DataView(buffer)
+                var ind = 0
+                dv.setUint8(ind, 101); ind += 1; // Balance OW Package
+                dv.setUint8(ind, 7); ind += 1; // Command ID: RC Move
+                dv.setUint8(ind, 1); ind += 1; // Direction
+                dv.setUint8(ind, movementStrengthSlider.value); ind += 1; // Current
+                dv.setUint8(ind, 1); ind += 1; // Time
+                dv.setUint8(ind, movementStrengthSlider.value + 1); ind += 1; // Sum = time + current
+                mCommands.sendCustomAppData(buffer)
+            }
         }
     }
 
     ColumnLayout {
+        id: root
         anchors.fill: parent
 
         TabBar {
-            id: localTabBar
-            // parent: parentTabBar
-            anchors.fill: parent
-            currentIndex: swipeView.currentIndex
-            
+            id: tabBar
+            currentIndex: 0
+            Layout.fillWidth: true
+            clip: true
+            enabled: true
+
             background: Rectangle {
                 opacity: 1
-                color: Utility.getAppHexColor("lightBackground")
+                color: {color = Utility.getAppHexColor("lightBackground")}
             }
-            
-            property int buttonWidth: Math.max(120, localTabBar.width / (rep.model.length))
+            property int buttons: 3
+            property int buttonWidth: 120
 
             Repeater {
-                id: rep
-                model: ["Info", "DLA"]
-                
+                model: ["Info", "Tunes", "Control", "DLA"]
                 TabButton {
                     text: modelData
-                    width: localTabBar.buttonWidth
-                }
-            }
-        }
-        
-        SwipeView {
-            id: swipeView
-            currentIndex: localTabBar.currentIndex
-            anchors.fill: parent
-            clip: true
-            
-            Page {
-                ColumnLayout {
-                    anchors.fill: parent
-
-                    ScrollView {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        clip: true
-                        
-                        ColumnLayout {
-                            Text {
-                                id: header1
-                                color: Utility.getAppHexColor("lightText")
-                                font.family: "DejaVu Sans Mono"
-                                Layout.margins: 0
-                                Layout.leftMargin: 0
-                                Layout.fillWidth: true
-                                text: "Balance OW App RT Data"
-                                font.underline: true
-                                font.weight: Font.Black
-                            }
-                            Text {
-                                id: rt_data_text
-                                color: Utility.getAppHexColor("lightText")
-                                font.family: "DejaVu Sans Mono"
-                                Layout.margins: 0
-                                Layout.leftMargin: 5
-                                Layout.preferredWidth: parent.width/3
-                                text: "App not connected"
-                            }
-
-                            Text {
-                                id: header2
-                                color: Utility.getAppHexColor("lightText")
-                                font.family: "DejaVu Sans Mono"
-                                Layout.margins: 0
-                                Layout.leftMargin: 0
-                                Layout.fillWidth: true
-                                text: "Setpoints"
-                                font.underline: true
-                                font.weight: Font.Black
-                            }
-                            Text {
-                                id: setpoints_text
-                                color: Utility.getAppHexColor("lightText")
-                                font.family: "DejaVu Sans Mono"
-                                Layout.margins: 0
-                                Layout.leftMargin: 5
-                                Layout.preferredWidth: parent.width/3
-                                text: "App not connected"
-                            }
-                        }
-                        
+                    onClicked:{
+                        stackLayout.currentIndex = index
                     }
                 }
             }
-            
-    //        Page {
-    //            ColumnLayout {
-    //                anchors.fill: parent
-    //
-    //                ScrollView {
-    //                    Layout.fillWidth: true
-    //                    Layout.fillHeight: true
-    //                    clip: true
-                        
-    //                    ParamList {
-    //                        id: params
-    //                        anchors.fill: parent
-    //                    }
-    //                }
-    //            }
-    //        }
-            
-            Page {
-                ColumnLayout {
-                    anchors.fill: parent
+        }
 
-                    ScrollView {
+        StackLayout {
+            id: stackLayout
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            // onCurrentIndexChanged: {tabBar.currentIndex = currentIndex
+
+
+            ColumnLayout {// RT Data Page
+                id: rtDataColumn
+
+                ScrollView {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                        
+                    ColumnLayout {
+                        Text {
+                            id: header1
+                            color: Utility.getAppHexColor("lightText")
+                            font.family: "DejaVu Sans Mono"
+                            Layout.margins: 0
+                            Layout.leftMargin: 0
+                            Layout.fillWidth: true
+                            text: "Balance OW App RT Data"
+                            font.underline: true
+                            font.weight: Font.Black
+                        }
+                        Text {
+                            id: rt_data_text
+                            color: Utility.getAppHexColor("lightText")
+                            font.family: "DejaVu Sans Mono"
+                            Layout.margins: 0
+                            Layout.leftMargin: 5
+                            Layout.preferredWidth: parent.width/3
+                            text: "App not connected"
+                        }
+
+                        Text {
+                            id: header2
+                            color: Utility.getAppHexColor("lightText")
+                            font.family: "DejaVu Sans Mono"
+                            Layout.margins: 0
+                            Layout.leftMargin: 0
+                            Layout.fillWidth: true
+                            text: "Setpoints"
+                            font.underline: true
+                            font.weight: Font.Black
+                        }
+                        Text {
+                            id: setpoints_text
+                            color: Utility.getAppHexColor("lightText")
+                            font.family: "DejaVu Sans Mono"
+                            Layout.margins: 0
+                            Layout.leftMargin: 5
+                            Layout.preferredWidth: parent.width/3
+                            text: "App not connected"
+                        }
+                    }                        
+                }
+            }
+            
+            ColumnLayout { // Tunes Page
+                id: tunesColumn
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Button {
+                        id: quicksave1Button
+                        text: "Quicksave 1"
+                        Layout.fillWidth: false
+                        onClicked: {
+                            quickload1Button.enabled = true
+                            settingStorage.setValue("ow_qs1_populated", "1")
+                            settingStorage.setValue("ow_qs1_kp", mCustomConf.getParamDouble("kp"))
+                            settingStorage.setValue("ow_qs1_kp_brake", mCustomConf.getParamDouble("kp_brake"))
+                            settingStorage.setValue("ow_qs1_ki", mCustomConf.getParamDouble("ki"))
+                            settingStorage.setValue("ow_qs1_kp2", mCustomConf.getParamDouble("kp2"))
+                            settingStorage.setValue("ow_qs1_ki2", mCustomConf.getParamDouble("ki2"))
+                            settingStorage.setValue("ow_qs1_ki2_decay", mCustomConf.getParamDouble("ki2_decay"))
+                            settingStorage.setValue("ow_qs1_pid_filtering_weight", mCustomConf.getParamDouble("pid_filtering_weight"))
+                            settingStorage.setValue("ow_qs1_pid_filtering_weight_brake", mCustomConf.getParamDouble("pid_filtering_weight_brake"))
+                            settingStorage.setValue("ow_qs1_pid_transition_speed_on", mCustomConf.getParamDouble("pid_transition_speed_on"))
+                            settingStorage.setValue("ow_qs1_pid_transition_speed_off", mCustomConf.getParamDouble("pid_transition_speed_off"))
+                            settingStorage.setValue("ow_qs1_fault_pitch", mCustomConf.getParamDouble("fault_pitch"))
+                            settingStorage.setValue("ow_qs1_fault_roll", mCustomConf.getParamDouble("fault_roll"))
+                            settingStorage.setValue("ow_qs1_fault_delay_pitch", mCustomConf.getParamInt("fault_delay_pitch"))
+                            settingStorage.setValue("ow_qs1_fault_delay_roll", mCustomConf.getParamInt("fault_delay_roll"))
+                            settingStorage.setValue("ow_qs1_tiltback_duty_angle", mCustomConf.getParamDouble("tiltback_duty_angle"))
+                            settingStorage.setValue("ow_qs1_tiltback_duty_speed", mCustomConf.getParamDouble("tiltback_duty_speed"))
+                            settingStorage.setValue("ow_qs1_tiltback_duty", mCustomConf.getParamDouble("tiltback_duty"))
+                            settingStorage.setValue("ow_qs1_tiltback_hv_angle", mCustomConf.getParamDouble("tiltback_hv_angle"))
+                            settingStorage.setValue("ow_qs1_tiltback_hv_speed", mCustomConf.getParamDouble("tiltback_hv_speed"))
+                            settingStorage.setValue("ow_qs1_tiltback_lv_angle", mCustomConf.getParamDouble("tiltback_lv_angle"))
+                            settingStorage.setValue("ow_qs1_tiltback_lv_speed", mCustomConf.getParamDouble("tiltback_lv_speed"))
+                            settingStorage.setValue("ow_qs1_tiltback_return_speed", mCustomConf.getParamDouble("tiltback_return_speed"))
+                            settingStorage.setValue("ow_qs1_tiltback_constant", mCustomConf.getParamDouble("tiltback_constant"))
+                            settingStorage.setValue("ow_qs1_tiltback_constant_erpm", mCustomConf.getParamInt("tiltback_constant_erpm"))
+                            settingStorage.setValue("ow_qs1_tiltback_variable", mCustomConf.getParamDouble("tiltback_variable"))
+                            settingStorage.setValue("ow_qs1_tiltback_variable_max", mCustomConf.getParamDouble("tiltback_variable_max"))
+                            settingStorage.setValue("ow_qs1_noseangling_speed", mCustomConf.getParamDouble("noseangling_speed"))
+                            settingStorage.setValue("ow_qs1_startup_pitch_tolerance", mCustomConf.getParamDouble("startup_pitch_tolerance"))
+                            settingStorage.setValue("ow_qs1_startup_roll_tolerance", mCustomConf.getParamDouble("startup_roll_tolerance"))
+                            settingStorage.setValue("ow_qs1_startup_speed", mCustomConf.getParamDouble("startup_speed"))
+                            settingStorage.setValue("ow_qs1_brake_current", mCustomConf.getParamDouble("brake_current"))
+                            settingStorage.setValue("ow_qs1_pid_brake_max_amp_change", mCustomConf.getParamDouble("pid_brake_max_amp_change"))
+                            settingStorage.setValue("ow_qs1_ki_limit", mCustomConf.getParamDouble("ki_limit"))
+                            settingStorage.setValue("ow_qs1_ki_limit2", mCustomConf.getParamDouble("ki_limit2"))
+                            settingStorage.setValue("ow_qs1_booster_angle", mCustomConf.getParamDouble("booster_angle"))
+                            settingStorage.setValue("ow_qs1_booster_ramp", mCustomConf.getParamDouble("booster_ramp"))
+                            settingStorage.setValue("ow_qs1_booster_current", mCustomConf.getParamDouble("booster_current"))
+                            settingStorage.setValue("ow_qs1_torquetilt_start_current", mCustomConf.getParamDouble("torquetilt_start_current"))
+                            settingStorage.setValue("ow_qs1_torquetilt_angle_limit", mCustomConf.getParamDouble("torquetilt_angle_limit"))
+                            settingStorage.setValue("ow_qs1_torquetilt_on_speed", mCustomConf.getParamDouble("torquetilt_on_speed"))
+                            settingStorage.setValue("ow_qs1_torquetilt_off_speed", mCustomConf.getParamDouble("torquetilt_off_speed"))
+                            settingStorage.setValue("ow_qs1_torquetilt_strength", mCustomConf.getParamDouble("torquetilt_strength"))
+                            settingStorage.setValue("ow_qs1_torquetilt_strength_regen", mCustomConf.getParamDouble("torquetilt_strength_regen"))
+                            settingStorage.setValue("ow_qs1_torquetilt_filter", mCustomConf.getParamDouble("torquetilt_filter"))
+                            // settingStorage.setValue("ow_qs1_mahony_kp", mCustomConf.getParamDouble("mahony_kp"))
+                            // settingStorage.setValue("ow_qs1_is_buzzer_enabled", mCustomConf.getParamBool("is_buzzer_enabled")?1:0)
+                            VescIf.emitStatusMessage("Quicksave 1 complete!", true)
+                        }
+                    }
+                    Button {
+                        id: quickload1Button
+                        text: "Quickload 1"
                         Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        clip: true
+                        enabled: settingStorage.value("ow_qs1_populated") == "1"
+                        onClicked: {
+                            mCustomConf.updateParamDouble("kp", settingStorage.value("ow_qs1_kp", 0))
+                            mCustomConf.updateParamDouble("kp_brake", settingStorage.value("ow_qs1_kp_brake", 0))
+                            mCustomConf.updateParamDouble("ki", settingStorage.value("ow_qs1_ki", 0))
+                            mCustomConf.updateParamDouble("kp2", settingStorage.value("ow_qs1_kp2", 0))
+                            mCustomConf.updateParamDouble("ki2", settingStorage.value("ow_qs1_ki2", 0))
+                            mCustomConf.updateParamDouble("ki2_decay", settingStorage.value("ow_qs1_ki2_decay", 0))
+                            mCustomConf.updateParamDouble("pid_filtering_weight", settingStorage.value("ow_qs1_pid_filtering_weight", 0))
+                            mCustomConf.updateParamDouble("pid_filtering_weight_brake", settingStorage.value("ow_qs1_pid_filtering_weight_brake", 0))
+                            mCustomConf.updateParamDouble("pid_transition_speed_on", settingStorage.value("ow_qs1_pid_transition_speed_on", 0))
+                            mCustomConf.updateParamDouble("pid_transition_speed_off", settingStorage.value("ow_qs1_pid_transition_speed_off", 0))
+                            mCustomConf.updateParamDouble("fault_pitch", settingStorage.value("ow_qs1_fault_pitch", 0))
+                            mCustomConf.updateParamDouble("fault_roll", settingStorage.value("ow_qs1_fault_roll", 0))
+                            mCustomConf.updateParamInt("fault_delay_pitch", settingStorage.value("ow_qs1_fault_delay_pitch", 0))
+                            mCustomConf.updateParamInt("fault_delay_roll", settingStorage.value("ow_qs1_fault_delay_roll", 0))
+                            mCustomConf.updateParamDouble("tiltback_duty_angle", settingStorage.value("ow_qs1_tiltback_duty_angle", 0))
+                            mCustomConf.updateParamDouble("tiltback_duty_speed", settingStorage.value("ow_qs1_tiltback_duty_speed", 0))
+                            mCustomConf.updateParamDouble("tiltback_duty", settingStorage.value("ow_qs1_tiltback_duty", 0))
+                            mCustomConf.updateParamDouble("tiltback_hv_angle", settingStorage.value("ow_qs1_tiltback_hv_angle", 0))
+                            mCustomConf.updateParamDouble("tiltback_hv_speed", settingStorage.value("ow_qs1_tiltback_hv_speed", 0))
+                            mCustomConf.updateParamDouble("tiltback_lv_angle", settingStorage.value("ow_qs1_tiltback_lv_angle", 0))
+                            mCustomConf.updateParamDouble("tiltback_lv_speed", settingStorage.value("ow_qs1_tiltback_lv_speed", 0))
+                            mCustomConf.updateParamDouble("tiltback_return_speed", settingStorage.value("ow_qs1_tiltback_return_speed", 0))
+                            mCustomConf.updateParamDouble("tiltback_constant", settingStorage.value("ow_qs1_tiltback_constant", 0))
+                            mCustomConf.updateParamInt("tiltback_constant_erpm", settingStorage.value("ow_qs1_tiltback_constant_erpm", 0))
+                            mCustomConf.updateParamDouble("tiltback_tiltback_variable", settingStorage.value("ow_qs1_tiltback_variable", 0))
+                            mCustomConf.updateParamDouble("tiltback_tiltback_variable_max", settingStorage.value("ow_qs1_tiltback_variable_max", 0))
+                            mCustomConf.updateParamDouble("noseangling_speed", settingStorage.value("ow_qs1_noseangling_speed", 0))
+                            mCustomConf.updateParamDouble("startup_pitch_tolerance", settingStorage.value("ow_qs1_startup_pitch_tolerance", 0))
+                            mCustomConf.updateParamDouble("startup_roll_tolerance", settingStorage.value("ow_qs1_startup_roll_tolerance", 0))
+                            mCustomConf.updateParamDouble("startup_speed", settingStorage.value("ow_qs1_startup_speed", 0))
+                            mCustomConf.updateParamDouble("brake_current", settingStorage.value("ow_qs1_brake_current", 0))
+                            mCustomConf.updateParamDouble("pid_brake_max_amp_change", settingStorage.value("ow_qs1_pid_brake_max_amp_change", 0))
+                            mCustomConf.updateParamDouble("ki_limit", settingStorage.value("ow_qs1_ki_limit", 0))
+                            mCustomConf.updateParamDouble("ki_limit2", settingStorage.value("ow_qs1_ki_limit2", 0))
+                            mCustomConf.updateParamDouble("booster_angle", settingStorage.value("ow_qs1_booster_angle", 0))
+                            mCustomConf.updateParamDouble("booster_ramp", settingStorage.value("ow_qs1_booster_ramp", 0))
+                            mCustomConf.updateParamDouble("booster_current", settingStorage.value("ow_qs1_booster_current", 0))
+                            mCustomConf.updateParamDouble("torquetilt_start_current", settingStorage.value("ow_qs1_torquetilt_start_current", 0))
+                            mCustomConf.updateParamDouble("torquetilt_angle_limit", settingStorage.value("ow_qs1_torquetilt_angle_limit", 0))
+                            mCustomConf.updateParamDouble("torquetilt_on_speed", settingStorage.value("ow_qs1_torquetilt_on_speed", 0))
+                            mCustomConf.updateParamDouble("torquetilt_off_speed", settingStorage.value("ow_qs1_torquetilt_off_speed", 0))
+                            mCustomConf.updateParamDouble("torquetilt_strength", settingStorage.value("ow_qs1_torquetilt_strength", 0))
+                            mCustomConf.updateParamDouble("torquetilt_strength_regen", settingStorage.value("ow_qs1_torquetilt_strength_regen", 0))
+                            mCustomConf.updateParamDouble("torquetilt_filter", settingStorage.value("ow_qs1_torquetilt_filter", 0))
+                            // mCustomConf.updateParamDouble("mahony_kp", settingStorage.value("ow_qs1_mahony_kp", 0))
+                            // mCustomConf.updateParamBool("is_buzzer_enabled", parseInt(settingStorage.value("ow_qs1_is_buzzer_enabled", 0)))
+                            mCommands.customConfigSet(0, mCustomConf)
+                        }
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Button {
+                        id: quicksave2Button
+                        text: "Quicksave 2"
+                        Layout.fillWidth: false
+                        onClicked: {
+                            quickload2Button.enabled = true
+                            settingStorage.setValue("ow_qs2_populated", "1")
+                            settingStorage.setValue("ow_qs2_kp", mCustomConf.getParamDouble("kp"))
+                            settingStorage.setValue("ow_qs2_kp_brake", mCustomConf.getParamDouble("kp_brake"))
+                            settingStorage.setValue("ow_qs2_ki", mCustomConf.getParamDouble("ki"))
+                            settingStorage.setValue("ow_qs2_kp2", mCustomConf.getParamDouble("kp2"))
+                            settingStorage.setValue("ow_qs2_ki2", mCustomConf.getParamDouble("ki2"))
+                            settingStorage.setValue("ow_qs2_ki2_decay", mCustomConf.getParamDouble("ki2_decay"))
+                            settingStorage.setValue("ow_qs2_pid_filtering_weight", mCustomConf.getParamDouble("pid_filtering_weight"))
+                            settingStorage.setValue("ow_qs2_pid_filtering_weight_brake", mCustomConf.getParamDouble("pid_filtering_weight_brake"))
+                            settingStorage.setValue("ow_qs2_pid_transition_speed_on", mCustomConf.getParamDouble("pid_transition_speed_on"))
+                            settingStorage.setValue("ow_qs2_pid_transition_speed_off", mCustomConf.getParamDouble("pid_transition_speed_off"))
+                            settingStorage.setValue("ow_qs2_fault_pitch", mCustomConf.getParamDouble("fault_pitch"))
+                            settingStorage.setValue("ow_qs2_fault_roll", mCustomConf.getParamDouble("fault_roll"))
+                            settingStorage.setValue("ow_qs2_fault_delay_pitch", mCustomConf.getParamInt("fault_delay_pitch"))
+                            settingStorage.setValue("ow_qs2_fault_delay_roll", mCustomConf.getParamInt("fault_delay_roll"))
+                            settingStorage.setValue("ow_qs2_tiltback_duty_angle", mCustomConf.getParamDouble("tiltback_duty_angle"))
+                            settingStorage.setValue("ow_qs2_tiltback_duty_speed", mCustomConf.getParamDouble("tiltback_duty_speed"))
+                            settingStorage.setValue("ow_qs2_tiltback_duty", mCustomConf.getParamDouble("tiltback_duty"))
+                            settingStorage.setValue("ow_qs2_tiltback_hv_angle", mCustomConf.getParamDouble("tiltback_hv_angle"))
+                            settingStorage.setValue("ow_qs2_tiltback_hv_speed", mCustomConf.getParamDouble("tiltback_hv_speed"))
+                            settingStorage.setValue("ow_qs2_tiltback_lv_angle", mCustomConf.getParamDouble("tiltback_lv_angle"))
+                            settingStorage.setValue("ow_qs2_tiltback_lv_speed", mCustomConf.getParamDouble("tiltback_lv_speed"))
+                            settingStorage.setValue("ow_qs2_tiltback_return_speed", mCustomConf.getParamDouble("tiltback_return_speed"))
+                            settingStorage.setValue("ow_qs2_tiltback_constant", mCustomConf.getParamDouble("tiltback_constant"))
+                            settingStorage.setValue("ow_qs2_tiltback_constant_erpm", mCustomConf.getParamInt("tiltback_constant_erpm"))
+                            settingStorage.setValue("ow_qs2_tiltback_variable", mCustomConf.getParamDouble("tiltback_variable"))
+                            settingStorage.setValue("ow_qs2_tiltback_variable_max", mCustomConf.getParamDouble("tiltback_variable_max"))
+                            settingStorage.setValue("ow_qs2_noseangling_speed", mCustomConf.getParamDouble("noseangling_speed"))
+                            settingStorage.setValue("ow_qs2_startup_pitch_tolerance", mCustomConf.getParamDouble("startup_pitch_tolerance"))
+                            settingStorage.setValue("ow_qs2_startup_roll_tolerance", mCustomConf.getParamDouble("startup_roll_tolerance"))
+                            settingStorage.setValue("ow_qs2_startup_speed", mCustomConf.getParamDouble("startup_speed"))
+                            settingStorage.setValue("ow_qs2_brake_current", mCustomConf.getParamDouble("brake_current"))
+                            settingStorage.setValue("ow_qs2_pid_brake_max_amp_change", mCustomConf.getParamDouble("pid_brake_max_amp_change"))
+                            settingStorage.setValue("ow_qs2_ki_limit", mCustomConf.getParamDouble("ki_limit"))
+                            settingStorage.setValue("ow_qs2_ki_limit2", mCustomConf.getParamDouble("ki_limit2"))
+                            settingStorage.setValue("ow_qs2_booster_angle", mCustomConf.getParamDouble("booster_angle"))
+                            settingStorage.setValue("ow_qs2_booster_ramp", mCustomConf.getParamDouble("booster_ramp"))
+                            settingStorage.setValue("ow_qs2_booster_current", mCustomConf.getParamDouble("booster_current"))
+                            settingStorage.setValue("ow_qs2_torquetilt_start_current", mCustomConf.getParamDouble("torquetilt_start_current"))
+                            settingStorage.setValue("ow_qs2_torquetilt_angle_limit", mCustomConf.getParamDouble("torquetilt_angle_limit"))
+                            settingStorage.setValue("ow_qs2_torquetilt_on_speed", mCustomConf.getParamDouble("torquetilt_on_speed"))
+                            settingStorage.setValue("ow_qs2_torquetilt_off_speed", mCustomConf.getParamDouble("torquetilt_off_speed"))
+                            settingStorage.setValue("ow_qs2_torquetilt_strength", mCustomConf.getParamDouble("torquetilt_strength"))
+                            settingStorage.setValue("ow_qs2_torquetilt_strength_regen", mCustomConf.getParamDouble("torquetilt_strength_regen"))
+                            settingStorage.setValue("ow_qs2_torquetilt_filter", mCustomConf.getParamDouble("torquetilt_filter"))
+                            // settingStorage.setValue("ow_qs2_mahony_kp", mCustomConf.getParamDouble("mahony_kp"))
+                            // settingStorage.setValue("ow_qs2_is_buzzer_enabled", mCustomConf.getParamBool("is_buzzer_enabled")?1:0)
+                            VescIf.emitStatusMessage("Quicksave 2 complete!", true)
+                        }
+                    }
+                    Button {
+                        id: quickload2Button
+                        text: "Quickload 2"
+                        Layout.fillWidth: true
+                        enabled: settingStorage.value("ow_qs2_populated") == "1"
+                        onClicked: {
+                            mCustomConf.updateParamDouble("kp", settingStorage.value("ow_qs2_kp", 0))
+                            mCustomConf.updateParamDouble("kp_brake", settingStorage.value("ow_qs2_kp_brake", 0))
+                            mCustomConf.updateParamDouble("ki", settingStorage.value("ow_qs2_ki", 0))
+                            mCustomConf.updateParamDouble("kp2", settingStorage.value("ow_qs2_kp2", 0))
+                            mCustomConf.updateParamDouble("ki2", settingStorage.value("ow_qs2_ki2", 0))
+                            mCustomConf.updateParamDouble("ki2_decay", settingStorage.value("ow_qs2_ki2_decay", 0))
+                            mCustomConf.updateParamDouble("pid_filtering_weight", settingStorage.value("ow_qs2_pid_filtering_weight", 0))
+                            mCustomConf.updateParamDouble("pid_filtering_weight_brake", settingStorage.value("ow_qs2_pid_filtering_weight_brake", 0))
+                            mCustomConf.updateParamDouble("pid_transition_speed_on", settingStorage.value("ow_qs2_pid_transition_speed_on", 0))
+                            mCustomConf.updateParamDouble("pid_transition_speed_off", settingStorage.value("ow_qs2_pid_transition_speed_off", 0))
+                            mCustomConf.updateParamDouble("fault_pitch", settingStorage.value("ow_qs2_fault_pitch", 0))
+                            mCustomConf.updateParamDouble("fault_roll", settingStorage.value("ow_qs2_fault_roll", 0))
+                            mCustomConf.updateParamInt("fault_delay_pitch", settingStorage.value("ow_qs2_fault_delay_pitch", 0))
+                            mCustomConf.updateParamInt("fault_delay_roll", settingStorage.value("ow_qs2_fault_delay_roll", 0))
+                            mCustomConf.updateParamDouble("tiltback_duty_angle", settingStorage.value("ow_qs2_tiltback_duty_angle", 0))
+                            mCustomConf.updateParamDouble("tiltback_duty_speed", settingStorage.value("ow_qs2_tiltback_duty_speed", 0))
+                            mCustomConf.updateParamDouble("tiltback_duty", settingStorage.value("ow_qs2_tiltback_duty", 0))
+                            mCustomConf.updateParamDouble("tiltback_hv_angle", settingStorage.value("ow_qs2_tiltback_hv_angle", 0))
+                            mCustomConf.updateParamDouble("tiltback_hv_speed", settingStorage.value("ow_qs2_tiltback_hv_speed", 0))
+                            mCustomConf.updateParamDouble("tiltback_lv_angle", settingStorage.value("ow_qs2_tiltback_lv_angle", 0))
+                            mCustomConf.updateParamDouble("tiltback_lv_speed", settingStorage.value("ow_qs2_tiltback_lv_speed", 0))
+                            mCustomConf.updateParamDouble("tiltback_return_speed", settingStorage.value("ow_qs2_tiltback_return_speed", 0))
+                            mCustomConf.updateParamDouble("tiltback_constant", settingStorage.value("ow_qs2_tiltback_constant", 0))
+                            mCustomConf.updateParamInt("tiltback_constant_erpm", settingStorage.value("ow_qs2_tiltback_constant_erpm", 0))
+                            mCustomConf.updateParamDouble("tiltback_tiltback_variable", settingStorage.value("ow_qs2_tiltback_variable", 0))
+                            mCustomConf.updateParamDouble("tiltback_tiltback_variable_max", settingStorage.value("ow_qs2_tiltback_variable_max", 0))
+                            mCustomConf.updateParamDouble("noseangling_speed", settingStorage.value("ow_qs2_noseangling_speed", 0))
+                            mCustomConf.updateParamDouble("startup_pitch_tolerance", settingStorage.value("ow_qs2_startup_pitch_tolerance", 0))
+                            mCustomConf.updateParamDouble("startup_roll_tolerance", settingStorage.value("ow_qs2_startup_roll_tolerance", 0))
+                            mCustomConf.updateParamDouble("startup_speed", settingStorage.value("ow_qs2_startup_speed", 0))
+                            mCustomConf.updateParamDouble("brake_current", settingStorage.value("ow_qs2_brake_current", 0))
+                            mCustomConf.updateParamDouble("pid_brake_max_amp_change", settingStorage.value("ow_qs2_pid_brake_max_amp_change", 0))
+                            mCustomConf.updateParamDouble("ki_limit", settingStorage.value("ow_qs2_ki_limit", 0))
+                            mCustomConf.updateParamDouble("ki_limit2", settingStorage.value("ow_qs2_ki_limit2", 0))
+                            mCustomConf.updateParamDouble("booster_angle", settingStorage.value("ow_qs2_booster_angle", 0))
+                            mCustomConf.updateParamDouble("booster_ramp", settingStorage.value("ow_qs2_booster_ramp", 0))
+                            mCustomConf.updateParamDouble("booster_current", settingStorage.value("ow_qs2_booster_current", 0))
+                            mCustomConf.updateParamDouble("torquetilt_start_current", settingStorage.value("ow_qs2_torquetilt_start_current", 0))
+                            mCustomConf.updateParamDouble("torquetilt_angle_limit", settingStorage.value("ow_qs2_torquetilt_angle_limit", 0))
+                            mCustomConf.updateParamDouble("torquetilt_on_speed", settingStorage.value("ow_qs2_torquetilt_on_speed", 0))
+                            mCustomConf.updateParamDouble("torquetilt_off_speed", settingStorage.value("ow_qs2_torquetilt_off_speed", 0))
+                            mCustomConf.updateParamDouble("torquetilt_strength", settingStorage.value("ow_qs2_torquetilt_strength", 0))
+                            mCustomConf.updateParamDouble("torquetilt_strength_regen", settingStorage.value("ow_qs2_torquetilt_strength_regen", 0))
+                            mCustomConf.updateParamDouble("torquetilt_filter", settingStorage.value("ow_qs2_torquetilt_filter", 0))
+                            // mCustomConf.updateParamDouble("mahony_kp", settingStorage.value("ow_qs2_mahony_kp", 0))
+                            // mCustomConf.updateParamBool("is_buzzer_enabled", parseInt(settingStorage.value("ow_qs2_is_buzzer_enabled", 0)))
+                            mCommands.customConfigSet(0, mCustomConf)
+                        }
+                    }
+                }
+
+                Button {
+                    id: downloadTunesButton
+                    text: "Refresh Tune Archive"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        downloadTunesButton.text = "Downloading Tunes..."
+                        downloadedTunesModel.clear()
+                        var http = new XMLHttpRequest()
+                        var url = "https://docs.google.com/spreadsheets/d/1bPH-gviDFyXvxx5s2cjs5BWTjqJOmRqB4Xi59itxbJ8/export?format=csv";
+                        http.open("GET", url, true);
+                        http.send()
+                        http.onreadystatechange = function() {
+                            if (http.readyState == 4) {
+                                if (http.status == 200) {
+                                    settingStorage.setValue("tunes_csv", http.responseText)
+                                    displaySavedTunes()
+                                    downloadTunesButton.text = "Refresh Tune Archive"
+                                    VescIf.emitStatusMessage("Tune Download Success", true)
+                                } else {
+                                    downloadTunesButton.text = "Refresh Tune Archive"
+                                    VescIf.emitStatusMessage("Tune Download Failed: " + http.status, false)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ListView {
+                    id: downloadedTunesList
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    spacing: 5
+
+                    model: ListModel {
+                        id: downloadedTunesModel
+                    }
+                    delegate: Button {
+                        text: tune._name
+                        width: parent.width
+                        onClicked: {
+                            applyDownloadedTune(tune)
+                        }
+                    }
+                }
+
+            }
+
+            ColumnLayout { // Controls Page
+                id: controlsColumn
+                Layout.fillWidth: true
+
+                // Movement controls
+                Text {
+                    id: movementControlsHeader
+                    color: Utility.getAppHexColor("lightText")
+                    font.family: "DejaVu Sans Mono"
+                    Layout.margins: 0
+                    Layout.leftMargin: 0
+                    Layout.fillWidth: true
+                    text: "Movement Controls"
+                    font.underline: true
+                    font.weight: Font.Black
+                    font.pointSize: 14
+                }
+                RowLayout {
+                    id: movementStrength
+                    Layout.fillWidth: true
+
+                    Text {
+                        id: movementStrengthLabel
+                        color: Utility.getAppHexColor("lightText")
+                        font.family: "DejaVu Sans Mono"
+                        text: "Strength:"
+                    }
+                    Slider {
+                        id: movementStrengthSlider
+                        from: 20
+                        value: 40
+                        to: 80
+                        stepSize: 1
+                    }
+                }
+                RowLayout {
+                    id: movementControls
+                    Layout.fillWidth: true
+                    Button {
+                        id: reverseButton
+                        text: "Reverse"
+                        Layout.fillWidth: true
+                    }
+                    Button {
+                        id: forwardButton
+                        text: "Forward"
+                        Layout.fillWidth: true
+                    }
+                }
+                
+                // Tilt controls
+                Text {
+                    id: tiltControlsHeader
+                    color: Utility.getAppHexColor("lightText")
+                    font.family: "DejaVu Sans Mono"
+                    Layout.margins: 0
+                    Layout.leftMargin: 0
+                    Layout.fillWidth: true
+                    text: "Tilt Controls"
+                    font.underline: true
+                    font.weight: Font.Black
+                    font.pointSize: 14
+                }
+                 CheckBox {
+                    id: tiltEnabled
+                    checked: false
+                    text: qsTr("Enabled (Overrides Remote)")
+                    onClicked: {
+                        if(tiltEnabled.checked && mCustomConf.getParamEnum("inputtilt_remote_type", 0) != 1){
+                            mCustomConf.updateParamEnum("inputtilt_remote_type", 1)
+                            mCommands.customConfigSet(0, mCustomConf)
+                        }
+                    }
+                }
+                Slider {
+                    id: tiltSlider
+                    from: -1
+                    value: 0
+                    to: 1
+                    Layout.fillWidth: true
+                }
+            }
+
+            ColumnLayout { // DLA Page
+                anchors.fill: parent
+
+                ScrollView {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                        
+                    ColumnLayout {
+                        id: gaugeColumn
+                        anchors.fill: parent
                         
                         ColumnLayout {
-                            id: gaugeColumn
-                            anchors.fill: parent
-                            
-                            ColumnLayout {
+                            Layout.fillWidth: true
+                            Text{
+                                text: "Dla calibration file name"
+                            }
+
+                            TextInput {
+                                id: csvFilePath
+                                text: "/storage/emulated/0/Documents/logs/"
+                            }
+
+                            TextInput {
+                                id: csvFileName
+                                text: "log_file.csv"
+                            }
+
+                            Button {
+                                id: toggleDlaCalibDump
+                                text: "Null"
                                 Layout.fillWidth: true
-
-                                Text{
-                                    text: "Dla calibration file name"
-                                }
-
-                                TextInput {
-                                    id: csvFilePath
-                                    text: "/storage/emulated/0/Documents/logs/"
-                                }
-
-                                TextInput {
-                                    id: csvFileName
-                                    text: "log_file.csv"
-                                }
-
-                                Button {
-                                    id: toggleDlaCalibDump
-                                    text: "Null"
-                                    Layout.fillWidth: true
-                                    
-                                    onClicked: {
-                                        if (enableDlaCaliDumping == 0) {
-                                            enableDlaCaliDumping = 1
-                                            mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
-                                            mLogWriter.writeToLogFile("Brake,ERPM,Acceleration,Current,PID,Current Pid Ratio\n")
-                                        }
-                                        else {
-                                            enableDlaCaliDumping = 0
-                                            // Close file when done to ensure that all data is written.
-                                            mLogWriter.closeLogFile()
-                                        }
+                                
+                                onClicked: {
+                                    if (enableDlaCaliDumping == 0) {
+                                        enableDlaCaliDumping = 1
+                                        mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
+                                        mLogWriter.writeToLogFile("Brake,ERPM,Acceleration,Current,PID,Current Pid Ratio\n")
+                                    }
+                                    else {
+                                        enableDlaCaliDumping = 0
+                                        // Close file when done to ensure that all data is written.
+                                        mLogWriter.closeLogFile()
                                     }
                                 }
                             }
@@ -231,6 +605,7 @@ Item {
                     }
                 }
             }
+                
         }
     }
     
@@ -244,6 +619,11 @@ Item {
             // Ints and floats can be extracted like this from the data
             var dv = new DataView(data, 0)
             var ind = 0
+            var magicnr = dv.getUint8(ind); ind += 1;
+            if (magicnr != 101) {
+                return;
+            }
+
             var running = dv.getInt16(ind); ind += 2;
             var time_diff = dv.getFloat32(ind); ind += 4;
             var state = dv.getInt16(ind); ind += 2;
@@ -349,6 +729,80 @@ Item {
                                             motor_current.toFixed(2) + "," + pid_value.toFixed(2) + "," + 
                                             (motor_current / pid_value).toFixed(4) + "\n")
                 }
+            }
+        }
+    }
+
+    function displaySavedTunes(){
+        var tunes = parseCSV(settingStorage.value("tunes_csv", ""))
+        for(var i in tunes){
+            downloadedTunesModel.append({"tune": tunes[i]})
+        }
+    }
+
+    function parseCSV(csv){
+        var result = [];
+        var columns = csv.split("\n");
+        var numRows = columns[0].split(",").length;
+        VescIf.emitStatusMessage("column 0: " + columns[0], true);
+        VescIf.emitStatusMessage("column 1: " + columns[1], true);
+        VescIf.emitStatusMessage("num columns: " + columns.length, true);
+        
+        for (var r = 0; r < numRows - 1; r++)
+        {
+            result.push({});
+        }
+
+        for (var c = 0; c < columns.length; c++)
+        {
+            var row = columns[c].split(",");
+            var header = row[0];
+            for(var r = 1; r < row.length; r++){
+                if(row[r]){
+                    result[r - 1][header] = row[r];
+                }
+            }
+        }
+
+        return result;
+    }
+
+    function parseCSV_old(csv){
+        var lines=csv.split("\n");
+        var result = [];
+        var headers=lines[0].split(",");
+
+        for(var i=1;i<lines.length;i++){
+            var obj = {};
+            var currentline=lines[i].split(",");
+            for(var j=0;j<headers.length;j++){
+                if(currentline[j]){
+                    obj[headers[j]] = currentline[j];
+                }
+            }
+            VescIf.emitStatusMessage(obj, true)
+            result.push(obj);
+        }
+
+        VescIf.emitStatusMessage("Num Tunes: " + result.length, true)
+        return result; //JavaScript object
+        // return JSON.stringify(result); //JSON
+    }
+
+    function applyDownloadedTune(tune){
+        for (const [key, value] of Object.entries(tune)) {
+            if(!key.startsWith("_")){
+                var actualKey
+                if(key.startsWith("double_")){
+                    mCustomConf.updateParamDouble(key.substring(7), value)
+                }else if(key.startsWith("int_")){
+                    mCustomConf.updateParamInt(key.substring(4), value)
+                }else if(key.startsWith("bool_")){
+                    mCustomConf.updateParamBool(key.substring(5), parseInt(value))
+                }else if(key.startsWith("enum_")){
+                    mCustomConf.updateParamEnum(key.substring(5), value)
+                }
+                mCommands.customConfigSet(0, mCustomConf)
             }
         }
     }

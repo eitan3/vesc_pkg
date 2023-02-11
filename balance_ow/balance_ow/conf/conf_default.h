@@ -5,12 +5,12 @@
 
 // Pitch Throttle
 #ifndef APPCONF_BALANCE_KP
-#define APPCONF_BALANCE_KP 25
+#define APPCONF_BALANCE_KP 20
 #endif
 
 // Pitch Throttle (Braking)
 #ifndef APPCONF_BALANCE_KP_BRAKE
-#define APPCONF_BALANCE_KP_BRAKE 45
+#define APPCONF_BALANCE_KP_BRAKE 35
 #endif
 
 // Pitch Throttle Integral
@@ -30,7 +30,7 @@
 
 // Gyro Throttle Integral Decay
 #ifndef APPCONF_BALANCE_KI2_DECAY
-#define APPCONF_BALANCE_KI2_DECAY 0
+#define APPCONF_BALANCE_KI2_DECAY 0.75
 #endif
 
 // PID Filtering Weight
@@ -40,7 +40,7 @@
 
 // PID Filtering Weight (Braking)
 #ifndef APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE
-#define APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE 1
+#define APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE 0.8
 #endif
 
 // PID Transition Speed (On)
@@ -208,14 +208,14 @@
 #define APPCONF_BALANCE_PID_BRAKE_MAX_AMPS 15
 #endif
 
-// Angle I term limit
+// Pitch Throttle Integral Limit
 #ifndef APPCONF_BALANCE_KI_LIMIT
 #define APPCONF_BALANCE_KI_LIMIT 30
 #endif
 
-// Rate I term limit
+// Gyro Throttle Integral Limit
 #ifndef APPCONF_BALANCE_KI_LIMIT2
-#define APPCONF_BALANCE_KI_LIMIT2 10
+#define APPCONF_BALANCE_KI_LIMIT2 5
 #endif
 
 // Start Angle
