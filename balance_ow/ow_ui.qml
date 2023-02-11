@@ -744,10 +744,6 @@ Item {
         var result = [];
         var columns = csv.split("\n");
         var numRows = columns[0].split(",").length;
-        VescIf.emitStatusMessage("column 0: " + columns[0], true);
-        VescIf.emitStatusMessage("column 1: " + columns[1], true);
-        VescIf.emitStatusMessage("num columns: " + columns.length, true);
-        
         for (var r = 0; r < numRows - 1; r++)
         {
             result.push({});
