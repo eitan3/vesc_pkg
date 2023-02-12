@@ -59,6 +59,10 @@ Item {
     LogWriter {
         id: mLogWriter
     }
+    
+    LogWriter {
+        id: mArchiveCsvWriter
+    }
 
     // Timer 1, 10hz for ble comms
     Timer {
@@ -248,8 +252,27 @@ Item {
                             settingStorage.setValue("ow_qs1_torquetilt_strength", mCustomConf.getParamDouble("torquetilt_strength"))
                             settingStorage.setValue("ow_qs1_torquetilt_strength_regen", mCustomConf.getParamDouble("torquetilt_strength_regen"))
                             settingStorage.setValue("ow_qs1_torquetilt_filter", mCustomConf.getParamDouble("torquetilt_filter"))
+                            settingStorage.setValue("ow_qs1_turntilt_mixing_mode", mCustomConf.getParamEnum("turntilt_mixing_mode"))
+                            settingStorage.setValue("ow_qs1_roll_turntilt_weight", mCustomConf.getParamDouble("roll_turntilt_weight"))
+                            settingStorage.setValue("ow_qs1_roll_turntilt_strength", mCustomConf.getParamDouble("roll_turntilt_strength"))
+                            settingStorage.setValue("ow_qs1_roll_turntilt_angle_limit", mCustomConf.getParamDouble("roll_turntilt_angle_limit"))
+                            settingStorage.setValue("ow_qs1_roll_turntilt_start_angle", mCustomConf.getParamDouble("roll_turntilt_start_angle"))
+                            settingStorage.setValue("ow_qs1_roll_turntilt_start_erpm", mCustomConf.getParamInt("roll_turntilt_start_erpm"))
+                            settingStorage.setValue("ow_qs1_roll_turntilt_speed", mCustomConf.getParamDouble("roll_turntilt_speed"))
+                            settingStorage.setValue("ow_qs1_roll_turntilt_erpm_boost", mCustomConf.getParamInt("roll_turntilt_erpm_boost"))
+                            settingStorage.setValue("ow_qs1_roll_turntilt_erpm_boost_end", mCustomConf.getParamInt("roll_turntilt_erpm_boost_end"))
+                            settingStorage.setValue("ow_qs1_yaw_turntilt_weight", mCustomConf.getParamDouble("yaw_turntilt_weight"))
+                            settingStorage.setValue("ow_qs1_yaw_turntilt_strength", mCustomConf.getParamDouble("yaw_turntilt_strength"))
+                            settingStorage.setValue("ow_qs1_yaw_turntilt_angle_limit", mCustomConf.getParamDouble("yaw_turntilt_angle_limit"))
+                            settingStorage.setValue("ow_qs1_yaw_turntilt_start_angle", mCustomConf.getParamDouble("yaw_turntilt_start_angle"))
+                            settingStorage.setValue("ow_qs1_yaw_turntilt_start_erpm", mCustomConf.getParamInt("yaw_turntilt_start_erpm"))
+                            settingStorage.setValue("ow_qs1_yaw_turntilt_speed", mCustomConf.getParamDouble("yaw_turntilt_speed"))
+                            settingStorage.setValue("ow_qs1_yaw_turntilt_erpm_boost", mCustomConf.getParamInt("yaw_turntilt_erpm_boost"))
+                            settingStorage.setValue("ow_qs1_yaw_turntilt_erpm_boost_end", mCustomConf.getParamInt("yaw_turntilt_erpm_boost_end"))
+                            settingStorage.setValue("ow_qs1_yaw_turntilt_aggregate", mCustomConf.getParamInt("yaw_turntilt_aggregate"))
+                            settingStorage.setValue("ow_qs1_enable_traction_control", mCustomConf.getParamBool("enable_traction_control")?1:0)
+                            settingStorage.setValue("ow_qs1_traction_control_mul_by", mCustomConf.getParamDouble("traction_control_mul_by"))
                             // settingStorage.setValue("ow_qs1_mahony_kp", mCustomConf.getParamDouble("mahony_kp"))
-                            // settingStorage.setValue("ow_qs1_is_buzzer_enabled", mCustomConf.getParamBool("is_buzzer_enabled")?1:0)
                             VescIf.emitStatusMessage("Quicksave 1 complete!", true)
                         }
                     }
@@ -283,8 +306,8 @@ Item {
                             mCustomConf.updateParamDouble("tiltback_return_speed", settingStorage.value("ow_qs1_tiltback_return_speed", 0))
                             mCustomConf.updateParamDouble("tiltback_constant", settingStorage.value("ow_qs1_tiltback_constant", 0))
                             mCustomConf.updateParamInt("tiltback_constant_erpm", settingStorage.value("ow_qs1_tiltback_constant_erpm", 0))
-                            mCustomConf.updateParamDouble("tiltback_tiltback_variable", settingStorage.value("ow_qs1_tiltback_variable", 0))
-                            mCustomConf.updateParamDouble("tiltback_tiltback_variable_max", settingStorage.value("ow_qs1_tiltback_variable_max", 0))
+                            mCustomConf.updateParamDouble("tiltback_variable", settingStorage.value("ow_qs1_tiltback_variable", 0))
+                            mCustomConf.updateParamDouble("tiltback_variable_max", settingStorage.value("ow_qs1_tiltback_variable_max", 0))
                             mCustomConf.updateParamDouble("noseangling_speed", settingStorage.value("ow_qs1_noseangling_speed", 0))
                             mCustomConf.updateParamDouble("startup_pitch_tolerance", settingStorage.value("ow_qs1_startup_pitch_tolerance", 0))
                             mCustomConf.updateParamDouble("startup_roll_tolerance", settingStorage.value("ow_qs1_startup_roll_tolerance", 0))
@@ -303,8 +326,27 @@ Item {
                             mCustomConf.updateParamDouble("torquetilt_strength", settingStorage.value("ow_qs1_torquetilt_strength", 0))
                             mCustomConf.updateParamDouble("torquetilt_strength_regen", settingStorage.value("ow_qs1_torquetilt_strength_regen", 0))
                             mCustomConf.updateParamDouble("torquetilt_filter", settingStorage.value("ow_qs1_torquetilt_filter", 0))
+                            mCustomConf.updateParamEnum("turntilt_mixing_mode", settingStorage.value("ow_qs1_turntilt_mixing_mode", 0))
+                            mCustomConf.updateParamDouble("roll_turntilt_weight", settingStorage.value("ow_qs1_roll_turntilt_weight", 0))
+                            mCustomConf.updateParamDouble("roll_turntilt_strength", settingStorage.value("ow_qs1_roll_turntilt_strength", 0))
+                            mCustomConf.updateParamDouble("roll_turntilt_angle_limit", settingStorage.value("ow_qs1_roll_turntilt_angle_limit", 0))
+                            mCustomConf.updateParamDouble("roll_turntilt_start_angle", settingStorage.value("ow_qs1_roll_turntilt_start_angle", 0))
+                            mCustomConf.updateParamInt("roll_turntilt_start_erpm", settingStorage.value("ow_qs1_roll_turntilt_start_erpm", 0))
+                            mCustomConf.updateParamDouble("roll_turntilt_speed", settingStorage.value("ow_qs1_roll_turntilt_speed", 0))
+                            mCustomConf.updateParamInt("roll_turntilt_erpm_boost", settingStorage.value("ow_qs1_roll_turntilt_erpm_boost", 0))
+                            mCustomConf.updateParamInt("roll_turntilt_erpm_boost_end", settingStorage.value("ow_qs1_roll_turntilt_erpm_boost_end", 0))
+                            mCustomConf.updateParamDouble("yaw_turntilt_weight", settingStorage.value("ow_qs1_yaw_turntilt_weight", 0))
+                            mCustomConf.updateParamDouble("yaw_turntilt_strength", settingStorage.value("ow_qs1_yaw_turntilt_strength", 0))
+                            mCustomConf.updateParamDouble("yaw_turntilt_angle_limit", settingStorage.value("ow_qs1_yaw_turntilt_angle_limit", 0))
+                            mCustomConf.updateParamDouble("yaw_turntilt_start_angle", settingStorage.value("ow_qs1_yaw_turntilt_start_angle", 0))
+                            mCustomConf.updateParamInt("yaw_turntilt_start_erpm", settingStorage.value("ow_qs1_yaw_turntilt_start_erpm", 0))
+                            mCustomConf.updateParamDouble("yaw_turntilt_speed", settingStorage.value("ow_qs1_yaw_turntilt_speed", 0))
+                            mCustomConf.updateParamInt("yaw_turntilt_erpm_boost", settingStorage.value("ow_qs1_yaw_turntilt_erpm_boost", 0))
+                            mCustomConf.updateParamInt("yaw_turntilt_erpm_boost_end", settingStorage.value("ow_qs1_yaw_turntilt_erpm_boost_end", 0))
+                            mCustomConf.updateParamInt("yaw_turntilt_aggregate", settingStorage.value("ow_qs1_yaw_turntilt_aggregate", 0))
+                            mCustomConf.updateParamBool("enable_traction_control", parseInt(settingStorage.value("ow_qs1_enable_traction_control", 0)))
+                            mCustomConf.updateParamDouble("traction_control_mul_by", settingStorage.value("ow_qs1_traction_control_mul_by", 0))
                             // mCustomConf.updateParamDouble("mahony_kp", settingStorage.value("ow_qs1_mahony_kp", 0))
-                            // mCustomConf.updateParamBool("is_buzzer_enabled", parseInt(settingStorage.value("ow_qs1_is_buzzer_enabled", 0)))
                             mCommands.customConfigSet(0, mCustomConf)
                         }
                     }
@@ -363,8 +405,27 @@ Item {
                             settingStorage.setValue("ow_qs2_torquetilt_strength", mCustomConf.getParamDouble("torquetilt_strength"))
                             settingStorage.setValue("ow_qs2_torquetilt_strength_regen", mCustomConf.getParamDouble("torquetilt_strength_regen"))
                             settingStorage.setValue("ow_qs2_torquetilt_filter", mCustomConf.getParamDouble("torquetilt_filter"))
+                            settingStorage.setValue("ow_qs2_turntilt_mixing_mode", mCustomConf.getParamEnum("turntilt_mixing_mode"))
+                            settingStorage.setValue("ow_qs2_roll_turntilt_weight", mCustomConf.getParamDouble("roll_turntilt_weight"))
+                            settingStorage.setValue("ow_qs2_roll_turntilt_strength", mCustomConf.getParamDouble("roll_turntilt_strength"))
+                            settingStorage.setValue("ow_qs2_roll_turntilt_angle_limit", mCustomConf.getParamDouble("roll_turntilt_angle_limit"))
+                            settingStorage.setValue("ow_qs2_roll_turntilt_start_angle", mCustomConf.getParamDouble("roll_turntilt_start_angle"))
+                            settingStorage.setValue("ow_qs2_roll_turntilt_start_erpm", mCustomConf.getParamInt("roll_turntilt_start_erpm"))
+                            settingStorage.setValue("ow_qs2_roll_turntilt_speed", mCustomConf.getParamDouble("roll_turntilt_speed"))
+                            settingStorage.setValue("ow_qs2_roll_turntilt_erpm_boost", mCustomConf.getParamInt("roll_turntilt_erpm_boost"))
+                            settingStorage.setValue("ow_qs2_roll_turntilt_erpm_boost_end", mCustomConf.getParamInt("roll_turntilt_erpm_boost_end"))
+                            settingStorage.setValue("ow_qs2_yaw_turntilt_weight", mCustomConf.getParamDouble("yaw_turntilt_weight"))
+                            settingStorage.setValue("ow_qs2_yaw_turntilt_strength", mCustomConf.getParamDouble("yaw_turntilt_strength"))
+                            settingStorage.setValue("ow_qs2_yaw_turntilt_angle_limit", mCustomConf.getParamDouble("yaw_turntilt_angle_limit"))
+                            settingStorage.setValue("ow_qs2_yaw_turntilt_start_angle", mCustomConf.getParamDouble("yaw_turntilt_start_angle"))
+                            settingStorage.setValue("ow_qs2_yaw_turntilt_start_erpm", mCustomConf.getParamInt("yaw_turntilt_start_erpm"))
+                            settingStorage.setValue("ow_qs2_yaw_turntilt_speed", mCustomConf.getParamDouble("yaw_turntilt_speed"))
+                            settingStorage.setValue("ow_qs2_yaw_turntilt_erpm_boost", mCustomConf.getParamInt("yaw_turntilt_erpm_boost"))
+                            settingStorage.setValue("ow_qs2_yaw_turntilt_erpm_boost_end", mCustomConf.getParamInt("yaw_turntilt_erpm_boost_end"))
+                            settingStorage.setValue("ow_qs2_yaw_turntilt_aggregate", mCustomConf.getParamInt("yaw_turntilt_aggregate"))
+                            settingStorage.setValue("ow_qs2_enable_traction_control", mCustomConf.getParamBool("enable_traction_control")?1:0)
+                            settingStorage.setValue("ow_qs2_traction_control_mul_by", mCustomConf.getParamDouble("traction_control_mul_by"))
                             // settingStorage.setValue("ow_qs2_mahony_kp", mCustomConf.getParamDouble("mahony_kp"))
-                            // settingStorage.setValue("ow_qs2_is_buzzer_enabled", mCustomConf.getParamBool("is_buzzer_enabled")?1:0)
                             VescIf.emitStatusMessage("Quicksave 2 complete!", true)
                         }
                     }
@@ -398,8 +459,8 @@ Item {
                             mCustomConf.updateParamDouble("tiltback_return_speed", settingStorage.value("ow_qs2_tiltback_return_speed", 0))
                             mCustomConf.updateParamDouble("tiltback_constant", settingStorage.value("ow_qs2_tiltback_constant", 0))
                             mCustomConf.updateParamInt("tiltback_constant_erpm", settingStorage.value("ow_qs2_tiltback_constant_erpm", 0))
-                            mCustomConf.updateParamDouble("tiltback_tiltback_variable", settingStorage.value("ow_qs2_tiltback_variable", 0))
-                            mCustomConf.updateParamDouble("tiltback_tiltback_variable_max", settingStorage.value("ow_qs2_tiltback_variable_max", 0))
+                            mCustomConf.updateParamDouble("tiltback_variable", settingStorage.value("ow_qs2_tiltback_variable", 0))
+                            mCustomConf.updateParamDouble("tiltback_variable_max", settingStorage.value("ow_qs2_tiltback_variable_max", 0))
                             mCustomConf.updateParamDouble("noseangling_speed", settingStorage.value("ow_qs2_noseangling_speed", 0))
                             mCustomConf.updateParamDouble("startup_pitch_tolerance", settingStorage.value("ow_qs2_startup_pitch_tolerance", 0))
                             mCustomConf.updateParamDouble("startup_roll_tolerance", settingStorage.value("ow_qs2_startup_roll_tolerance", 0))
@@ -418,10 +479,92 @@ Item {
                             mCustomConf.updateParamDouble("torquetilt_strength", settingStorage.value("ow_qs2_torquetilt_strength", 0))
                             mCustomConf.updateParamDouble("torquetilt_strength_regen", settingStorage.value("ow_qs2_torquetilt_strength_regen", 0))
                             mCustomConf.updateParamDouble("torquetilt_filter", settingStorage.value("ow_qs2_torquetilt_filter", 0))
+                            mCustomConf.updateParamEnum("turntilt_mixing_mode", settingStorage.value("ow_qs2_turntilt_mixing_mode", 0))
+                            mCustomConf.updateParamDouble("roll_turntilt_weight", settingStorage.value("ow_qs2_roll_turntilt_weight", 0))
+                            mCustomConf.updateParamDouble("roll_turntilt_strength", settingStorage.value("ow_qs2_roll_turntilt_strength", 0))
+                            mCustomConf.updateParamDouble("roll_turntilt_angle_limit", settingStorage.value("ow_qs2_roll_turntilt_angle_limit", 0))
+                            mCustomConf.updateParamDouble("roll_turntilt_start_angle", settingStorage.value("ow_qs2_roll_turntilt_start_angle", 0))
+                            mCustomConf.updateParamInt("roll_turntilt_start_erpm", settingStorage.value("ow_qs2_roll_turntilt_start_erpm", 0))
+                            mCustomConf.updateParamDouble("roll_turntilt_speed", settingStorage.value("ow_qs2_roll_turntilt_speed", 0))
+                            mCustomConf.updateParamInt("roll_turntilt_erpm_boost", settingStorage.value("ow_qs2_roll_turntilt_erpm_boost", 0))
+                            mCustomConf.updateParamInt("roll_turntilt_erpm_boost_end", settingStorage.value("ow_qs2_roll_turntilt_erpm_boost_end", 0))
+                            mCustomConf.updateParamDouble("yaw_turntilt_weight", settingStorage.value("ow_qs2_yaw_turntilt_weight", 0))
+                            mCustomConf.updateParamDouble("yaw_turntilt_strength", settingStorage.value("ow_qs2_yaw_turntilt_strength", 0))
+                            mCustomConf.updateParamDouble("yaw_turntilt_angle_limit", settingStorage.value("ow_qs2_yaw_turntilt_angle_limit", 0))
+                            mCustomConf.updateParamDouble("yaw_turntilt_start_angle", settingStorage.value("ow_qs2_yaw_turntilt_start_angle", 0))
+                            mCustomConf.updateParamInt("yaw_turntilt_start_erpm", settingStorage.value("ow_qs2_yaw_turntilt_start_erpm", 0))
+                            mCustomConf.updateParamDouble("yaw_turntilt_speed", settingStorage.value("ow_qs2_yaw_turntilt_speed", 0))
+                            mCustomConf.updateParamInt("yaw_turntilt_erpm_boost", settingStorage.value("ow_qs2_yaw_turntilt_erpm_boost", 0))
+                            mCustomConf.updateParamInt("yaw_turntilt_erpm_boost_end", settingStorage.value("ow_qs2_yaw_turntilt_erpm_boost_end", 0))
+                            mCustomConf.updateParamInt("yaw_turntilt_aggregate", settingStorage.value("ow_qs2_yaw_turntilt_aggregate", 0))
+                            mCustomConf.updateParamBool("enable_traction_control", parseInt(settingStorage.value("ow_qs2_enable_traction_control", 0)))
+                            mCustomConf.updateParamDouble("traction_control_mul_by", settingStorage.value("ow_qs2_traction_control_mul_by", 0))
                             // mCustomConf.updateParamDouble("mahony_kp", settingStorage.value("ow_qs2_mahony_kp", 0))
-                            // mCustomConf.updateParamBool("is_buzzer_enabled", parseInt(settingStorage.value("ow_qs2_is_buzzer_enabled", 0)))
                             mCommands.customConfigSet(0, mCustomConf)
                         }
+                    }
+                }
+
+                TextInput {
+                    id: cloudCsvFileName
+                    text: "CloudCsvFile_.csv"
+                }
+
+                Button {
+                    id: exportBtn
+                    text: "Export CSV to archive"
+                    Layout.fillWidth: true
+                    onClicked: {
+                        var arr = [["double", "kp"], ["double", "kp_brake"], ["double", "ki"], ["double", "kp2"], ["double", "ki2"],
+                                   ["double", "ki2_decay"], ["double", "pid_filtering_weight"], ["double", "pid_filtering_weight_brake"],
+                                   ["double", "pid_transition_speed_on"], ["double", "pid_transition_speed_off"], ["double", "fault_pitch"],
+                                   ["double", "fault_roll"], ["int", "fault_delay_pitch"], ["int", "fault_delay_roll"], ["double", "tiltback_duty_angle"],
+                                   ["double", "tiltback_duty_speed"], ["double", "tiltback_duty"], ["double", "tiltback_hv_angle"],
+                                   ["double", "tiltback_hv_speed"], ["double", "tiltback_lv_angle"], ["double", "tiltback_lv_speed"],
+                                   ["double", "tiltback_return_speed"], ["double", "tiltback_constant"], ["int", "tiltback_constant_erpm"],
+                                   ["double", "tiltback_variable"], ["double", "tiltback_variable_max"], ["double", "noseangling_speed"],
+                                   ["double", "startup_pitch_tolerance"], ["double", "startup_roll_tolerance"], ["double", "startup_speed"],
+                                   ["double", "brake_current"], ["double", "pid_brake_max_amp_change"], ["double", "ki_limit"], ["double", "ki_limit2"],
+                                   ["double", "booster_angle"], ["double", "booster_ramp"], ["double", "booster_current"], ["double", "torquetilt_start_current"],
+                                   ["double", "torquetilt_angle_limit"], ["double", "torquetilt_on_speed"], ["double", "torquetilt_off_speed"],
+                                   ["double", "torquetilt_strength"], ["double", "torquetilt_strength_regen"], ["double", "torquetilt_filter"],
+                                   ["enum", "turntilt_mixing_mode"], ["double", "roll_turntilt_weight"], ["double", "roll_turntilt_strength"], 
+                                   ["double", "roll_turntilt_angle_limit"], ["double", "roll_turntilt_start_angle"], ["int", "roll_turntilt_start_erpm"],
+                                   ["double", "roll_turntilt_speed"], ["int", "roll_turntilt_erpm_boost"], ["int", "roll_turntilt_erpm_boost_end"],
+                                   ["double", "yaw_turntilt_weight"], ["double", "yaw_turntilt_strength"], ["double", "yaw_turntilt_angle_limit"],
+                                   ["double", "yaw_turntilt_start_angle"], ["int", "yaw_turntilt_start_erpm"], ["double", "yaw_turntilt_speed"],
+                                   ["int", "yaw_turntilt_erpm_boost"], ["int", "yaw_turntilt_erpm_boost_end"],
+                                   ["int", "yaw_turntilt_aggregate"], ["bool", "enable_traction_control"], ["double", "traction_control_mul_by"]]
+                        
+                        mArchiveCsvWriter.openLogFileFromPath(cloudCsvFileName.text, "/storage/emulated/0/Documents/logs/")
+                        mArchiveCsvWriter.writeToLogFile("_name,")
+                        for(var i in arr) {
+                            mArchiveCsvWriter.writeToLogFile(arr[i][0] + "_" + arr[i][1])
+                            if (i < arr.length - 1) {
+                                mArchiveCsvWriter.writeToLogFile(",")
+                            }
+                        }
+                        mArchiveCsvWriter.writeToLogFile("\n")
+                        mArchiveCsvWriter.writeToLogFile("Name,")
+                        for(var i in arr) {
+                            if (arr[i][0] == "double") {
+                                mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamDouble(arr[i][1]))
+                            }
+                            else if (arr[i][0] == "int") {
+                                mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamInt(arr[i][1]))
+                            }
+                            else if (arr[i][0] == "bool") {
+                                mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamBool(arr[i][1]))
+                            }
+                            else if (arr[i][0] == "enum") {
+                                mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamEnum(arr[i][1]))
+                            }
+                            if (i < arr.length - 1) {
+                                mArchiveCsvWriter.writeToLogFile(",")
+                            }
+                        }
+                        mArchiveCsvWriter.closeLogFile()
+                        VescIf.emitStatusMessage("Save Csv Complete!", true)
                     }
                 }
 
@@ -433,7 +576,7 @@ Item {
                         downloadTunesButton.text = "Downloading Tunes..."
                         downloadedTunesModel.clear()
                         var http = new XMLHttpRequest()
-                        var url = "https://docs.google.com/spreadsheets/d/1bPH-gviDFyXvxx5s2cjs5BWTjqJOmRqB4Xi59itxbJ8/export?format=csv";
+                        var url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSIjzVhEx4VuMrkdj28TURG0gQv1-2HGH8ISZiRtTzs_gqY5uEwKmckzb9m7fNPzuKXZeJisi2IW6FG/pub?output=csv";
                         http.open("GET", url, true);
                         http.send()
                         http.onreadystatechange = function() {
@@ -741,30 +884,7 @@ Item {
     }
 
     function parseCSV(csv){
-        var result = [];
-        var columns = csv.split("\n");
-        var numRows = columns[0].split(",").length;
-        for (var r = 0; r < numRows - 1; r++)
-        {
-            result.push({});
-        }
-
-        for (var c = 0; c < columns.length; c++)
-        {
-            var row = columns[c].split(",");
-            var header = row[0];
-            for(var r = 1; r < row.length; r++){
-                if(row[r]){
-                    result[r - 1][header] = row[r];
-                }
-            }
-        }
-
-        return result;
-    }
-
-    function parseCSV_old(csv){
-        var lines=csv.split("\n");
+        var lines=csv.split("\r\n");
         var result = [];
         var headers=lines[0].split(",");
 
@@ -776,30 +896,36 @@ Item {
                     obj[headers[j]] = currentline[j];
                 }
             }
-            VescIf.emitStatusMessage(obj, true)
             result.push(obj);
         }
 
-        VescIf.emitStatusMessage("Num Tunes: " + result.length, true)
-        return result; //JavaScript object
         // return JSON.stringify(result); //JSON
+        return result; //JavaScript object
     }
 
     function applyDownloadedTune(tune){
+        var found = false;
         for (const [key, value] of Object.entries(tune)) {
             if(!key.startsWith("_")){
-                var actualKey
+                VescIf.emitStatusMessage(key + ": " + value, true);
                 if(key.startsWith("double_")){
-                    mCustomConf.updateParamDouble(key.substring(7), value)
+                    mCustomConf.updateParamDouble(key.substring(7), value);
+                    found = true;
                 }else if(key.startsWith("int_")){
-                    mCustomConf.updateParamInt(key.substring(4), value)
+                    mCustomConf.updateParamInt(key.substring(4), value);
+                    found = true;
                 }else if(key.startsWith("bool_")){
-                    mCustomConf.updateParamBool(key.substring(5), parseInt(value))
+                    mCustomConf.updateParamBool(key.substring(5), parseInt(value));
+                    found = true;
                 }else if(key.startsWith("enum_")){
-                    mCustomConf.updateParamEnum(key.substring(5), value)
+                    mCustomConf.updateParamEnum(key.substring(5), value);
+                    found = true;
                 }
-                mCommands.customConfigSet(0, mCustomConf)
             }
+        }
+
+        if (found) {
+            mCommands.customConfigSet(0, mCustomConf)
         }
     }
 }
