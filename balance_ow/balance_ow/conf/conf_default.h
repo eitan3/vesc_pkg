@@ -5,10 +5,10 @@
 
 // Pitch Throttle
 #ifndef APPCONF_BALANCE_KP
-#define APPCONF_BALANCE_KP 20
+#define APPCONF_BALANCE_KP 5
 #endif
 
-// Pitch Throttle (Braking)
+// Pitch Throttle (B)
 #ifndef APPCONF_BALANCE_KP_BRAKE
 #define APPCONF_BALANCE_KP_BRAKE 35
 #endif
@@ -20,37 +20,37 @@
 
 // Gyro Throttle
 #ifndef APPCONF_BALANCE_KP2
-#define APPCONF_BALANCE_KP2 0.6
+#define APPCONF_BALANCE_KP2 0.5
 #endif
 
 // Gyro Throttle Integral
 #ifndef APPCONF_BALANCE_KI2
-#define APPCONF_BALANCE_KI2 0
+#define APPCONF_BALANCE_KI2 0.0025
 #endif
 
 // Gyro Throttle Integral Decay
 #ifndef APPCONF_BALANCE_KI2_DECAY
-#define APPCONF_BALANCE_KI2_DECAY 0.75
+#define APPCONF_BALANCE_KI2_DECAY 0.85
 #endif
 
 // PID Filtering Weight
 #ifndef APPCONF_BALANCE_PID_FILTERING_WEIGHT
-#define APPCONF_BALANCE_PID_FILTERING_WEIGHT 0.5
+#define APPCONF_BALANCE_PID_FILTERING_WEIGHT 0.2
 #endif
 
-// PID Filtering Weight (Braking)
+// PID Filtering Weight (B)
 #ifndef APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE
 #define APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE 0.8
 #endif
 
-// PID Transition Speed (On)
+// Normal 2 Brake Speed
 #ifndef APPCONF_BALANCE_PID_TRANSITION_SPEED_ON
-#define APPCONF_BALANCE_PID_TRANSITION_SPEED_ON 5
+#define APPCONF_BALANCE_PID_TRANSITION_SPEED_ON 0.005
 #endif
 
-// PID Transition Speed (Off)
+// Brake 2 Normal Speed
 #ifndef APPCONF_BALANCE_PID_TRANSITION_SPEED_OFF
-#define APPCONF_BALANCE_PID_TRANSITION_SPEED_OFF 1
+#define APPCONF_BALANCE_PID_TRANSITION_SPEED_OFF 0.025
 #endif
 
 // Loop Hertz
@@ -70,12 +70,12 @@
 
 // ADC1 Switch Voltage
 #ifndef APPCONF_BALANCE_FAULT_ADC1
-#define APPCONF_BALANCE_FAULT_ADC1 2.8
+#define APPCONF_BALANCE_FAULT_ADC1 2.5
 #endif
 
 // ADC2 Switch Voltage
 #ifndef APPCONF_BALANCE_FAULT_ADC2
-#define APPCONF_BALANCE_FAULT_ADC2 2.8
+#define APPCONF_BALANCE_FAULT_ADC2 2.5
 #endif
 
 // Pitch Fault Delay
@@ -205,12 +205,12 @@
 
 // Brake max amp change
 #ifndef APPCONF_BALANCE_PID_BRAKE_MAX_AMPS
-#define APPCONF_BALANCE_PID_BRAKE_MAX_AMPS 15
+#define APPCONF_BALANCE_PID_BRAKE_MAX_AMPS 20
 #endif
 
 // Pitch Throttle Integral Limit
 #ifndef APPCONF_BALANCE_KI_LIMIT
-#define APPCONF_BALANCE_KI_LIMIT 30
+#define APPCONF_BALANCE_KI_LIMIT 35
 #endif
 
 // Gyro Throttle Integral Limit
@@ -400,7 +400,7 @@
 
 // Enable Traction Control
 #ifndef APPCONF_BALANCE_ENABLE_TRACTION_CONTROL
-#define APPCONF_BALANCE_ENABLE_TRACTION_CONTROL 1
+#define APPCONF_BALANCE_ENABLE_TRACTION_CONTROL 0
 #endif
 
 // Decrease Current While TC
