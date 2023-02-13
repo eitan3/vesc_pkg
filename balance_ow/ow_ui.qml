@@ -208,16 +208,16 @@ Item {
                         onClicked: {
                             quickload1Button.enabled = true
                             settingStorage.setValue("ow_qs1_populated", "1")
-                            settingStorage.setValue("ow_qs1_kp", mCustomConf.getParamDouble("kp"))
-                            settingStorage.setValue("ow_qs1_kp_brake", mCustomConf.getParamDouble("kp_brake"))
-                            settingStorage.setValue("ow_qs1_ki", mCustomConf.getParamDouble("ki"))
-                            settingStorage.setValue("ow_qs1_kp2", mCustomConf.getParamDouble("kp2"))
-                            settingStorage.setValue("ow_qs1_ki2", mCustomConf.getParamDouble("ki2"))
-                            settingStorage.setValue("ow_qs1_ki2_decay", mCustomConf.getParamDouble("ki2_decay"))
-                            settingStorage.setValue("ow_qs1_pid_filtering_weight", mCustomConf.getParamDouble("pid_filtering_weight"))
-                            settingStorage.setValue("ow_qs1_pid_filtering_weight_brake", mCustomConf.getParamDouble("pid_filtering_weight_brake"))
-                            settingStorage.setValue("ow_qs1_pid_transition_speed_on", mCustomConf.getParamDouble("pid_transition_speed_on"))
-                            settingStorage.setValue("ow_qs1_pid_transition_speed_off", mCustomConf.getParamDouble("pid_transition_speed_off"))
+                            settingStorage.setValue("ow_qs1_pitch_th", mCustomConf.getParamDouble("pitch_th"))
+                            settingStorage.setValue("ow_qs1_pitch_th_b", mCustomConf.getParamDouble("pitch_th_b"))
+                            settingStorage.setValue("ow_qs1_pitch_thi", mCustomConf.getParamDouble("pitch_thi"))
+                            settingStorage.setValue("ow_qs1_gyro_th", mCustomConf.getParamDouble("gyro_th"))
+                            settingStorage.setValue("ow_qs1_gyro_thi", mCustomConf.getParamDouble("gyro_thi"))
+                            settingStorage.setValue("ow_qs1_gyro_thi_decay", mCustomConf.getParamDouble("gyro_thi_decay"))
+                            settingStorage.setValue("ow_qs1_current_out_filter", mCustomConf.getParamDouble("current_out_filter"))
+                            settingStorage.setValue("ow_qs1_current_out_filter_b", mCustomConf.getParamDouble("current_out_filter_b"))
+                            settingStorage.setValue("ow_qs1_normal_to_brake_speed", mCustomConf.getParamDouble("normal_to_brake_speed"))
+                            settingStorage.setValue("ow_qs1_brake_to_normal_speed", mCustomConf.getParamDouble("brake_to_normal_speed"))
                             settingStorage.setValue("ow_qs1_fault_pitch", mCustomConf.getParamDouble("fault_pitch"))
                             settingStorage.setValue("ow_qs1_fault_roll", mCustomConf.getParamDouble("fault_roll"))
                             settingStorage.setValue("ow_qs1_fault_delay_pitch", mCustomConf.getParamInt("fault_delay_pitch"))
@@ -239,7 +239,7 @@ Item {
                             settingStorage.setValue("ow_qs1_startup_roll_tolerance", mCustomConf.getParamDouble("startup_roll_tolerance"))
                             settingStorage.setValue("ow_qs1_startup_speed", mCustomConf.getParamDouble("startup_speed"))
                             settingStorage.setValue("ow_qs1_brake_current", mCustomConf.getParamDouble("brake_current"))
-                            settingStorage.setValue("ow_qs1_pid_brake_max_amp_change", mCustomConf.getParamDouble("pid_brake_max_amp_change"))
+                            settingStorage.setValue("ow_qs1_brake_max_amp_change", mCustomConf.getParamDouble("brake_max_amp_change"))
                             settingStorage.setValue("ow_qs1_ki_limit", mCustomConf.getParamDouble("ki_limit"))
                             settingStorage.setValue("ow_qs1_ki_limit2", mCustomConf.getParamDouble("ki_limit2"))
                             settingStorage.setValue("ow_qs1_booster_angle", mCustomConf.getParamDouble("booster_angle"))
@@ -282,16 +282,16 @@ Item {
                         Layout.fillWidth: true
                         enabled: settingStorage.value("ow_qs1_populated") == "1"
                         onClicked: {
-                            mCustomConf.updateParamDouble("kp", settingStorage.value("ow_qs1_kp", 0))
-                            mCustomConf.updateParamDouble("kp_brake", settingStorage.value("ow_qs1_kp_brake", 0))
-                            mCustomConf.updateParamDouble("ki", settingStorage.value("ow_qs1_ki", 0))
-                            mCustomConf.updateParamDouble("kp2", settingStorage.value("ow_qs1_kp2", 0))
-                            mCustomConf.updateParamDouble("ki2", settingStorage.value("ow_qs1_ki2", 0))
-                            mCustomConf.updateParamDouble("ki2_decay", settingStorage.value("ow_qs1_ki2_decay", 0))
-                            mCustomConf.updateParamDouble("pid_filtering_weight", settingStorage.value("ow_qs1_pid_filtering_weight", 0))
-                            mCustomConf.updateParamDouble("pid_filtering_weight_brake", settingStorage.value("ow_qs1_pid_filtering_weight_brake", 0))
-                            mCustomConf.updateParamDouble("pid_transition_speed_on", settingStorage.value("ow_qs1_pid_transition_speed_on", 0))
-                            mCustomConf.updateParamDouble("pid_transition_speed_off", settingStorage.value("ow_qs1_pid_transition_speed_off", 0))
+                            mCustomConf.updateParamDouble("pitch_th", settingStorage.value("ow_qs1_pitch_th", 0))
+                            mCustomConf.updateParamDouble("pitch_th_b", settingStorage.value("ow_qs1_pitch_th_b", 0))
+                            mCustomConf.updateParamDouble("pitch_thi", settingStorage.value("ow_qs1_pitch_thi", 0))
+                            mCustomConf.updateParamDouble("gyro_th", settingStorage.value("ow_qs1_gyro_th", 0))
+                            mCustomConf.updateParamDouble("gyro_thi", settingStorage.value("ow_qs1_gyro_thi", 0))
+                            mCustomConf.updateParamDouble("gyro_thi_decay", settingStorage.value("ow_qs1_gyro_thi_decay", 0))
+                            mCustomConf.updateParamDouble("current_out_filter", settingStorage.value("ow_qs1_current_out_filter", 0))
+                            mCustomConf.updateParamDouble("current_out_filter_b", settingStorage.value("ow_qs1_current_out_filter_b", 0))
+                            mCustomConf.updateParamDouble("normal_to_brake_speed", settingStorage.value("ow_qs1_normal_to_brake_speed", 0))
+                            mCustomConf.updateParamDouble("brake_to_normal_speed", settingStorage.value("ow_qs1_brake_to_normal_speed", 0))
                             mCustomConf.updateParamDouble("fault_pitch", settingStorage.value("ow_qs1_fault_pitch", 0))
                             mCustomConf.updateParamDouble("fault_roll", settingStorage.value("ow_qs1_fault_roll", 0))
                             mCustomConf.updateParamInt("fault_delay_pitch", settingStorage.value("ow_qs1_fault_delay_pitch", 0))
@@ -313,7 +313,7 @@ Item {
                             mCustomConf.updateParamDouble("startup_roll_tolerance", settingStorage.value("ow_qs1_startup_roll_tolerance", 0))
                             mCustomConf.updateParamDouble("startup_speed", settingStorage.value("ow_qs1_startup_speed", 0))
                             mCustomConf.updateParamDouble("brake_current", settingStorage.value("ow_qs1_brake_current", 0))
-                            mCustomConf.updateParamDouble("pid_brake_max_amp_change", settingStorage.value("ow_qs1_pid_brake_max_amp_change", 0))
+                            mCustomConf.updateParamDouble("brake_max_amp_change", settingStorage.value("ow_qs1_brake_max_amp_change", 0))
                             mCustomConf.updateParamDouble("ki_limit", settingStorage.value("ow_qs1_ki_limit", 0))
                             mCustomConf.updateParamDouble("ki_limit2", settingStorage.value("ow_qs1_ki_limit2", 0))
                             mCustomConf.updateParamDouble("booster_angle", settingStorage.value("ow_qs1_booster_angle", 0))
@@ -361,16 +361,16 @@ Item {
                         onClicked: {
                             quickload2Button.enabled = true
                             settingStorage.setValue("ow_qs2_populated", "1")
-                            settingStorage.setValue("ow_qs2_kp", mCustomConf.getParamDouble("kp"))
-                            settingStorage.setValue("ow_qs2_kp_brake", mCustomConf.getParamDouble("kp_brake"))
-                            settingStorage.setValue("ow_qs2_ki", mCustomConf.getParamDouble("ki"))
-                            settingStorage.setValue("ow_qs2_kp2", mCustomConf.getParamDouble("kp2"))
-                            settingStorage.setValue("ow_qs2_ki2", mCustomConf.getParamDouble("ki2"))
-                            settingStorage.setValue("ow_qs2_ki2_decay", mCustomConf.getParamDouble("ki2_decay"))
-                            settingStorage.setValue("ow_qs2_pid_filtering_weight", mCustomConf.getParamDouble("pid_filtering_weight"))
-                            settingStorage.setValue("ow_qs2_pid_filtering_weight_brake", mCustomConf.getParamDouble("pid_filtering_weight_brake"))
-                            settingStorage.setValue("ow_qs2_pid_transition_speed_on", mCustomConf.getParamDouble("pid_transition_speed_on"))
-                            settingStorage.setValue("ow_qs2_pid_transition_speed_off", mCustomConf.getParamDouble("pid_transition_speed_off"))
+                            settingStorage.setValue("ow_qs2_pitch_th", mCustomConf.getParamDouble("pitch_th"))
+                            settingStorage.setValue("ow_qs2_pitch_th_b", mCustomConf.getParamDouble("pitch_th_b"))
+                            settingStorage.setValue("ow_qs2_pitch_thi", mCustomConf.getParamDouble("pitch_thi"))
+                            settingStorage.setValue("ow_qs2_gyro_th", mCustomConf.getParamDouble("gyro_th"))
+                            settingStorage.setValue("ow_qs2_gyro_thi", mCustomConf.getParamDouble("gyro_thi"))
+                            settingStorage.setValue("ow_qs2_gyro_thi_decay", mCustomConf.getParamDouble("gyro_thi_decay"))
+                            settingStorage.setValue("ow_qs2_current_out_filter", mCustomConf.getParamDouble("current_out_filter"))
+                            settingStorage.setValue("ow_qs2_current_out_filter_b", mCustomConf.getParamDouble("current_out_filter_b"))
+                            settingStorage.setValue("ow_qs2_normal_to_brake_speed", mCustomConf.getParamDouble("normal_to_brake_speed"))
+                            settingStorage.setValue("ow_qs2_brake_to_normal_speed", mCustomConf.getParamDouble("brake_to_normal_speed"))
                             settingStorage.setValue("ow_qs2_fault_pitch", mCustomConf.getParamDouble("fault_pitch"))
                             settingStorage.setValue("ow_qs2_fault_roll", mCustomConf.getParamDouble("fault_roll"))
                             settingStorage.setValue("ow_qs2_fault_delay_pitch", mCustomConf.getParamInt("fault_delay_pitch"))
@@ -392,7 +392,7 @@ Item {
                             settingStorage.setValue("ow_qs2_startup_roll_tolerance", mCustomConf.getParamDouble("startup_roll_tolerance"))
                             settingStorage.setValue("ow_qs2_startup_speed", mCustomConf.getParamDouble("startup_speed"))
                             settingStorage.setValue("ow_qs2_brake_current", mCustomConf.getParamDouble("brake_current"))
-                            settingStorage.setValue("ow_qs2_pid_brake_max_amp_change", mCustomConf.getParamDouble("pid_brake_max_amp_change"))
+                            settingStorage.setValue("ow_qs2_brake_max_amp_change", mCustomConf.getParamDouble("brake_max_amp_change"))
                             settingStorage.setValue("ow_qs2_ki_limit", mCustomConf.getParamDouble("ki_limit"))
                             settingStorage.setValue("ow_qs2_ki_limit2", mCustomConf.getParamDouble("ki_limit2"))
                             settingStorage.setValue("ow_qs2_booster_angle", mCustomConf.getParamDouble("booster_angle"))
@@ -435,16 +435,16 @@ Item {
                         Layout.fillWidth: true
                         enabled: settingStorage.value("ow_qs2_populated") == "1"
                         onClicked: {
-                            mCustomConf.updateParamDouble("kp", settingStorage.value("ow_qs2_kp", 0))
-                            mCustomConf.updateParamDouble("kp_brake", settingStorage.value("ow_qs2_kp_brake", 0))
-                            mCustomConf.updateParamDouble("ki", settingStorage.value("ow_qs2_ki", 0))
-                            mCustomConf.updateParamDouble("kp2", settingStorage.value("ow_qs2_kp2", 0))
-                            mCustomConf.updateParamDouble("ki2", settingStorage.value("ow_qs2_ki2", 0))
-                            mCustomConf.updateParamDouble("ki2_decay", settingStorage.value("ow_qs2_ki2_decay", 0))
-                            mCustomConf.updateParamDouble("pid_filtering_weight", settingStorage.value("ow_qs2_pid_filtering_weight", 0))
-                            mCustomConf.updateParamDouble("pid_filtering_weight_brake", settingStorage.value("ow_qs2_pid_filtering_weight_brake", 0))
-                            mCustomConf.updateParamDouble("pid_transition_speed_on", settingStorage.value("ow_qs2_pid_transition_speed_on", 0))
-                            mCustomConf.updateParamDouble("pid_transition_speed_off", settingStorage.value("ow_qs2_pid_transition_speed_off", 0))
+                            mCustomConf.updateParamDouble("pitch_th", settingStorage.value("ow_qs2_pitch_th", 0))
+                            mCustomConf.updateParamDouble("pitch_th_b", settingStorage.value("ow_qs2_pitch_th_b", 0))
+                            mCustomConf.updateParamDouble("pitch_thi", settingStorage.value("ow_qs2_pitch_thi", 0))
+                            mCustomConf.updateParamDouble("gyro_th", settingStorage.value("ow_qs2_gyro_th", 0))
+                            mCustomConf.updateParamDouble("gyro_thi", settingStorage.value("ow_qs2_gyro_thi", 0))
+                            mCustomConf.updateParamDouble("gyro_thi_decay", settingStorage.value("ow_qs2_gyro_thi_decay", 0))
+                            mCustomConf.updateParamDouble("current_out_filter", settingStorage.value("ow_qs2_current_out_filter", 0))
+                            mCustomConf.updateParamDouble("current_out_filter_b", settingStorage.value("ow_qs2_current_out_filter_b", 0))
+                            mCustomConf.updateParamDouble("normal_to_brake_speed", settingStorage.value("ow_qs2_normal_to_brake_speed", 0))
+                            mCustomConf.updateParamDouble("brake_to_normal_speed", settingStorage.value("ow_qs2_brake_to_normal_speed", 0))
                             mCustomConf.updateParamDouble("fault_pitch", settingStorage.value("ow_qs2_fault_pitch", 0))
                             mCustomConf.updateParamDouble("fault_roll", settingStorage.value("ow_qs2_fault_roll", 0))
                             mCustomConf.updateParamInt("fault_delay_pitch", settingStorage.value("ow_qs2_fault_delay_pitch", 0))
@@ -466,7 +466,7 @@ Item {
                             mCustomConf.updateParamDouble("startup_roll_tolerance", settingStorage.value("ow_qs2_startup_roll_tolerance", 0))
                             mCustomConf.updateParamDouble("startup_speed", settingStorage.value("ow_qs2_startup_speed", 0))
                             mCustomConf.updateParamDouble("brake_current", settingStorage.value("ow_qs2_brake_current", 0))
-                            mCustomConf.updateParamDouble("pid_brake_max_amp_change", settingStorage.value("ow_qs2_pid_brake_max_amp_change", 0))
+                            mCustomConf.updateParamDouble("brake_max_amp_change", settingStorage.value("ow_qs2_brake_max_amp_change", 0))
                             mCustomConf.updateParamDouble("ki_limit", settingStorage.value("ow_qs2_ki_limit", 0))
                             mCustomConf.updateParamDouble("ki_limit2", settingStorage.value("ow_qs2_ki_limit2", 0))
                             mCustomConf.updateParamDouble("booster_angle", settingStorage.value("ow_qs2_booster_angle", 0))
@@ -515,16 +515,16 @@ Item {
                     text: "Export CSV to archive"
                     Layout.fillWidth: true
                     onClicked: {
-                        var arr = [["double", "kp"], ["double", "kp_brake"], ["double", "ki"], ["double", "kp2"], ["double", "ki2"],
-                                   ["double", "ki2_decay"], ["double", "pid_filtering_weight"], ["double", "pid_filtering_weight_brake"],
-                                   ["double", "pid_transition_speed_on"], ["double", "pid_transition_speed_off"], ["double", "fault_pitch"],
+                        var arr = [["double", "pitch_th"], ["double", "pitch_th_b"], ["double", "pitch_thi"], ["double", "gyro_th"],  ["double", "gyro_thi"], 
+                                   ["double", "gyro_thi_decay"],  ["double", "current_out_filter"], ["double", "current_out_filter_b"],
+                                   ["double", "normal_to_brake_speed"], ["double", "brake_to_normal_speed"], ["double", "fault_pitch"],
                                    ["double", "fault_roll"], ["int", "fault_delay_pitch"], ["int", "fault_delay_roll"], ["double", "tiltback_duty_angle"],
                                    ["double", "tiltback_duty_speed"], ["double", "tiltback_duty"], ["double", "tiltback_hv_angle"],
                                    ["double", "tiltback_hv_speed"], ["double", "tiltback_lv_angle"], ["double", "tiltback_lv_speed"],
                                    ["double", "tiltback_return_speed"], ["double", "tiltback_constant"], ["int", "tiltback_constant_erpm"],
                                    ["double", "tiltback_variable"], ["double", "tiltback_variable_max"], ["double", "noseangling_speed"],
                                    ["double", "startup_pitch_tolerance"], ["double", "startup_roll_tolerance"], ["double", "startup_speed"],
-                                   ["double", "brake_current"], ["double", "pid_brake_max_amp_change"], ["double", "ki_limit"], ["double", "ki_limit2"],
+                                   ["double", "brake_current"], ["double", "brake_max_amp_change"], ["double", "ki_limit"], ["double", "ki_limit2"],
                                    ["double", "booster_angle"], ["double", "booster_ramp"], ["double", "booster_current"], ["double", "torquetilt_start_current"],
                                    ["double", "torquetilt_angle_limit"], ["double", "torquetilt_on_speed"], ["double", "torquetilt_off_speed"],
                                    ["double", "torquetilt_strength"], ["double", "torquetilt_strength_regen"], ["double", "torquetilt_filter"],

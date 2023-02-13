@@ -30,16 +30,16 @@ typedef enum {
 } TURNTILT_MIXING_MODE;
 
 typedef struct {
-	float kp;
-	float kp_brake;
-	float ki;
-	float kp2;
-	float ki2;
-	float ki2_decay;
-	float pid_filtering_weight;
-	float pid_filtering_weight_brake;
-	float pid_transition_speed_on;
-	float pid_transition_speed_off;
+	float pitch_th;
+	float pitch_th_b;
+	float pitch_thi;
+	float gyro_th;
+	float gyro_thi;
+	float gyro_thi_decay;
+	float current_out_filter;
+	float current_out_filter_b;
+	float normal_to_brake_speed;
+	float brake_to_normal_speed;
 	uint16_t hertz;
 	float fault_pitch;
 	float fault_roll;
@@ -70,7 +70,7 @@ typedef struct {
 	float startup_roll_tolerance;
 	float startup_speed;
 	float brake_current;
-	float pid_brake_max_amp_change;
+	float brake_max_amp_change;
 	float ki_limit;
 	float ki_limit2;
 	float booster_angle;

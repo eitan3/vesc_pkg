@@ -10,16 +10,16 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 
 	buffer_append_uint32(buffer, BALANCE_CONFIG_SIGNATURE, &ind);
 
-	buffer_append_float32_auto(buffer, conf->kp, &ind);
-	buffer_append_float32_auto(buffer, conf->kp_brake, &ind);
-	buffer_append_float32_auto(buffer, conf->ki, &ind);
-	buffer_append_float32_auto(buffer, conf->kp2, &ind);
-	buffer_append_float32_auto(buffer, conf->ki2, &ind);
-	buffer_append_float32_auto(buffer, conf->ki2_decay, &ind);
-	buffer_append_float32_auto(buffer, conf->pid_filtering_weight, &ind);
-	buffer_append_float32_auto(buffer, conf->pid_filtering_weight_brake, &ind);
-	buffer_append_float32(buffer, conf->pid_transition_speed_on, 100, &ind);
-	buffer_append_float32(buffer, conf->pid_transition_speed_off, 100, &ind);
+	buffer_append_float32_auto(buffer, conf->pitch_th, &ind);
+	buffer_append_float32_auto(buffer, conf->pitch_th_b, &ind);
+	buffer_append_float32_auto(buffer, conf->pitch_thi, &ind);
+	buffer_append_float32_auto(buffer, conf->gyro_th, &ind);
+	buffer_append_float32_auto(buffer, conf->gyro_thi, &ind);
+	buffer_append_float32_auto(buffer, conf->gyro_thi_decay, &ind);
+	buffer_append_float32_auto(buffer, conf->current_out_filter, &ind);
+	buffer_append_float32_auto(buffer, conf->current_out_filter_b, &ind);
+	buffer_append_float32(buffer, conf->normal_to_brake_speed, 100, &ind);
+	buffer_append_float32(buffer, conf->brake_to_normal_speed, 100, &ind);
 	buffer_append_uint16(buffer, conf->hertz, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_roll, &ind);
@@ -50,7 +50,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->startup_roll_tolerance, &ind);
 	buffer_append_float32_auto(buffer, conf->startup_speed, &ind);
 	buffer_append_float32_auto(buffer, conf->brake_current, &ind);
-	buffer_append_float32_auto(buffer, conf->pid_brake_max_amp_change, &ind);
+	buffer_append_float32_auto(buffer, conf->brake_max_amp_change, &ind);
 	buffer_append_float32_auto(buffer, conf->ki_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->ki_limit2, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_angle, &ind);
@@ -103,16 +103,16 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 		return false;
 	}
 
-	conf->kp = buffer_get_float32_auto(buffer, &ind);
-	conf->kp_brake = buffer_get_float32_auto(buffer, &ind);
-	conf->ki = buffer_get_float32_auto(buffer, &ind);
-	conf->kp2 = buffer_get_float32_auto(buffer, &ind);
-	conf->ki2 = buffer_get_float32_auto(buffer, &ind);
-	conf->ki2_decay = buffer_get_float32_auto(buffer, &ind);
-	conf->pid_filtering_weight = buffer_get_float32_auto(buffer, &ind);
-	conf->pid_filtering_weight_brake = buffer_get_float32_auto(buffer, &ind);
-	conf->pid_transition_speed_on = buffer_get_float32(buffer, 100, &ind);
-	conf->pid_transition_speed_off = buffer_get_float32(buffer, 100, &ind);
+	conf->pitch_th = buffer_get_float32_auto(buffer, &ind);
+	conf->pitch_th_b = buffer_get_float32_auto(buffer, &ind);
+	conf->pitch_thi = buffer_get_float32_auto(buffer, &ind);
+	conf->gyro_th = buffer_get_float32_auto(buffer, &ind);
+	conf->gyro_thi = buffer_get_float32_auto(buffer, &ind);
+	conf->gyro_thi_decay = buffer_get_float32_auto(buffer, &ind);
+	conf->current_out_filter = buffer_get_float32_auto(buffer, &ind);
+	conf->current_out_filter_b = buffer_get_float32_auto(buffer, &ind);
+	conf->normal_to_brake_speed = buffer_get_float32(buffer, 100, &ind);
+	conf->brake_to_normal_speed = buffer_get_float32(buffer, 100, &ind);
 	conf->hertz = buffer_get_uint16(buffer, &ind);
 	conf->fault_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->fault_roll = buffer_get_float32_auto(buffer, &ind);
@@ -143,7 +143,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->startup_roll_tolerance = buffer_get_float32_auto(buffer, &ind);
 	conf->startup_speed = buffer_get_float32_auto(buffer, &ind);
 	conf->brake_current = buffer_get_float32_auto(buffer, &ind);
-	conf->pid_brake_max_amp_change = buffer_get_float32_auto(buffer, &ind);
+	conf->brake_max_amp_change = buffer_get_float32_auto(buffer, &ind);
 	conf->ki_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->ki_limit2 = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_angle = buffer_get_float32_auto(buffer, &ind);
@@ -189,16 +189,16 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 }
 
 void confparser_set_defaults_balance_config(balance_config *conf) {
-	conf->kp = APPCONF_BALANCE_KP;
-	conf->kp_brake = APPCONF_BALANCE_KP_BRAKE;
-	conf->ki = APPCONF_BALANCE_KI;
-	conf->kp2 = APPCONF_BALANCE_KP2;
-	conf->ki2 = APPCONF_BALANCE_KI2;
-	conf->ki2_decay = APPCONF_BALANCE_KI2_DECAY;
-	conf->pid_filtering_weight = APPCONF_BALANCE_PID_FILTERING_WEIGHT;
-	conf->pid_filtering_weight_brake = APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE;
-	conf->pid_transition_speed_on = APPCONF_BALANCE_PID_TRANSITION_SPEED_ON;
-	conf->pid_transition_speed_off = APPCONF_BALANCE_PID_TRANSITION_SPEED_OFF;
+	conf->pitch_th = APPCONF_BALANCE_PITCH_TH;
+	conf->pitch_th_b = APPCONF_BALANCE_PITCH_TH_B;
+	conf->pitch_thi = APPCONF_BALANCE_PITCH_THI;
+	conf->gyro_th = APPCONF_BALANCE_GYRO_TH;
+	conf->gyro_thi = APPCONF_BALANCE_GYRO_THI;
+	conf->gyro_thi_decay = APPCONF_BALANCE_GYRO_THI_DECAY;
+	conf->current_out_filter = APPCONF_BALANCE_CURRENT_OUT_FILTER;
+	conf->current_out_filter_b = APPCONF_BALANCE_CURRENT_OUT_FILTER_B;
+	conf->normal_to_brake_speed = APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED;
+	conf->brake_to_normal_speed = APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED;
 	conf->hertz = APPCONF_BALANCE_HERTZ;
 	conf->fault_pitch = APPCONF_BALANCE_FAULT_PITCH;
 	conf->fault_roll = APPCONF_BALANCE_FAULT_ROLL;
@@ -229,7 +229,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->startup_roll_tolerance = APPCONF_BALANCE_STARTUP_ROLL_TOLERANCE;
 	conf->startup_speed = APPCONF_BALANCE_STARTUP_SPEED;
 	conf->brake_current = APPCONF_BALANCE_BRAKE_CURRENT;
-	conf->pid_brake_max_amp_change = APPCONF_BALANCE_PID_BRAKE_MAX_AMPS;
+	conf->brake_max_amp_change = APPCONF_BALANCE_BRAKE_MAX_AMPS;
 	conf->ki_limit = APPCONF_BALANCE_KI_LIMIT;
 	conf->ki_limit2 = APPCONF_BALANCE_KI_LIMIT2;
 	conf->booster_angle = APPCONF_BALANCE_BOOSTER_ANGLE;

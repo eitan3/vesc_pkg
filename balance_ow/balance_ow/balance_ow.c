@@ -99,7 +99,7 @@ typedef struct {
 	float tiltback_duty_step_size, tiltback_hv_step_size, tiltback_lv_step_size, tiltback_return_step_size;
 	float torquetilt_on_step_size, torquetilt_off_step_size;
 	float tiltback_variable, tiltback_variable_max_erpm, noseangling_step_size;
-	float pid_transition_step_size_on, pid_transition_step_size_off;
+	float normal_to_brake_step_size, brake_to_normal_step_size;
 
 	// Feature: True Pitch
 	ATTITUDE_INFO m_att_ref;
@@ -119,7 +119,7 @@ typedef struct {
 	// Rumtime state values
 	BalanceState state;
 	bool running;
-	float kp_interpolated, pid_filtering_weight_interpolated;
+	float pitch_th_interpolated, current_out_filter_interpolated;
 	float proportional, integral, proportional2, integral2;
 	float abs_proportional;
 	float pid_value;
@@ -138,7 +138,7 @@ typedef struct {
 
 	bool braking;
 	float tb_highvoltage_timer;
-	float pid_brake_increment; // Brake Amp Rate Limiting
+	float brake_max_amp_change; // Brake Amp Rate Limiting
 
 	float max_duty_with_margin;
 	float wheelslip_timer, wheelslip_end_timer;
@@ -243,13 +243,13 @@ static void configure(data *d) {
 	d->roll_turntilt_step_size = d->balance_conf.roll_turntilt_speed / d->balance_conf.hertz;
 	d->yaw_turntilt_step_size = d->balance_conf.yaw_turntilt_speed / d->balance_conf.hertz;
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
-	d->pid_transition_step_size_on = (1.0 / d->balance_conf.pid_transition_speed_on) / d->balance_conf.hertz;
-	d->pid_transition_step_size_off = (1.0 / d->balance_conf.pid_transition_speed_off) / d->balance_conf.hertz;
+	d->normal_to_brake_step_size = (1.0 / d->balance_conf.normal_to_brake_speed) / d->balance_conf.hertz;
+	d->brake_to_normal_step_size = (1.0 / d->balance_conf.brake_to_normal_speed) / d->balance_conf.hertz;
 
 	// Maximum amps change when braking
-	d->pid_brake_increment = d->balance_conf.pid_brake_max_amp_change;
-	if (d->pid_brake_increment < 0.1) {
-		d->pid_brake_increment = 5;
+	d->brake_max_amp_change = d->balance_conf.brake_max_amp_change;
+	if (d->brake_max_amp_change < 0.1) {
+		d->brake_max_amp_change = 5;
 	}
 
 	d->max_duty_with_margin = VESC_IF->get_cfg_float(CFG_PARAM_l_max_duty) - 0.1;
@@ -331,8 +331,8 @@ static void reset_vars(data *d) {
 	d->applied_booster_current = 0;
 	biquad_reset(&d->smooth_erpm_biquad);
 	d->smooth_erpm = 0;
-	d->kp_interpolated = d->balance_conf.kp;
-	d->pid_filtering_weight_interpolated = d->balance_conf.pid_filtering_weight;
+	d->pitch_th_interpolated = d->balance_conf.pitch_th;
+	d->current_out_filter_interpolated = d->balance_conf.current_out_filter;
 
 	// Acceleration:
 	// d->accel_gap = 0;
@@ -1187,8 +1187,8 @@ static void balance_thd(void *arg) {
 			// Apply integral and limiter
 			if (d->abs_erpm > 250) {
 				d->integral = d->integral + d->proportional;
-				if (d->balance_conf.ki_limit > 0 && fabsf(d->integral * d->balance_conf.ki) > d->balance_conf.ki_limit) {
-					d->integral = d->balance_conf.ki_limit / d->balance_conf.ki * SIGN(d->integral);
+				if (d->balance_conf.ki_limit > 0 && fabsf(d->integral * d->balance_conf.pitch_thi) > d->balance_conf.ki_limit) {
+					d->integral = d->balance_conf.ki_limit / d->balance_conf.pitch_thi * SIGN(d->integral);
 				}
 			}
 			else {
@@ -1201,41 +1201,41 @@ static void balance_thd(void *arg) {
 			}
 
 			// Calculate KP
-			float pidtss = d->braking ? d->pid_transition_step_size_on : d->pid_transition_step_size_off;
-			float kp_target = d->balance_conf.kp;
+			float pidtss = d->braking ? d->normal_to_brake_step_size : d->brake_to_normal_step_size;
+			float kp_target = d->balance_conf.pitch_th;
 			if (d->braking) {
 				float acc_coeff = fminf(fmaxf(fabsf(d->acceleration) - 0.5, 0.0), 2.0) / 2.0;
 				kp_target *= (1.0 - acc_coeff);
-				kp_target += d->balance_conf.kp_brake * acc_coeff;
+				kp_target += d->balance_conf.pitch_th_b * acc_coeff;
 			}
-			if (fabsf(kp_target - d->kp_interpolated) <= pidtss) {
-				d->kp_interpolated = kp_target;
-			} else if (kp_target - d->kp_interpolated > 0) {
-				d->kp_interpolated += pidtss;
+			if (fabsf(kp_target - d->pitch_th_interpolated) <= pidtss) {
+				d->pitch_th_interpolated = kp_target;
+			} else if (kp_target - d->pitch_th_interpolated > 0) {
+				d->pitch_th_interpolated += pidtss;
 			} else {
-				d->kp_interpolated -= pidtss;
+				d->pitch_th_interpolated -= pidtss;
 			}
 
 			// Calculate new PID
-			float new_pid_value = (d->kp_interpolated * d->proportional) + d->balance_conf.ki * d->integral;
+			float new_pid_value = (d->pitch_th_interpolated * d->proportional) + d->balance_conf.pitch_thi * d->integral;
 			
 			// Start Rate PID and Booster portion a few cycles later, after the start clicks have been emitted
 			// this keeps the start smooth and predictable
 			if (d->start_counter_clicks == 0) {
-				if (d->balance_conf.kp2 > 0) {
+				if (d->balance_conf.gyro_th > 0) {
 					d->proportional2 = -d->gyro[1];
 
 					// Apply integral2 and limiter
 					if (d->abs_erpm > 250) {
 						d->integral2 = d->integral2 + d->proportional2;
-						if (d->balance_conf.ki_limit2 > 0 && fabsf(d->integral2 * d->balance_conf.ki2) > d->balance_conf.ki_limit2) {
-							d->integral2 = d->balance_conf.ki_limit2 / d->balance_conf.ki2 * SIGN(d->integral2);
+						if (d->balance_conf.ki_limit2 > 0 && fabsf(d->integral2 * d->balance_conf.gyro_thi) > d->balance_conf.ki_limit2) {
+							d->integral2 = d->balance_conf.ki_limit2 / d->balance_conf.gyro_thi * SIGN(d->integral2);
 						}
 					}
-					d->integral2 = d->integral2 * d->balance_conf.ki2_decay;
+					d->integral2 = d->integral2 * d->balance_conf.gyro_thi_decay;
 
-					new_pid_value += (d->balance_conf.kp2 * d->proportional2) +
-							(d->balance_conf.ki2 * d->integral2);
+					new_pid_value += (d->balance_conf.gyro_th * d->proportional2) +
+							(d->balance_conf.gyro_thi * d->integral2);
 				}
 
 				// Apply Booster
@@ -1278,33 +1278,32 @@ static void balance_thd(void *arg) {
 				d->pid_value = d->pid_value * d->balance_conf.traction_control_mul_by;
 			}
 			// Brake Amp Rate Limiting
-			else if (d->braking && (fabsf(d->pid_value - new_pid_value) > d->pid_brake_increment)) {
+			else if (d->braking && (fabsf(d->pid_value - new_pid_value) > d->brake_max_amp_change)) {
 				if (new_pid_value > d->pid_value) {
-					d->pid_value += d->pid_brake_increment;
+					d->pid_value += d->brake_max_amp_change;
 				}
 				else {
-					d->pid_value -= d->pid_brake_increment;
+					d->pid_value -= d->brake_max_amp_change;
 				}
 			}
 			else {
 				// Calculate new filtering weight
-				float filtering_target = d->balance_conf.pid_filtering_weight;
+				float filtering_target = d->balance_conf.current_out_filter;
 				if (d->braking) {
 					float acc_coeff = fminf(fmaxf(fabsf(d->acceleration) - 0.5, 0.0), 2.0) / 2.0;
 					filtering_target *= (1.0 - acc_coeff);
-					filtering_target += d->balance_conf.pid_filtering_weight_brake * acc_coeff;
+					filtering_target += d->balance_conf.current_out_filter_b * acc_coeff;
 				}
-				if (fabsf(filtering_target - d->pid_filtering_weight_interpolated) <= pidtss) {
-					d->pid_filtering_weight_interpolated = filtering_target;
-				} else if (filtering_target - d->pid_filtering_weight_interpolated > 0) {
-					d->pid_filtering_weight_interpolated += pidtss;
+				if (fabsf(filtering_target - d->current_out_filter_interpolated) <= pidtss) {
+					d->current_out_filter_interpolated = filtering_target;
+				} else if (filtering_target - d->current_out_filter_interpolated > 0) {
+					d->current_out_filter_interpolated += pidtss;
 				} else {
-					d->pid_filtering_weight_interpolated -= pidtss;
+					d->current_out_filter_interpolated -= pidtss;
 				}
 
 				// Apply PID Filtering
-				float pid_filtering_weight = d->pid_filtering_weight_interpolated;
-				d->pid_value = d->pid_value * (1.0 - pid_filtering_weight) + new_pid_value * pid_filtering_weight;
+				d->pid_value = d->pid_value * (1.0 - d->current_out_filter_interpolated) + new_pid_value * d->current_out_filter_interpolated;
 			}
 
 
@@ -1386,11 +1385,11 @@ static float app_balance_get_debug(int index) {
 		case(14):
 			return d->integral;
 		case(15):
-			return d->integral * d->balance_conf.ki;
+			return d->integral * d->balance_conf.pitch_thi;
 		case(16):
 			return d->integral2;
 		case(17):
-			return d->integral2 * d->balance_conf.ki2;
+			return d->integral2 * d->balance_conf.gyro_thi;
 		default:
 			return 0;
 	}
@@ -1421,7 +1420,7 @@ static void send_realtime_data(data *d){
 	buffer_append_float32_auto(send_buffer, d->yaw_turntilt_interpolated * d->balance_conf.yaw_turntilt_weight, &ind);
 	buffer_append_float32_auto(send_buffer, d->roll_turntilt_interpolated * d->balance_conf.roll_turntilt_weight, &ind);
 	buffer_append_float32_auto(send_buffer, d->total_turntilt_interpolated, &ind);
-	buffer_append_float32_auto(send_buffer, d->kp_interpolated, &ind);
+	buffer_append_float32_auto(send_buffer, d->pitch_th_interpolated, &ind);
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 

@@ -25,7 +25,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This is the VESC Logging and Communication Module.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
             <cDefine></cDefine>
         </hw_name>
-        <kp>
+        <pitch_th>
             <longName>Pitch Throttle</longName>
             <type>1</type>
             <transmittable>1</transmittable>
@@ -34,7 +34,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Scale how much the pitch affect the throttle. The higher the value, the more current will deliver to the motor for every pitch angle.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_KP</cDefine>
+            <cDefine>APPCONF_BALANCE_PITCH_TH</cDefine>
             <editorDecimalsDouble>4</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -42,12 +42,12 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>5</valDouble>
+            <valDouble>20</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
-        </kp>
-        <kp_brake>
+        </pitch_th>
+        <pitch_th_b>
             <longName>Pitch Throttle (B)</longName>
             <type>1</type>
             <transmittable>1</transmittable>
@@ -56,7 +56,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Scale how much the pitch affect the throttle. The higher the value, the more current will deliver to the motor for every pitch angle (while braking).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_KP_BRAKE</cDefine>
+            <cDefine>APPCONF_BALANCE_PITCH_TH_B</cDefine>
             <editorDecimalsDouble>4</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -68,8 +68,8 @@ p, li { white-space: pre-wrap; }
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
-        </kp_brake>
-        <ki>
+        </pitch_th_b>
+        <pitch_thi>
             <longName>Pitch Throttle Integral</longName>
             <type>1</type>
             <transmittable>1</transmittable>
@@ -82,7 +82,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The higher the value, the faster it take to reach &amp;quot;I term limit&amp;quot;.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This will effect how the board will react on acceleration\decceleration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_KI</cDefine>
+            <cDefine>APPCONF_BALANCE_PITCH_THI</cDefine>
             <editorDecimalsDouble>4</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -94,8 +94,8 @@ p, li { white-space: pre-wrap; }
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
-        </ki>
-        <kp2>
+        </pitch_thi>
+        <gyro_th>
             <longName>Gyro Throttle</longName>
             <type>1</type>
             <transmittable>1</transmittable>
@@ -104,7 +104,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Scale how much the gyro affect the throttle. The higher the value, the more current will deliver to the motor for every gyro angle.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_KP2</cDefine>
+            <cDefine>APPCONF_BALANCE_GYRO_TH</cDefine>
             <editorDecimalsDouble>4</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -112,12 +112,12 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>0.5</valDouble>
+            <valDouble>0.6</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
-        </kp2>
-        <ki2>
+        </gyro_th>
+        <gyro_thi>
             <longName>Gyro Throttle Integral</longName>
             <type>1</type>
             <transmittable>1</transmittable>
@@ -130,7 +130,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The higher the value, the faster it take to reach &amp;quot;I term limit&amp;quot;.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This will effect how the board will react on acceleration\decceleration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_KI2</cDefine>
+            <cDefine>APPCONF_BALANCE_GYRO_THI</cDefine>
             <editorDecimalsDouble>4</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -142,8 +142,8 @@ p, li { white-space: pre-wrap; }
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
-        </ki2>
-        <ki2_decay>
+        </gyro_thi>
+        <gyro_thi_decay>
             <longName>Gyro Throttle Integral Decay</longName>
             <type>1</type>
             <transmittable>1</transmittable>
@@ -155,7 +155,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;1.0 = Dont decrease at all.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;0.5 = Multiply integral by 0.5 each step.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;0.0 = Multiply integral by 0.0 each step, it will disable &amp;quot;Gyro Throttle Integral&amp;quot; (like Rate I = 0).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_KI2_DECAY</cDefine>
+            <cDefine>APPCONF_BALANCE_GYRO_THI_DECAY</cDefine>
             <editorDecimalsDouble>4</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -163,13 +163,13 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.001</stepDouble>
-            <valDouble>0.85</valDouble>
+            <valDouble>0.75</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
-        </ki2_decay>
-        <pid_filtering_weight>
-            <longName>PID Filtering Weight</longName>
+        </gyro_thi_decay>
+        <current_out_filter>
+            <longName>Current Out Filter</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -178,7 +178,7 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The lower the value, the smoother the PID will be, but react slower.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Higher value, higher reaction but PID less smooth.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_PID_FILTERING_WEIGHT</cDefine>
+            <cDefine>APPCONF_BALANCE_CURRENT_OUT_FILTER</cDefine>
             <editorDecimalsDouble>2</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -186,13 +186,13 @@ p, li { white-space: pre-wrap; }
             <minDouble>0.1</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.01</stepDouble>
-            <valDouble>0.2</valDouble>
+            <valDouble>0.5</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> </suffix>
             <vTx>9</vTx>
-        </pid_filtering_weight>
-        <pid_filtering_weight_brake>
-            <longName>PID Filtering Weight (B)</longName>
+        </current_out_filter>
+        <current_out_filter_b>
+            <longName>Current Out Filter (B)</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -202,7 +202,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The lower the value, the smoother the PID will be, but react slower.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Higher value, higher reaction but PID less smooth.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This value will take place only while braking.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_PID_FILTERING_WEIGHT_BRAKE</cDefine>
+            <cDefine>APPCONF_BALANCE_CURRENT_OUT_FILTER_B</cDefine>
             <editorDecimalsDouble>2</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -214,9 +214,9 @@ p, li { white-space: pre-wrap; }
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> </suffix>
             <vTx>9</vTx>
-        </pid_filtering_weight_brake>
-        <pid_transition_speed_on>
-            <longName>Normal 2 Brake Speed</longName>
+        </current_out_filter_b>
+        <normal_to_brake_speed>
+            <longName>Normal To Brake Speed</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -224,7 +224,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The speed which we change from normal Throttle/PID to Braking Throttle/PID.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_PID_TRANSITION_SPEED_ON</cDefine>
+            <cDefine>APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED</cDefine>
             <editorDecimalsDouble>4</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -232,13 +232,13 @@ p, li { white-space: pre-wrap; }
             <minDouble>0.0005</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.0005</stepDouble>
-            <valDouble>0.005</valDouble>
+            <valDouble>0.02</valDouble>
             <vTxDoubleScale>100</vTxDoubleScale>
             <suffix> /s</suffix>
             <vTx>8</vTx>
-        </pid_transition_speed_on>
-        <pid_transition_speed_off>
-            <longName>Brake 2 Normal Speed</longName>
+        </normal_to_brake_speed>
+        <brake_to_normal_speed>
+            <longName>Brake To Normal Speed</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -246,7 +246,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The speed which we change from Braking Throttle/PID to normal Throttle/PID.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_PID_TRANSITION_SPEED_OFF</cDefine>
+            <cDefine>APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED</cDefine>
             <editorDecimalsDouble>4</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -254,11 +254,11 @@ p, li { white-space: pre-wrap; }
             <minDouble>0.0005</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.0005</stepDouble>
-            <valDouble>0.025</valDouble>
+            <valDouble>0.1</valDouble>
             <vTxDoubleScale>100</vTxDoubleScale>
             <suffix> /s</suffix>
             <vTx>8</vTx>
-        </pid_transition_speed_off>
+        </brake_to_normal_speed>
         <hertz>
             <longName>Loop Hertz</longName>
             <type>2</type>
@@ -340,7 +340,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>1</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>2.5</valDouble>
+            <valDouble>2.75</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> V</suffix>
             <vTx>9</vTx>
@@ -362,7 +362,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>1</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>2.5</valDouble>
+            <valDouble>2.75</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> V</suffix>
             <vTx>9</vTx>
@@ -895,7 +895,7 @@ p, li { white-space: pre-wrap; }
             <suffix> A</suffix>
             <vTx>9</vTx>
         </brake_current>
-        <pid_brake_max_amp_change>
+        <brake_max_amp_change>
             <longName>Brake max amp change</longName>
             <type>1</type>
             <transmittable>1</transmittable>
@@ -904,7 +904,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Maximum amps change when braking. Hard coded to 5 if the value is less than 0.1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_PID_BRAKE_MAX_AMPS</cDefine>
+            <cDefine>APPCONF_BALANCE_BRAKE_MAX_AMPS</cDefine>
             <editorDecimalsDouble>2</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -916,7 +916,7 @@ p, li { white-space: pre-wrap; }
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> A</suffix>
             <vTx>9</vTx>
-        </pid_brake_max_amp_change>
+        </brake_max_amp_change>
         <ki_limit>
             <longName>Pitch Throttle Integral Limit</longName>
             <type>1</type>
@@ -1749,16 +1749,16 @@ p, li { white-space: pre-wrap; }
         </traction_control_mul_by>
     </Params>
     <SerOrder>
-        <ser>kp</ser>
-        <ser>kp_brake</ser>
-        <ser>ki</ser>
-        <ser>kp2</ser>
-        <ser>ki2</ser>
-        <ser>ki2_decay</ser>
-        <ser>pid_filtering_weight</ser>
-        <ser>pid_filtering_weight_brake</ser>
-        <ser>pid_transition_speed_on</ser>
-        <ser>pid_transition_speed_off</ser>
+        <ser>pitch_th</ser>
+        <ser>pitch_th_b</ser>
+        <ser>pitch_thi</ser>
+        <ser>gyro_th</ser>
+        <ser>gyro_thi</ser>
+        <ser>gyro_thi_decay</ser>
+        <ser>current_out_filter</ser>
+        <ser>current_out_filter_b</ser>
+        <ser>normal_to_brake_speed</ser>
+        <ser>brake_to_normal_speed</ser>
         <ser>hertz</ser>
         <ser>fault_pitch</ser>
         <ser>fault_roll</ser>
@@ -1789,7 +1789,7 @@ p, li { white-space: pre-wrap; }
         <ser>startup_roll_tolerance</ser>
         <ser>startup_speed</ser>
         <ser>brake_current</ser>
-        <ser>pid_brake_max_amp_change</ser>
+        <ser>brake_max_amp_change</ser>
         <ser>ki_limit</ser>
         <ser>ki_limit2</ser>
         <ser>booster_angle</ser>
@@ -1840,17 +1840,17 @@ p, li { white-space: pre-wrap; }
                     <param>::sep::Main Loop</param>
                     <param>hertz</param>
                     <param>::sep::Throttle/PID</param>
-                    <param>kp</param>
-                    <param>ki</param>
-                    <param>kp2</param>
-                    <param>ki2</param>
-                    <param>ki2_decay</param>
-                    <param>pid_filtering_weight</param>
+                    <param>pitch_th</param>
+                    <param>pitch_thi</param>
+                    <param>gyro_th</param>
+                    <param>gyro_thi</param>
+                    <param>gyro_thi_decay</param>
+                    <param>current_out_filter</param>
                     <param>::sep::Limiters</param>
                     <param>ki_limit</param>
                     <param>ki_limit2</param>
                     <param>::sep::Transitions</param>
-                    <param>pid_transition_speed_off</param>
+                    <param>brake_to_normal_speed</param>
                     <param>::sep::Booster</param>
                     <param>booster_angle</param>
                     <param>booster_ramp</param>
@@ -1861,12 +1861,12 @@ p, li { white-space: pre-wrap; }
                 <subgroupName>Tune (Brake)</subgroupName>
                 <subgroupParams>
                     <param>::sep::Throttle/PID (Braking)</param>
-                    <param>kp_brake</param>
-                    <param>pid_filtering_weight_brake</param>
+                    <param>pitch_th_b</param>
+                    <param>current_out_filter_b</param>
                     <param>::sep::Limiters</param>
-                    <param>pid_brake_max_amp_change</param>
+                    <param>brake_max_amp_change</param>
                     <param>::sep::Transitions</param>
-                    <param>pid_transition_speed_on</param>
+                    <param>normal_to_brake_speed</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>
