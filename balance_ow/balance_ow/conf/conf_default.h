@@ -5,12 +5,12 @@
 
 // Pitch Throttle
 #ifndef APPCONF_BALANCE_PITCH_TH
-#define APPCONF_BALANCE_PITCH_TH 20
+#define APPCONF_BALANCE_PITCH_TH 25
 #endif
 
 // Pitch Throttle (B)
 #ifndef APPCONF_BALANCE_PITCH_TH_B
-#define APPCONF_BALANCE_PITCH_TH_B 35
+#define APPCONF_BALANCE_PITCH_TH_B 40
 #endif
 
 // Pitch Throttle Integral
@@ -18,9 +18,19 @@
 #define APPCONF_BALANCE_PITCH_THI 0.005
 #endif
 
+// Pitch Throttle Integral (B)
+#ifndef APPCONF_BALANCE_PITCH_THI_B
+#define APPCONF_BALANCE_PITCH_THI_B 0.01
+#endif
+
 // Gyro Throttle
 #ifndef APPCONF_BALANCE_GYRO_TH
 #define APPCONF_BALANCE_GYRO_TH 0.6
+#endif
+
+// Gyro Throttle (B)
+#ifndef APPCONF_BALANCE_GYRO_TH_B
+#define APPCONF_BALANCE_GYRO_TH_B 0.6
 #endif
 
 // Gyro Throttle Integral
@@ -28,9 +38,19 @@
 #define APPCONF_BALANCE_GYRO_THI 0.0025
 #endif
 
+// Gyro Throttle Integral (B)
+#ifndef APPCONF_BALANCE_GYRO_THI_B
+#define APPCONF_BALANCE_GYRO_THI_B 0.005
+#endif
+
 // Gyro Throttle Integral Decay
 #ifndef APPCONF_BALANCE_GYRO_THI_DECAY
 #define APPCONF_BALANCE_GYRO_THI_DECAY 0.75
+#endif
+
+// Gyro Throttle Integral Decay (B)
+#ifndef APPCONF_BALANCE_GYRO_THI_DECAY_B
+#define APPCONF_BALANCE_GYRO_THI_DECAY_B 0.75
 #endif
 
 // Current Out Filter
@@ -45,12 +65,12 @@
 
 // Normal To Brake Speed
 #ifndef APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED
-#define APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED 0.02
+#define APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED 0.75
 #endif
 
 // Brake To Normal Speed
 #ifndef APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED
-#define APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED 0.1
+#define APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED 1
 #endif
 
 // Loop Hertz
@@ -205,17 +225,27 @@
 
 // Brake max amp change
 #ifndef APPCONF_BALANCE_BRAKE_MAX_AMPS
-#define APPCONF_BALANCE_BRAKE_MAX_AMPS 20
+#define APPCONF_BALANCE_BRAKE_MAX_AMPS 25
 #endif
 
 // Pitch Throttle Integral Limit
-#ifndef APPCONF_BALANCE_KI_LIMIT
-#define APPCONF_BALANCE_KI_LIMIT 35
+#ifndef APPCONF_BALANCE_PITCH_THI_LIMIT
+#define APPCONF_BALANCE_PITCH_THI_LIMIT 35
+#endif
+
+// Pitch Throttle Integral Limit (B)
+#ifndef APPCONF_BALANCE_PITCH_THI_LIMIT_B
+#define APPCONF_BALANCE_PITCH_THI_LIMIT_B 40
 #endif
 
 // Gyro Throttle Integral Limit
-#ifndef APPCONF_BALANCE_KI_LIMIT2
-#define APPCONF_BALANCE_KI_LIMIT2 5
+#ifndef APPCONF_BALANCE_GYRO_THI_LIMIT
+#define APPCONF_BALANCE_GYRO_THI_LIMIT 5
+#endif
+
+// Gyro Throttle Integral Limit (B)
+#ifndef APPCONF_BALANCE_GYRO_THI_LIMIT_B
+#define APPCONF_BALANCE_GYRO_THI_LIMIT_B 7.5
 #endif
 
 // Start Angle
@@ -223,14 +253,29 @@
 #define APPCONF_BALANCE_BOOSTER_ANGLE 0
 #endif
 
+// Start Angle (B)
+#ifndef APPCONF_BALANCE_BOOSTER_ANGLE_B
+#define APPCONF_BALANCE_BOOSTER_ANGLE_B 0
+#endif
+
 // Ramp Up
 #ifndef APPCONF_BALANCE_BOOSTER_RAMP
 #define APPCONF_BALANCE_BOOSTER_RAMP 2
 #endif
 
+// Ramp Up (B)
+#ifndef APPCONF_BALANCE_BOOSTER_RAMP_B
+#define APPCONF_BALANCE_BOOSTER_RAMP_B 2
+#endif
+
 // Current Boost
 #ifndef APPCONF_BALANCE_BOOSTER_CURRENT
 #define APPCONF_BALANCE_BOOSTER_CURRENT 15
+#endif
+
+// Current Boost (B)
+#ifndef APPCONF_BALANCE_BOOSTER_CURRENT_B
+#define APPCONF_BALANCE_BOOSTER_CURRENT_B 15
 #endif
 
 // Start Current Threshold
