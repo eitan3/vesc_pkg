@@ -501,7 +501,9 @@ Item {
                                     if (enableDlaCaliDumping == 0) {
                                         enableDlaCaliDumping = 1
                                         mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
-                                        mLogWriter.writeToLogFile("Brake,ERPM,Acceleration,Current,PID,Current Pid Ratio\n")
+                                        var header = "braking,current_out_weight,normal_ride_current,brake_ride_current,"
+                                        header += "current_request,applied_booster_current\n"
+                                        mLogWriter.writeToLogFile(header)
                                     }
                                     else {
                                         enableDlaCaliDumping = 0
@@ -541,7 +543,7 @@ Item {
             var erpm = dv.getFloat32(ind); ind += 4;
             var acceleration = dv.getFloat32(ind); ind += 4;
             var braking = dv.getInt16(ind); ind += 2;
-            var pid_value = dv.getFloat32(ind); ind += 4;
+            var current_request = dv.getFloat32(ind); ind += 4;
             var true_pitch = dv.getFloat32(ind); ind += 4;
             var pitch = dv.getFloat32(ind); ind += 4;
             var roll = dv.getFloat32(ind); ind += 4;
@@ -558,6 +560,7 @@ Item {
             var normal_ride_current = dv.getFloat32(ind); ind += 4;
             var brake_ride_current = dv.getFloat32(ind); ind += 4;
             var current_out_weight = dv.getFloat32(ind); ind += 4;
+            var applied_booster_current = dv.getFloat32(ind); ind += 4;
 
             var stateString
             if(state == 0){
@@ -604,15 +607,16 @@ Item {
                 switchString = "On"
             }
             
-            
             rt_data_text.text =
                 "Time               : " + (1/time_diff).toFixed(0) + " hz\n" +
                 "State              : " + stateString + "\n" +
-                "Normal Current     : " + normal_ride_current.toFixed(2) + "\n" +
-                "Brake Current      : " + brake_ride_current.toFixed(2) + "\n" +
-                "Current (Request)  : " + pid_value.toFixed(2) + " A\n" +
+                "Normal Current     : " + normal_ride_current.toFixed(2) + " A\n" +
+                "Brake Current      : " + brake_ride_current.toFixed(2) + " A\n" +
+                "Current Out Weight : " + current_out_weight.toFixed(2) + "\n" +
+                "Current (Request)  : " + current_request.toFixed(2) + " A\n" +
                 "Current (Motor)    : " + motor_current.toFixed(2) + " A\n" +
                 "Current (Filtered) : " + filtered_current.toFixed(2) + " A\n" +
+                "Booster            : " + applied_booster_current.toFixed(2) + " A\n" + 
                 "ERPM               : " + (erpm / 1000).toFixed(3) + " / 1000 \n" +
                 "Acceleration       : " + acceleration.toFixed(2) + "\n" +
                 "Braking            : " + braking + "\n" + 
@@ -620,9 +624,7 @@ Item {
                 "Pitch              : " + pitch.toFixed(2) + "°\n" +
                 "Roll               : " + roll.toFixed(2) + "°\n" +
                 "Switch             : " + switchString + "\n" +
-                "ADC1 / ADC2        : " + adc1.toFixed(2) + "V / " + adc2.toFixed(2) + "V \n" +
-                "Torque PID Ratio   : " + (motor_current / pid_value).toFixed(4) + "\n" +
-                "Current Out Weight : " + current_out_weight.toFixed(2) + "\n";
+                "ADC1 / ADC2        : " + adc1.toFixed(2) + "V / " + adc2.toFixed(2) + "V \n";
             
             setpoints_text.text =
                 "Start Setpoint    : " + start_setpoint.toFixed(2) + "\n" +
@@ -638,9 +640,9 @@ Item {
             else {
                 toggleDlaCalibDump.text = "Disable DLA Calib Csv Dump"
                 if (running == 1) {
-                    mLogWriter.writeToLogFile(braking + "," + erpm.toFixed(0) + "," + acceleration.toFixed(3) + "," + 
-                                            motor_current.toFixed(2) + "," + pid_value.toFixed(2) + "," + 
-                                            (motor_current / pid_value).toFixed(4) + "\n")
+                    mLogWriter.writeToLogFile(braking + "," + current_out_weight.toFixed(3) + "," + 
+                                              normal_ride_current.toFixed(3) + "," + brake_ride_current.toFixed(3) + "," + 
+                                              current_request.toFixed(3) + "," + applied_booster_current.toFixed(3) + "\n")
                 }
             }
         }

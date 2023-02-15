@@ -121,7 +121,7 @@ typedef struct {
 	bool running;
 	float proportional, integral, proportional2, integral2;
 	float proportional_b, integral_b, proportional2_b, integral2_b;
-	float pid_value;
+	float current_request;
 	float setpoint, setpoint_target, setpoint_target_interpolated;
 	float noseangling_interpolated;
 	float torquetilt_filtered_current, torquetilt_target, torquetilt_interpolated;
@@ -243,8 +243,8 @@ static void configure(data *d) {
 	d->roll_turntilt_step_size = d->balance_conf.roll_turntilt_speed / d->balance_conf.hertz;
 	d->yaw_turntilt_step_size = d->balance_conf.yaw_turntilt_speed / d->balance_conf.hertz;
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
-	d->normal_to_brake_step_size = (1.0 / d->balance_conf.normal_to_brake_speed) / d->balance_conf.hertz;
-	d->brake_to_normal_step_size = (1.0 / d->balance_conf.brake_to_normal_speed) / d->balance_conf.hertz;
+	d->normal_to_brake_step_size = d->balance_conf.normal_to_brake_speed / d->balance_conf.hertz;
+	d->brake_to_normal_step_size = d->balance_conf.brake_to_normal_speed / d->balance_conf.hertz;
 
 	// Maximum amps change when braking
 	d->brake_max_amp_change = d->balance_conf.brake_max_amp_change;
@@ -329,7 +329,7 @@ static void reset_vars(data *d) {
 	d->last_time = 0;
 	d->diff_time = 0;
 	d->brake_timeout = 0;
-	d->pid_value = 0;
+	d->current_request = 0;
 	d->applied_booster_current = 0;
 	biquad_reset(&d->smooth_erpm_biquad);
 	d->smooth_erpm = 0;
@@ -1311,8 +1311,7 @@ static void balance_thd(void *arg) {
 			d->odometer_dirty = 1;
 
 			//Initialize variables
-			// Old version: SIGN(d->torquetilt_filtered_current) != SIGN(d->erpm)
-			if ((d->abs_erpm > 250) && (SIGN(d->proportional) != SIGN(d->erpm))) {
+			if ((d->abs_erpm > 250) && (SIGN(d->torquetilt_filtered_current) != SIGN(d->erpm))) {
 				// current is negative, so we are braking or going downhill
 				// high currents downhill are less likely
 				d->braking = true;
@@ -1353,7 +1352,7 @@ static void balance_thd(void *arg) {
 			float current_out_target = 0.0; // 0 = normal, 1 = brake
 			if (d->braking) {
 				// calculate how much weight to give to "brake ride" based on acceleration
-				float acc_coeff = fminf(fmaxf(fabsf(d->acceleration) - 0.5, 0.0), 2.0) / 2.0;
+				float acc_coeff = fminf(fabsf(d->acceleration), 2.0) / 2.0;
 				current_out_target += acc_coeff;
 			}
 
@@ -1369,24 +1368,24 @@ static void balance_thd(void *arg) {
 
 			// Blend between normal & brake rides, and apply filtering
 			float new_output_current = d->normal_ride_current * (1.0 - d->current_out_weight) + d->brake_ride_current * d->current_out_weight;
-			new_output_current = d->pid_value * 0.65 + new_output_current * 0.35;
+			new_output_current = d->current_request * 0.65 + new_output_current * 0.35;
 
 			// Freewheel while traction loss is detected
 			if (d->traction_control && d->balance_conf.enable_traction_control) {
-				d->pid_value = d->pid_value * d->balance_conf.traction_control_mul_by;
+				d->current_request = d->current_request * d->balance_conf.traction_control_mul_by;
 			}
 			// Brake Amp Rate Limiting
-			else if (d->braking && (fabsf(d->pid_value - new_output_current) > d->brake_max_amp_change)) {
-				if (new_output_current > d->pid_value) {
-					d->pid_value += d->brake_max_amp_change;
+			else if (d->braking && (fabsf(d->current_request - new_output_current) > d->brake_max_amp_change)) {
+				if (new_output_current > d->current_request) {
+					d->current_request += d->brake_max_amp_change;
 				}
 				else {
-					d->pid_value -= d->brake_max_amp_change;
+					d->current_request -= d->brake_max_amp_change;
 				}
 			}
 			// Everything ok, set new_output_current as the final current
 			else {
-				d->pid_value = new_output_current;
+				d->current_request = new_output_current;
 			}
 
 
@@ -1395,12 +1394,12 @@ static void balance_thd(void *arg) {
 				// Generate alternate pulses to produce distinct "click"
 				d->start_counter_clicks--;
 				if ((d->start_counter_clicks & 0x1) == 0)
-					set_current(d, d->pid_value - d->start_click_current);
+					set_current(d, d->current_request - d->start_click_current);
 				else
-					set_current(d, d->pid_value + d->start_click_current);
+					set_current(d, d->current_request + d->start_click_current);
 			}
 			else {
-				set_current(d, d->pid_value);
+				set_current(d, d->current_request);
 			}
 			break;
 
@@ -1490,7 +1489,7 @@ static void send_realtime_data(data *d){
 	buffer_append_float32_auto(send_buffer, d->erpm, &ind);
 	buffer_append_float32_auto(send_buffer, d->acceleration, &ind);
 	buffer_append_uint16(send_buffer, d->braking, &ind);
-	buffer_append_float32_auto(send_buffer, d->pid_value, &ind);
+	buffer_append_float32_auto(send_buffer, d->current_request, &ind);
 	buffer_append_float32_auto(send_buffer, d->true_pitch_angle, &ind);
 	buffer_append_float32_auto(send_buffer, d->pitch_angle, &ind);
 	buffer_append_float32_auto(send_buffer, d->roll_angle, &ind);
@@ -1506,6 +1505,7 @@ static void send_realtime_data(data *d){
 	buffer_append_float32_auto(send_buffer, d->normal_ride_current, &ind);
 	buffer_append_float32_auto(send_buffer, d->brake_ride_current, &ind);
 	buffer_append_float32_auto(send_buffer, d->current_out_weight, &ind);
+	buffer_append_float32_auto(send_buffer, d->applied_booster_current, &ind);
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 
