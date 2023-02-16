@@ -16,10 +16,6 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->pitch_thi_b, &ind);
 	buffer_append_float32_auto(buffer, conf->gyro_th, &ind);
 	buffer_append_float32_auto(buffer, conf->gyro_th_b, &ind);
-	buffer_append_float32_auto(buffer, conf->gyro_thi, &ind);
-	buffer_append_float32_auto(buffer, conf->gyro_thi_b, &ind);
-	buffer_append_float32_auto(buffer, conf->gyro_thi_decay, &ind);
-	buffer_append_float32_auto(buffer, conf->gyro_thi_decay_b, &ind);
 	buffer_append_float32_auto(buffer, conf->current_out_filter, &ind);
 	buffer_append_float32_auto(buffer, conf->current_out_filter_b, &ind);
 	buffer_append_float32(buffer, conf->normal_to_brake_speed, 100, &ind);
@@ -57,8 +53,6 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->brake_max_amp_change, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_limit_b, &ind);
-	buffer_append_float32_auto(buffer, conf->gyro_thi_limit, &ind);
-	buffer_append_float32_auto(buffer, conf->gyro_thi_limit_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_angle, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_angle_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_ramp, &ind);
@@ -118,10 +112,6 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->pitch_thi_b = buffer_get_float32_auto(buffer, &ind);
 	conf->gyro_th = buffer_get_float32_auto(buffer, &ind);
 	conf->gyro_th_b = buffer_get_float32_auto(buffer, &ind);
-	conf->gyro_thi = buffer_get_float32_auto(buffer, &ind);
-	conf->gyro_thi_b = buffer_get_float32_auto(buffer, &ind);
-	conf->gyro_thi_decay = buffer_get_float32_auto(buffer, &ind);
-	conf->gyro_thi_decay_b = buffer_get_float32_auto(buffer, &ind);
 	conf->current_out_filter = buffer_get_float32_auto(buffer, &ind);
 	conf->current_out_filter_b = buffer_get_float32_auto(buffer, &ind);
 	conf->normal_to_brake_speed = buffer_get_float32(buffer, 100, &ind);
@@ -159,8 +149,6 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->brake_max_amp_change = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_limit_b = buffer_get_float32_auto(buffer, &ind);
-	conf->gyro_thi_limit = buffer_get_float32_auto(buffer, &ind);
-	conf->gyro_thi_limit_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_angle = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_angle_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_ramp = buffer_get_float32_auto(buffer, &ind);
@@ -213,10 +201,6 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->pitch_thi_b = APPCONF_BALANCE_PITCH_THI_B;
 	conf->gyro_th = APPCONF_BALANCE_GYRO_TH;
 	conf->gyro_th_b = APPCONF_BALANCE_GYRO_TH_B;
-	conf->gyro_thi = APPCONF_BALANCE_GYRO_THI;
-	conf->gyro_thi_b = APPCONF_BALANCE_GYRO_THI_B;
-	conf->gyro_thi_decay = APPCONF_BALANCE_GYRO_THI_DECAY;
-	conf->gyro_thi_decay_b = APPCONF_BALANCE_GYRO_THI_DECAY_B;
 	conf->current_out_filter = APPCONF_BALANCE_CURRENT_OUT_FILTER;
 	conf->current_out_filter_b = APPCONF_BALANCE_CURRENT_OUT_FILTER_B;
 	conf->normal_to_brake_speed = APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED;
@@ -254,8 +238,6 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->brake_max_amp_change = APPCONF_BALANCE_BRAKE_MAX_AMPS;
 	conf->pitch_thi_limit = APPCONF_BALANCE_PITCH_THI_LIMIT;
 	conf->pitch_thi_limit_b = APPCONF_BALANCE_PITCH_THI_LIMIT_B;
-	conf->gyro_thi_limit = APPCONF_BALANCE_GYRO_THI_LIMIT;
-	conf->gyro_thi_limit_b = APPCONF_BALANCE_GYRO_THI_LIMIT_B;
 	conf->booster_angle = APPCONF_BALANCE_BOOSTER_ANGLE;
 	conf->booster_angle_b = APPCONF_BALANCE_BOOSTER_ANGLE_B;
 	conf->booster_ramp = APPCONF_BALANCE_BOOSTER_RAMP;

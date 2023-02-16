@@ -46,8 +46,7 @@ Item {
     property var dumpingText: 0
     property var dumpingCount: 0
     property var paramsArr:  [["double", "pitch_th"], ["double", "pitch_th_b"], ["double", "pitch_thi"], ["double", "pitch_thi_b"], 
-                              ["double", "gyro_th"], ["double", "gyro_th_b"], ["double", "gyro_thi"], ["double", "gyro_thi_b"], 
-                              ["double", "gyro_thi_decay"], ["double", "gyro_thi_decay_b"], ["double", "current_out_filter"], 
+                              ["double", "gyro_th"], ["double", "gyro_th_b"], ["double", "current_out_filter"], 
                               ["double", "current_out_filter_b"], ["double", "normal_to_brake_speed"], ["double", "brake_to_normal_speed"], 
                               ["double", "fault_pitch"], ["double", "fault_roll"], ["int", "fault_delay_pitch"], ["int", "fault_delay_roll"], 
                               ["double", "tiltback_duty_angle"], ["double", "tiltback_duty_speed"], ["double", "tiltback_duty"], 
@@ -56,8 +55,8 @@ Item {
                               ["int", "tiltback_constant_erpm"], ["double", "tiltback_variable"], ["double", "tiltback_variable_max"], 
                               ["double", "noseangling_speed"], ["double", "startup_pitch_tolerance"], ["double", "startup_roll_tolerance"], 
                               ["double", "startup_speed"], ["double", "brake_current"], ["double", "brake_max_amp_change"], 
-                              ["double", "pitch_thi_limit"], ["double", "pitch_thi_limit_b"], ["double", "gyro_thi_limit"], ["double", "gyro_thi_limit_b"],
-                              ["double", "booster_angle"], ["double", "booster_angle_b"], ["double", "booster_ramp"], ["double", "booster_ramp_b"], 
+                              ["double", "pitch_thi_limit"], ["double", "pitch_thi_limit_b"], ["double", "booster_angle"],
+                              ["double", "booster_angle_b"], ["double", "booster_ramp"], ["double", "booster_ramp_b"], 
                               ["double", "booster_current"], ["double", "booster_current_b"], ["double", "torquetilt_start_current"],
                               ["double", "torquetilt_angle_limit"], ["double", "torquetilt_on_speed"], ["double", "torquetilt_off_speed"],
                               ["double", "torquetilt_strength"], ["double", "torquetilt_strength_regen"], ["double", "torquetilt_filter"],

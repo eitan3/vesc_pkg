@@ -36,10 +36,6 @@ typedef struct {
 	float pitch_thi_b;
 	float gyro_th;
 	float gyro_th_b;
-	float gyro_thi;
-	float gyro_thi_b;
-	float gyro_thi_decay;
-	float gyro_thi_decay_b;
 	float current_out_filter;
 	float current_out_filter_b;
 	float normal_to_brake_speed;
@@ -77,8 +73,6 @@ typedef struct {
 	float brake_max_amp_change;
 	float pitch_thi_limit;
 	float pitch_thi_limit_b;
-	float gyro_thi_limit;
-	float gyro_thi_limit_b;
 	float booster_angle;
 	float booster_angle_b;
 	float booster_ramp;

@@ -119,8 +119,8 @@ typedef struct {
 	// Rumtime state values
 	BalanceState state;
 	bool running;
-	float proportional, integral, proportional2, integral2;
-	float proportional_b, integral_b, proportional2_b, integral2_b;
+	float proportional, integral, proportional2;
+	float proportional_b, integral_b, proportional2_b;
 	float current_request;
 	float setpoint, setpoint_target, setpoint_target_interpolated;
 	float noseangling_interpolated;
@@ -317,9 +317,7 @@ static void reset_vars(data *d) {
 	d->running = false;
 	// Clear accumulated values.
 	d->integral = 0;
-	d->integral2 = 0;
 	d->integral_b = 0;
-	d->integral2_b = 0;
 	// Set values for startup
 	d->setpoint = d->pitch_angle;
 	d->setpoint_target_interpolated = d->pitch_angle;
@@ -609,8 +607,6 @@ static void calculate_state_and_initial_setpoint(data *d) {
 					d->setpoint_target = 0;
 					d->integral = 0;
 					d->integral_b = 0;
-					d->integral2 = 0;
-					d->integral2_b = 0;
 				}
 			}
 		}
@@ -1124,18 +1120,7 @@ static float normal_ride_current(data *d, const float prev_current)
 	if (d->start_counter_clicks == 0) {
 		if (d->balance_conf.gyro_th > 0) {
 			d->proportional2 = -d->gyro[1];
-
-			// Apply integral2 and limiter
-			if (d->abs_erpm > 250) {
-				d->integral2 = d->integral2 + d->proportional2;
-				if (d->balance_conf.gyro_thi_limit > 0 && fabsf(d->integral2 * d->balance_conf.gyro_thi) > d->balance_conf.gyro_thi_limit) {
-					d->integral2 = d->balance_conf.gyro_thi_limit / d->balance_conf.gyro_thi * SIGN(d->integral2);
-				}
-			}
-			d->integral2 = d->integral2 * d->balance_conf.gyro_thi_decay;
-
-			output_current += (d->balance_conf.gyro_th * d->proportional2) +
-					(d->balance_conf.gyro_thi * d->integral2);
+			output_current += d->balance_conf.gyro_th * d->proportional2;
 		}
 
 		// Add booster
@@ -1174,18 +1159,7 @@ static float brake_ride_current(data *d, const float prev_current)
 	if (d->start_counter_clicks == 0) {
 		if (d->balance_conf.gyro_th_b > 0) {
 			d->proportional2_b = -d->gyro[1];
-
-			// Apply integral2_b and limiter
-			if (d->abs_erpm > 250) {
-				d->integral2_b = d->integral2_b + d->proportional2_b;
-				if (d->balance_conf.gyro_thi_limit_b > 0 && fabsf(d->integral2_b * d->balance_conf.gyro_thi_b) > d->balance_conf.gyro_thi_limit_b) {
-					d->integral2_b = d->balance_conf.gyro_thi_limit_b / d->balance_conf.gyro_thi_b * SIGN(d->integral2_b);
-				}
-			}
-			d->integral2_b = d->integral2_b * d->balance_conf.gyro_thi_decay_b;
-
-			output_current += (d->balance_conf.gyro_th_b * d->proportional2_b) +
-					(d->balance_conf.gyro_thi_b * d->integral2_b);
+			output_current += d->balance_conf.gyro_th_b * d->proportional2_b;
 		}
 
 		// Add booster
@@ -1369,7 +1343,6 @@ static void balance_thd(void *arg) {
 				d->proportional_b = d->proportional;
 				d->proportional2_b = d->proportional2;
 				d->integral_b = 0;
-				d->integral2_b = 0;
 			}
 
 			// Calculate current_out_weight and step size for interpolation
@@ -1496,10 +1469,6 @@ static float app_balance_get_debug(int index) {
 			return d->integral;
 		case(15):
 			return d->integral * d->balance_conf.pitch_thi;
-		case(16):
-			return d->integral2;
-		case(17):
-			return d->integral2 * d->balance_conf.gyro_thi;
 		default:
 			return 0;
 	}
