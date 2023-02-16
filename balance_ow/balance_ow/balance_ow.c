@@ -135,6 +135,9 @@ typedef struct {
 	float applied_booster_current;
 	bool traction_control;
 
+	float mc_max_current;
+	float mc_brake_max_current;
+
 	float normal_ride_current;
 	float brake_ride_current;
 	float current_out_weight;
@@ -245,6 +248,9 @@ static void configure(data *d) {
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
 	d->normal_to_brake_step_size = d->balance_conf.normal_to_brake_speed / d->balance_conf.hertz;
 	d->brake_to_normal_step_size = d->balance_conf.brake_to_normal_speed / d->balance_conf.hertz;
+
+	d->mc_max_current = VESC_IF->get_cfg_float(CFG_PARAM_l_current_max);
+	d->mc_brake_max_current = fabsf(VESC_IF->get_cfg_float(CFG_PARAM_l_current_min));
 
 	// Maximum amps change when braking
 	d->brake_max_amp_change = d->balance_conf.brake_max_amp_change;
@@ -1031,9 +1037,9 @@ static void do_rc_move(data *d)
 
 static void calc_booster(data *d)
 {
-	// Apply Booster (Now based on True Pitch)
-	float true_proportional = d->setpoint - d->true_pitch_angle;
-	float abs_true_proportional = fabsf(true_proportional);
+	// Apply Booster
+	float proportional = d->setpoint - d->pitch_angle;
+	float abs_proportional = fabsf(proportional);
 	// bool boostbraking = SIGN(d->proportional) != SIGN(d->erpm);
 
 	float booster_current, booster_angle, booster_ramp;
@@ -1064,12 +1070,12 @@ static void calc_booster(data *d)
 		}
 	}
 
-	if (abs_true_proportional > booster_angle) {
-		if (abs_true_proportional - booster_angle < booster_ramp) {
-			booster_current *= SIGN(true_proportional) *
-					((abs_true_proportional - booster_angle) / booster_ramp);
+	if (abs_proportional > booster_angle) {
+		if (abs_proportional - booster_angle < booster_ramp) {
+			booster_current *= SIGN(proportional) *
+					((abs_proportional - booster_angle) / booster_ramp);
 		} else {
-			booster_current *= SIGN(true_proportional);
+			booster_current *= SIGN(proportional);
 		}
 	}
 	else {
@@ -1342,18 +1348,28 @@ static void balance_thd(void *arg) {
 				d->roll_turntilt_target *= 0.99;
 			}
 			calc_final_setpoint(d);
+			
+			// Calculate current weight target (blend between normal & brake)
+			float current_out_target = 0.0; // 0 = normal, 1 = brake
+			float abs_accel = fabsf(d->acceleration);
+			if (d->braking && d->abs_erpm > 500 && abs_accel - 0.5 > 0) {
+				// calculate how much weight to give to "brake ride" based on acceleration
+				float acc_coeff = fminf(abs_accel - 0.5, 2.0) / 2.0;
+				current_out_target += acc_coeff;
+			}
 
 			// Calculate output current
 			calc_booster(d);
 			d->normal_ride_current = normal_ride_current(d, d->normal_ride_current);
-			d->brake_ride_current = brake_ride_current(d, d->brake_ride_current);
-			
-			// Calculate current weight target (blend between normal & brake)
-			float current_out_target = 0.0; // 0 = normal, 1 = brake
-			if (d->braking) {
-				// calculate how much weight to give to "brake ride" based on acceleration
-				float acc_coeff = fminf(fabsf(d->acceleration), 2.0) / 2.0;
-				current_out_target += acc_coeff;
+			if (current_out_target > 0.0 || d->current_out_weight > 0) {
+				d->brake_ride_current = brake_ride_current(d, d->brake_ride_current);
+			}
+			else {
+				d->brake_ride_current = d->normal_ride_current;
+				d->proportional_b = d->proportional;
+				d->proportional2_b = d->proportional2;
+				d->integral_b = 0;
+				d->integral2_b = 0;
 			}
 
 			// Calculate current_out_weight and step size for interpolation
@@ -1369,6 +1385,18 @@ static void balance_thd(void *arg) {
 			// Blend between normal & brake rides, and apply filtering
 			float new_output_current = d->normal_ride_current * (1.0 - d->current_out_weight) + d->brake_ride_current * d->current_out_weight;
 			new_output_current = d->current_request * 0.65 + new_output_current * 0.35;
+			
+			// Current Limiting!
+			float current_limit;
+			if (d->braking) {
+				current_limit = d->mc_brake_max_current;
+			}
+			else {
+				current_limit = d->mc_max_current;
+			}
+			if (fabsf(new_output_current) > current_limit) {
+				new_output_current = SIGN(new_output_current) * current_limit;
+			}
 
 			// Freewheel while traction loss is detected
 			if (d->traction_control && d->balance_conf.enable_traction_control) {

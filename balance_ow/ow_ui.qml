@@ -43,6 +43,8 @@ Item {
     property ConfigParams mCustomConf: VescIf.customConfig(0)
     property var dialogParent: ApplicationWindow.overlay
     property var enableDlaCaliDumping: 0
+    property var dumpingText: 0
+    property var dumpingCount: 0
     property var paramsArr:  [["double", "pitch_th"], ["double", "pitch_th_b"], ["double", "pitch_thi"], ["double", "pitch_thi_b"], 
                               ["double", "gyro_th"], ["double", "gyro_th_b"], ["double", "gyro_thi"], ["double", "gyro_thi_b"], 
                               ["double", "gyro_thi_decay"], ["double", "gyro_thi_decay_b"], ["double", "current_out_filter"], 
@@ -640,9 +642,15 @@ Item {
             else {
                 toggleDlaCalibDump.text = "Disable DLA Calib Csv Dump"
                 if (running == 1) {
-                    mLogWriter.writeToLogFile(braking + "," + current_out_weight.toFixed(3) + "," + 
-                                              normal_ride_current.toFixed(3) + "," + brake_ride_current.toFixed(3) + "," + 
-                                              current_request.toFixed(3) + "," + applied_booster_current.toFixed(3) + "\n")
+                    dumpingCount += 1
+                    dumpingText += braking + "," + current_out_weight.toFixed(3) + "," + 
+                                   normal_ride_current.toFixed(3) + "," + brake_ride_current.toFixed(3) + "," + 
+                                   current_request.toFixed(3) + "," + applied_booster_current.toFixed(3) + "\n"
+                    if (dumpingCount == 100){
+                        mLogWriter.writeToLogFile(dumpingText)
+                        dumpingText = ""
+                        dumpingCount = 0
+                    }
                 }
             }
         }
