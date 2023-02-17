@@ -120,7 +120,7 @@ typedef struct {
 	BalanceState state;
 	bool running;
 	float proportional, integral, proportional2;
-	float proportional_b, integral_b, proportional2_b;
+	float integral_b;
 	float current_request;
 	float setpoint, setpoint_target, setpoint_target_interpolated;
 	float noseangling_interpolated;
@@ -132,7 +132,8 @@ typedef struct {
 	float fault_angle_pitch_timer, fault_angle_roll_timer, fault_switch_timer, fault_switch_half_timer; // Seconds
 	float motor_timeout_seconds;
 	float brake_timeout; // Seconds
-	float applied_booster_current;
+	float normal_booster_current;
+	float brake_booster_current;
 	bool traction_control;
 
 	float mc_max_current;
@@ -343,7 +344,8 @@ static void reset_vars(data *d) {
 	d->diff_time = 0;
 	d->brake_timeout = 0;
 	d->current_request = 0;
-	d->applied_booster_current = 0;
+	d->normal_booster_current = 0;
+	d->brake_booster_current = 0;
 	biquad_reset(&d->smooth_erpm_biquad);
 	d->smooth_erpm = 0;
 
@@ -1040,52 +1042,17 @@ static void do_rc_move(data *d)
 	}
 }
 
-static void calc_booster(data *d)
+static float calc_nl_booster(data *d, float proportional, float min_pitch, float max_pitch, 
+							 float booster_base, float booster_exponent, float booster_scale) 
 {
-	// Apply Booster
-	float proportional = d->setpoint - d->pitch_angle;
-	float abs_proportional = fabsf(proportional);
-	// bool boostbraking = SIGN(d->proportional) != SIGN(d->erpm);
-
-	float booster_current, booster_angle, booster_ramp;
-	if (d->braking) {
-		booster_current = d->balance_conf.booster_current_b;
-		booster_angle = d->balance_conf.booster_angle_b;
-		booster_ramp = d->balance_conf.booster_ramp_b;
-	}
-	else {
-		booster_current = d->balance_conf.booster_current;
-		booster_angle = d->balance_conf.booster_angle;
-		booster_ramp = d->balance_conf.booster_ramp;
-	}
-
-	// Make booster a bit stronger at higher speed (up to 2x stronger when braking)
-	const int boost_min_erpm = 3000;
-	if (d->abs_erpm > boost_min_erpm) {
-		float speedstiffness = fminf(1, (d->abs_erpm - boost_min_erpm) / 10000);
-		if (d->braking) {
-			// use higher current at speed when braking
-			booster_current += booster_current * speedstiffness;
-		}
-		else {
-			// when accelerating, we reduce the booster start angle as we get faster
-			// strength remains unchanged
-			float angledivider = 1 + speedstiffness;
-			booster_angle /= angledivider;
-		}
-	}
-
-	if (abs_proportional > booster_angle) {
-		if (abs_proportional - booster_angle < booster_ramp) {
-			booster_current *= SIGN(proportional) *
-					((abs_proportional - booster_angle) / booster_ramp);
-		} else {
-			booster_current *= SIGN(proportional);
-		}
-	}
-	else {
-		booster_current = 0;
-	}
+	max_pitch = max_pitch - min_pitch;
+	float booster_weight = fabsf(proportional) - min_pitch;
+	booster_weight = fmaxf(booster_weight, 0.0);
+	booster_weight = fminf(booster_weight, max_pitch);
+	booster_weight = booster_weight / max_pitch; // Between 0-1, 0: pitch below min_pitch, 1: pitch above max_pitch
+	float booster_amps = booster_base * booster_weight;
+	float final_out_amps = powf(booster_amps, booster_exponent) * booster_scale;
+	final_out_amps *= SIGN(proportional);
 
 	// Limit booster while duty cycle
 	if (d->abs_duty_cycle > d->balance_conf.tiltback_duty) {
@@ -1093,11 +1060,10 @@ static void calc_booster(data *d)
 		dc_coeff = dc_coeff / (1.0 - d->balance_conf.tiltback_duty);
 		dc_coeff = fminf(fmaxf(dc_coeff, 0.0), 1.0);
 		dc_coeff = 1.0 - dc_coeff;
-		booster_current *= dc_coeff;
+		final_out_amps *= dc_coeff;
 	}
 
-	// No harsh changes in booster current (effective delay <= 100ms)
-	d->applied_booster_current = 0.01 * booster_current + 0.99 * d->applied_booster_current;
+	return final_out_amps;
 }
 
 static float normal_ride_current(data *d, const float prev_current)
@@ -1133,7 +1099,10 @@ static float normal_ride_current(data *d, const float prev_current)
 		}
 
 		// Add booster
-		output_current += d->applied_booster_current;
+		float booster_current = calc_nl_booster(d, d->proportional, d->balance_conf.booster_min_pitch, d->balance_conf.booster_max_pitch, 
+												d->balance_conf.booster_base, d->balance_conf.booster_exponent, d->balance_conf.booster_scale);
+		d->normal_booster_current = 0.01 * booster_current + 0.99 * d->normal_booster_current;
+		output_current += d->normal_booster_current;
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter) + output_current * d->balance_conf.current_out_filter;
 	return output_current;
@@ -1141,12 +1110,9 @@ static float normal_ride_current(data *d, const float prev_current)
 
 static float brake_ride_current(data *d, const float prev_current)
 {
-	// Calculate proportional
-	d->proportional_b = d->setpoint - d->pitch_angle;
-
 	// Apply integral_b and limiter
 	if (d->abs_erpm > 250) {
-		d->integral_b = d->integral_b + d->proportional_b;
+		d->integral_b = d->integral_b + d->proportional;
 		if (d->balance_conf.pitch_thi_limit_b > 0 && fabsf(d->integral_b * d->balance_conf.pitch_thi_b) > d->balance_conf.pitch_thi_limit_b) {
 			d->integral_b = d->balance_conf.pitch_thi_limit_b / d->balance_conf.pitch_thi_b * SIGN(d->integral_b);
 		}
@@ -1161,18 +1127,20 @@ static float brake_ride_current(data *d, const float prev_current)
 	}
 
 	// Calculate new current
-	float output_current = d->balance_conf.pitch_th_b * d->proportional_b + d->balance_conf.pitch_thi_b * d->integral_b;
+	float output_current = d->balance_conf.pitch_th_b * d->proportional + d->balance_conf.pitch_thi_b * d->integral_b;
 			
 	// Start Rate PID and Booster portion a few cycles later, after the start clicks have been emitted
 	// this keeps the start smooth and predictable
 	if (d->start_counter_clicks == 0) {
 		if (d->balance_conf.gyro_th_b > 0) {
-			d->proportional2_b = -d->gyro[1];
-			output_current += d->balance_conf.gyro_th_b * d->proportional2_b;
+			output_current += d->balance_conf.gyro_th_b * d->proportional2;
 		}
 
 		// Add booster
-		output_current += d->applied_booster_current;
+		float booster_current = calc_nl_booster(d, d->proportional, d->balance_conf.booster_min_pitch_b, d->balance_conf.booster_max_pitch_b, 
+												d->balance_conf.booster_base_b, d->balance_conf.booster_exponent_b, d->balance_conf.booster_scale_b);
+		d->brake_booster_current = 0.01 * booster_current + 0.99 * d->brake_booster_current;
+		output_current += d->brake_booster_current;
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter_b) + output_current * d->balance_conf.current_out_filter_b;
 	return output_current;
@@ -1345,15 +1313,13 @@ static void balance_thd(void *arg) {
 			}
 
 			// Calculate output current
-			calc_booster(d);
 			d->normal_ride_current = normal_ride_current(d, d->normal_ride_current);
 			if (current_out_target > 0.0 || d->current_out_weight > 0) {
 				d->brake_ride_current = brake_ride_current(d, d->brake_ride_current);
 			}
 			else {
 				d->brake_ride_current = d->normal_ride_current;
-				d->proportional_b = d->proportional;
-				d->proportional2_b = d->proportional2;
+				d->brake_booster_current = d->normal_booster_current;
 				d->integral_b = 0;
 			}
 
@@ -1514,7 +1480,8 @@ static void send_realtime_data(data *d){
 	buffer_append_float32_auto(send_buffer, d->normal_ride_current, &ind);
 	buffer_append_float32_auto(send_buffer, d->brake_ride_current, &ind);
 	buffer_append_float32_auto(send_buffer, d->current_out_weight, &ind);
-	buffer_append_float32_auto(send_buffer, d->applied_booster_current, &ind);
+	buffer_append_float32_auto(send_buffer, d->normal_booster_current, &ind);
+	buffer_append_float32_auto(send_buffer, d->brake_booster_current, &ind);
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 

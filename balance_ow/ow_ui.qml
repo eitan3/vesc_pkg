@@ -55,9 +55,7 @@ Item {
                               ["int", "tiltback_constant_erpm"], ["double", "tiltback_variable"], ["double", "tiltback_variable_max"], 
                               ["double", "noseangling_speed"], ["double", "startup_pitch_tolerance"], ["double", "startup_roll_tolerance"], 
                               ["double", "startup_speed"], ["double", "brake_current"], ["double", "brake_max_amp_change"], 
-                              ["double", "pitch_thi_limit"], ["double", "pitch_thi_limit_b"], ["double", "booster_angle"],
-                              ["double", "booster_angle_b"], ["double", "booster_ramp"], ["double", "booster_ramp_b"], 
-                              ["double", "booster_current"], ["double", "booster_current_b"], ["double", "torquetilt_start_current"],
+                              ["double", "pitch_thi_limit"], ["double", "pitch_thi_limit_b"], ["double", "torquetilt_start_current"],
                               ["double", "torquetilt_angle_limit"], ["double", "torquetilt_on_speed"], ["double", "torquetilt_off_speed"],
                               ["double", "torquetilt_strength"], ["double", "torquetilt_strength_regen"], ["double", "torquetilt_filter"],
                               ["enum", "turntilt_mixing_mode"], ["double", "roll_turntilt_weight"], ["double", "roll_turntilt_strength"], 
@@ -67,7 +65,10 @@ Item {
                               ["double", "yaw_turntilt_start_angle"], ["int", "yaw_turntilt_start_erpm"], ["double", "yaw_turntilt_speed"],
                               ["int", "yaw_turntilt_erpm_boost"], ["int", "yaw_turntilt_erpm_boost_end"],
                               ["int", "yaw_turntilt_aggregate"], ["bool", "enable_traction_control"], ["double", "traction_control_mul_by"],
-                              ["int", "asym_erpm_start"], ["double", "asym_min_accel"], ["double", "asym_max_accel"]]
+                              ["int", "asym_erpm_start"], ["double", "asym_min_accel"], ["double", "asym_max_accel"], ["double", "booster_min_pitch"],
+                              ["double", "booster_max_pitch"], ["double", "booster_base"], ["double", "booster_exponent"], ["double", "booster_scale"], 
+                              ["double", "booster_min_pitch_b"], ["double", "booster_max_pitch_b"], ["double", "booster_base_b"], 
+                              ["double", "booster_exponent_b"], ["double", "booster_scale_b"]]
     
     Settings {
         id: settingStorage
@@ -323,7 +324,7 @@ Item {
                                 mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamInt(paramsArr[i][1]))
                             }
                             else if (paramsArr[i][0] == "bool") {
-                                mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamBool(paramsArr[i][1]))
+                                mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamBool(paramsArr[i][1])?1:0)
                             }
                             else if (paramsArr[i][0] == "enum") {
                                 mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamEnum(paramsArr[i][1]))
@@ -503,8 +504,8 @@ Item {
                                     if (enableDlaCaliDumping == 0) {
                                         enableDlaCaliDumping = 1
                                         mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
-                                        var header = "braking,current_out_weight,normal_ride_current,brake_ride_current,"
-                                        header += "current_request,applied_booster_current\n"
+                                        var header = "erpm,braking,current_out_weight,normal_ride_current,brake_ride_current,"
+                                        header += "current_request,normal_booster_current,brake_booster_current\n"
                                         mLogWriter.writeToLogFile(header)
                                     }
                                     else {
@@ -562,7 +563,8 @@ Item {
             var normal_ride_current = dv.getFloat32(ind); ind += 4;
             var brake_ride_current = dv.getFloat32(ind); ind += 4;
             var current_out_weight = dv.getFloat32(ind); ind += 4;
-            var applied_booster_current = dv.getFloat32(ind); ind += 4;
+            var normal_booster_current = dv.getFloat32(ind); ind += 4;
+            var brake_booster_current = dv.getFloat32(ind); ind += 4;
 
             var stateString
             if(state == 0){
@@ -618,7 +620,8 @@ Item {
                 "Current (Request)  : " + current_request.toFixed(2) + " A\n" +
                 "Current (Motor)    : " + motor_current.toFixed(2) + " A\n" +
                 "Current (Filtered) : " + filtered_current.toFixed(2) + " A\n" +
-                "Booster            : " + applied_booster_current.toFixed(2) + " A\n" + 
+                "Normal Booster     : " + normal_booster_current.toFixed(2) + " A\n" + 
+                "Brake Booster      : " + brake_booster_current.toFixed(2) + " A\n" + 
                 "ERPM               : " + (erpm / 1000).toFixed(3) + " / 1000 \n" +
                 "Acceleration       : " + acceleration.toFixed(2) + "\n" +
                 "Braking            : " + braking + "\n" + 
@@ -643,9 +646,10 @@ Item {
                 toggleDlaCalibDump.text = "Disable DLA Calib Csv Dump"
                 if (running == 1) {
                     dumpingCount += 1
-                    dumpingText += braking + "," + current_out_weight.toFixed(3) + "," + 
+                    dumpingText += erpm + "," + braking + "," + current_out_weight.toFixed(3) + "," + 
                                    normal_ride_current.toFixed(3) + "," + brake_ride_current.toFixed(3) + "," + 
-                                   current_request.toFixed(3) + "," + applied_booster_current.toFixed(3) + "\n"
+                                   current_request.toFixed(3) + "," + normal_booster_current.toFixed(3) + "," + 
+                                   brake_booster_current.toFixed(3) + "\n"
                     if (dumpingCount == 100){
                         mLogWriter.writeToLogFile(dumpingText)
                         dumpingText = ""

@@ -73,12 +73,6 @@ typedef struct {
 	float brake_max_amp_change;
 	float pitch_thi_limit;
 	float pitch_thi_limit_b;
-	float booster_angle;
-	float booster_angle_b;
-	float booster_ramp;
-	float booster_ramp_b;
-	float booster_current;
-	float booster_current_b;
 	float torquetilt_start_current;
 	float torquetilt_angle_limit;
 	float torquetilt_on_speed;
@@ -117,6 +111,16 @@ typedef struct {
 	uint16_t asym_erpm_start;
 	float asym_min_accel;
 	float asym_max_accel;
+	float booster_min_pitch;
+	float booster_max_pitch;
+	float booster_base;
+	float booster_exponent;
+	float booster_scale;
+	float booster_min_pitch_b;
+	float booster_max_pitch_b;
+	float booster_base_b;
+	float booster_exponent_b;
+	float booster_scale_b;
 } balance_config;
 
 // DATATYPES_H_
