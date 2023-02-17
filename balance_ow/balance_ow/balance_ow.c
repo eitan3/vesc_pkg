@@ -178,6 +178,9 @@ typedef struct {
 	// Startup Clicks
 	unsigned int start_counter_clicks, start_counter_clicks_max, start_click_current;
 
+	// Asymmetric Tune
+	float asym_max_accel;
+
 	// Odometer
 	float odo_timer;
 	int odometer_dirty;
@@ -307,6 +310,12 @@ static void configure(data *d) {
 	// Startup Clicks
 	d->start_click_current = d->balance_conf.startup_click_current;
 	d->start_counter_clicks_max = 3;
+
+	// Asymmetric Tune
+	if (d->balance_conf.asym_max_accel < d->balance_conf.asym_min_accel)
+		d->asym_max_accel = 0.1;
+	else 
+		d->asym_max_accel = d->balance_conf.asym_max_accel - d->balance_conf.asym_min_accel;
 
 	// Odometer
 	d->odometer_dirty = 0;
@@ -1326,9 +1335,12 @@ static void balance_thd(void *arg) {
 			// Calculate current weight target (blend between normal & brake)
 			float current_out_target = 0.0; // 0 = normal, 1 = brake
 			float abs_accel = fabsf(d->acceleration);
-			if (d->braking && d->abs_erpm > 500 && abs_accel - 0.5 > 0) {
+			if (d->braking && 
+				d->abs_erpm > d->balance_conf.asym_erpm_start && 
+				abs_accel - d->balance_conf.asym_min_accel > 0) 
+			{
 				// calculate how much weight to give to "brake ride" based on acceleration
-				float acc_coeff = fminf(abs_accel - 0.5, 2.0) / 2.0;
+				float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel, d->asym_max_accel) / d->asym_max_accel;
 				current_out_target += acc_coeff;
 			}
 

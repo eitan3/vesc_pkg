@@ -423,6 +423,21 @@
 #define APPCONF_BALANCE_TRACTION_CONTROL_MUL_BY 0.75
 #endif
 
+// Asym Start ERPM
+#ifndef APPCONF_BALANCE_ASYM_ERPM_START
+#define APPCONF_BALANCE_ASYM_ERPM_START 500
+#endif
+
+// Asym Min Acceleration
+#ifndef APPCONF_BALANCE_ASYM_MIN_ACCEL
+#define APPCONF_BALANCE_ASYM_MIN_ACCEL 0.5
+#endif
+
+// Asym Max Acceleration
+#ifndef APPCONF_BALANCE_ASYM_MAX_ACCEL
+#define APPCONF_BALANCE_ASYM_MAX_ACCEL 2.5
+#endif
+
 // CONF_DEFAULT_H_
 #endif
 

@@ -66,7 +66,8 @@ Item {
                               ["double", "yaw_turntilt_weight"], ["double", "yaw_turntilt_strength"], ["double", "yaw_turntilt_angle_limit"],
                               ["double", "yaw_turntilt_start_angle"], ["int", "yaw_turntilt_start_erpm"], ["double", "yaw_turntilt_speed"],
                               ["int", "yaw_turntilt_erpm_boost"], ["int", "yaw_turntilt_erpm_boost_end"],
-                              ["int", "yaw_turntilt_aggregate"], ["bool", "enable_traction_control"], ["double", "traction_control_mul_by"]]
+                              ["int", "yaw_turntilt_aggregate"], ["bool", "enable_traction_control"], ["double", "traction_control_mul_by"],
+                              ["int", "asym_erpm_start"], ["double", "asym_min_accel"], ["double", "asym_max_accel"]]
     
     Settings {
         id: settingStorage

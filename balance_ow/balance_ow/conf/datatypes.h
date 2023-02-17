@@ -114,6 +114,9 @@ typedef struct {
 	uint16_t startup_click_current;
 	bool enable_traction_control;
 	float traction_control_mul_by;
+	uint16_t asym_erpm_start;
+	float asym_min_accel;
+	float asym_max_accel;
 } balance_config;
 
 // DATATYPES_H_

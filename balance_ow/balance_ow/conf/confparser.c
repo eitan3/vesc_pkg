@@ -94,6 +94,9 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_uint16(buffer, conf->startup_click_current, &ind);
 	buffer[ind++] = conf->enable_traction_control;
 	buffer_append_float32_auto(buffer, conf->traction_control_mul_by, &ind);
+	buffer_append_uint16(buffer, conf->asym_erpm_start, &ind);
+	buffer_append_float32_auto(buffer, conf->asym_min_accel, &ind);
+	buffer_append_float32_auto(buffer, conf->asym_max_accel, &ind);
 
 	return ind;
 }
@@ -190,6 +193,9 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->startup_click_current = buffer_get_uint16(buffer, &ind);
 	conf->enable_traction_control = buffer[ind++];
 	conf->traction_control_mul_by = buffer_get_float32_auto(buffer, &ind);
+	conf->asym_erpm_start = buffer_get_uint16(buffer, &ind);
+	conf->asym_min_accel = buffer_get_float32_auto(buffer, &ind);
+	conf->asym_max_accel = buffer_get_float32_auto(buffer, &ind);
 
 	return true;
 }
@@ -279,5 +285,8 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->startup_click_current = APPCONF_BALANCE_STARTUP_CLICK_CURRENT;
 	conf->enable_traction_control = APPCONF_BALANCE_ENABLE_TRACTION_CONTROL;
 	conf->traction_control_mul_by = APPCONF_BALANCE_TRACTION_CONTROL_MUL_BY;
+	conf->asym_erpm_start = APPCONF_BALANCE_ASYM_ERPM_START;
+	conf->asym_min_accel = APPCONF_BALANCE_ASYM_MIN_ACCEL;
+	conf->asym_max_accel = APPCONF_BALANCE_ASYM_MAX_ACCEL;
 }
 
