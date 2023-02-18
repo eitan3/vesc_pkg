@@ -74,6 +74,7 @@ typedef struct {
 	float pitch_thi_limit;
 	float pitch_thi_limit_b;
 	float torquetilt_start_current;
+	float torquetilt_start_current_b;
 	float torquetilt_angle_limit;
 	float torquetilt_on_speed;
 	float torquetilt_off_speed;

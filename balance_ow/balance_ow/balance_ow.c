@@ -758,7 +758,8 @@ static void calc_torquetilt_interpolation(data *d) {
 	// Then multiply it by "power" to get our desired angle, and min with the limit to respect boundaries.
 	// Finally multiply it by sign motor current to get directionality back
 	float torquetilt_strength = d->braking == false ? d->balance_conf.torquetilt_strength : d->balance_conf.torquetilt_strength_regen;
-	d->torquetilt_target = fminf(fmaxf(fabsf(d->torquetilt_filtered_current) - d->balance_conf.torquetilt_start_current, 0) *
+	float torquetilt_start_current = d->braking == false ? d->balance_conf.torquetilt_start_current : d->balance_conf.torquetilt_start_current_b;
+	d->torquetilt_target = fminf(fmaxf(fabsf(d->torquetilt_filtered_current) - torquetilt_start_current, 0) *
 			torquetilt_strength, d->balance_conf.torquetilt_angle_limit) * SIGN(d->torquetilt_filtered_current);
 
 	float step_size;
@@ -1046,7 +1047,8 @@ static float calc_nl_booster(data *d, float proportional, float min_pitch, float
 							 float pitch_scale, float booster_base, float booster_exponent, 
 							 float booster_out_scale, float booster_limit) 
 {
-	max_pitch = max_pitch - min_pitch;
+	min_pitch = min_pitch * pitch_scale;
+	max_pitch = max_pitch * pitch_scale - min_pitch;
 	float booster_weight = fabsf(proportional) * pitch_scale - min_pitch;
 	booster_weight = fmaxf(booster_weight, 0.0);
 	booster_weight = fminf(booster_weight, max_pitch);

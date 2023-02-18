@@ -54,6 +54,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->pitch_thi_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_limit_b, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_start_current, &ind);
+	buffer_append_float32_auto(buffer, conf->torquetilt_start_current_b, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_angle_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_on_speed, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_off_speed, &ind);
@@ -161,6 +162,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->pitch_thi_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_limit_b = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_start_current = buffer_get_float32_auto(buffer, &ind);
+	conf->torquetilt_start_current_b = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_angle_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_on_speed = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_off_speed = buffer_get_float32_auto(buffer, &ind);
@@ -261,6 +263,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->pitch_thi_limit = APPCONF_BALANCE_PITCH_THI_LIMIT;
 	conf->pitch_thi_limit_b = APPCONF_BALANCE_PITCH_THI_LIMIT_B;
 	conf->torquetilt_start_current = APPCONF_BALANCE_TORQUETILT_START_CURRENT;
+	conf->torquetilt_start_current_b = APPCONF_BALANCE_TORQUETILT_START_CURRENT_B;
 	conf->torquetilt_angle_limit = APPCONF_BALANCE_TORQUETILT_ANGLE_LIMIT;
 	conf->torquetilt_on_speed = APPCONF_BALANCE_TORQUETILT_ON_SPEED;
 	conf->torquetilt_off_speed = APPCONF_BALANCE_TORQUETILT_OFF_SPEED;
