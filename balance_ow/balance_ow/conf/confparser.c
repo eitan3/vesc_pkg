@@ -93,14 +93,18 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->asym_max_accel, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_min_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch, &ind);
+	buffer_append_float32_auto(buffer, conf->booster_pitch_scale, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_base, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_exponent, &ind);
-	buffer_append_float32_auto(buffer, conf->booster_scale, &ind);
+	buffer_append_float32_auto(buffer, conf->booster_out_scale, &ind);
+	buffer_append_float32_auto(buffer, conf->booster_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_min_pitch_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch_b, &ind);
+	buffer_append_float32_auto(buffer, conf->booster_pitch_scale_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_base_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_exponent_b, &ind);
-	buffer_append_float32_auto(buffer, conf->booster_scale_b, &ind);
+	buffer_append_float32_auto(buffer, conf->booster_out_scale_b, &ind);
+	buffer_append_float32_auto(buffer, conf->booster_limit_b, &ind);
 
 	return ind;
 }
@@ -196,14 +200,18 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->asym_max_accel = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_min_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch = buffer_get_float32_auto(buffer, &ind);
+	conf->booster_pitch_scale = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_base = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_exponent = buffer_get_float32_auto(buffer, &ind);
-	conf->booster_scale = buffer_get_float32_auto(buffer, &ind);
+	conf->booster_out_scale = buffer_get_float32_auto(buffer, &ind);
+	conf->booster_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_min_pitch_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch_b = buffer_get_float32_auto(buffer, &ind);
+	conf->booster_pitch_scale_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_base_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_exponent_b = buffer_get_float32_auto(buffer, &ind);
-	conf->booster_scale_b = buffer_get_float32_auto(buffer, &ind);
+	conf->booster_out_scale_b = buffer_get_float32_auto(buffer, &ind);
+	conf->booster_limit_b = buffer_get_float32_auto(buffer, &ind);
 
 	return true;
 }
@@ -292,13 +300,17 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->asym_max_accel = APPCONF_BALANCE_ASYM_MAX_ACCEL;
 	conf->booster_min_pitch = APPCONF_BALANCE_BOOSTER_MIN_PITCH;
 	conf->booster_max_pitch = APPCONF_BALANCE_BOOSTER_MAX_PITCH;
+	conf->booster_pitch_scale = APPCONF_BALANCE_BOOSTER_PITCH_SCALE;
 	conf->booster_base = APPCONF_BALANCE_BOOSTER_BASE;
 	conf->booster_exponent = APPCONF_BALANCE_BOOSTER_EXPONENT;
-	conf->booster_scale = APPCONF_BALANCE_BOOSTER_SCALE;
+	conf->booster_out_scale = APPCONF_BALANCE_BOOSTER_OUT_SCALE;
+	conf->booster_limit = APPCONF_BALANCE_BOOSTER_LIMIT;
 	conf->booster_min_pitch_b = APPCONF_BALANCE_BOOSTER_MIN_PITCH_B;
 	conf->booster_max_pitch_b = APPCONF_BALANCE_BOOSTER_MAX_PITCH_B;
+	conf->booster_pitch_scale_b = APPCONF_BALANCE_BOOSTER_PITCH_SCALE_B;
 	conf->booster_base_b = APPCONF_BALANCE_BOOSTER_BASE_B;
 	conf->booster_exponent_b = APPCONF_BALANCE_BOOSTER_EXPONENT_B;
-	conf->booster_scale_b = APPCONF_BALANCE_BOOSTER_SCALE_B;
+	conf->booster_out_scale_b = APPCONF_BALANCE_BOOSTER_OUT_SCALE_B;
+	conf->booster_limit_b = APPCONF_BALANCE_BOOSTER_LIMIT_B;
 }
 

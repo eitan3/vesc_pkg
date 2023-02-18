@@ -113,14 +113,18 @@ typedef struct {
 	float asym_max_accel;
 	float booster_min_pitch;
 	float booster_max_pitch;
+	float booster_pitch_scale;
 	float booster_base;
 	float booster_exponent;
-	float booster_scale;
+	float booster_out_scale;
+	float booster_limit;
 	float booster_min_pitch_b;
 	float booster_max_pitch_b;
+	float booster_pitch_scale_b;
 	float booster_base_b;
 	float booster_exponent_b;
-	float booster_scale_b;
+	float booster_out_scale_b;
+	float booster_limit_b;
 } balance_config;
 
 // DATATYPES_H_

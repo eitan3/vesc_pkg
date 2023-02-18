@@ -183,7 +183,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0.1</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.01</stepDouble>
-            <valDouble>0.4</valDouble>
+            <valDouble>0.25</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> </suffix>
             <vTx>9</vTx>
@@ -207,7 +207,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0.1</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.01</stepDouble>
-            <valDouble>0.8</valDouble>
+            <valDouble>0.75</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> </suffix>
             <vTx>9</vTx>
@@ -337,7 +337,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>1</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>2.75</valDouble>
+            <valDouble>2.7</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> V</suffix>
             <vTx>9</vTx>
@@ -359,7 +359,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>1</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>2.75</valDouble>
+            <valDouble>2.7</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> V</suffix>
             <vTx>9</vTx>
@@ -953,7 +953,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>2</stepDouble>
-            <valDouble>30</valDouble>
+            <valDouble>35</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> A</suffix>
             <vTx>9</vTx>
@@ -1694,7 +1694,7 @@ p, li { white-space: pre-wrap; }
             <minInt>250</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>1</stepInt>
-            <valInt>750</valInt>
+            <valInt>500</valInt>
             <suffix></suffix>
             <vTx>3</vTx>
         </asym_erpm_start>
@@ -1715,7 +1715,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.001</stepDouble>
-            <valDouble>0.75</valDouble>
+            <valDouble>0.5</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -1737,7 +1737,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.001</stepDouble>
-            <valDouble>2</valDouble>
+            <valDouble>1.25</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -1752,13 +1752,13 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Pitch at which booster is applied (actually measued as absolute deviation from setpoint).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
             <cDefine>APPCONF_BALANCE_BOOSTER_MIN_PITCH</cDefine>
-            <editorDecimalsDouble>1</editorDecimalsDouble>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
             <maxDouble>50</maxDouble>
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
-            <stepDouble>0.1</stepDouble>
+            <stepDouble>0.001</stepDouble>
             <valDouble>0</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> </suffix>
@@ -1774,18 +1774,40 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Limit booster pitch, clip the pitch to the value specified here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
             <cDefine>APPCONF_BALANCE_BOOSTER_MAX_PITCH</cDefine>
-            <editorDecimalsDouble>1</editorDecimalsDouble>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
             <maxDouble>50</maxDouble>
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
-            <stepDouble>0.1</stepDouble>
+            <stepDouble>0.001</stepDouble>
             <valDouble>2</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> </suffix>
             <vTx>9</vTx>
         </booster_max_pitch>
+        <booster_pitch_scale>
+            <longName>Booster Pitch Scale</longName>
+            <type>1</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Scale pitch by the specified value. this value doesn't effect min &amp;amp; max pitch!! scale them too if you want to.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_PITCH_SCALE</cDefine>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxDouble>50</maxDouble>
+            <minDouble>0</minDouble>
+            <showDisplay>0</showDisplay>
+            <stepDouble>0.001</stepDouble>
+            <valDouble>1</valDouble>
+            <vTxDoubleScale>1</vTxDoubleScale>
+            <suffix> </suffix>
+            <vTx>9</vTx>
+        </booster_pitch_scale>
         <booster_base>
             <longName>Booster Base Amps</longName>
             <type>1</type>
@@ -1797,13 +1819,13 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Base amps to apply to booster calculation.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster output = pow(booster_base, booster_exponent) * booster_scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
             <cDefine>APPCONF_BALANCE_BOOSTER_BASE</cDefine>
-            <editorDecimalsDouble>1</editorDecimalsDouble>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
             <maxDouble>50</maxDouble>
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
-            <stepDouble>0.1</stepDouble>
+            <stepDouble>0.001</stepDouble>
             <valDouble>15</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> </suffix>
@@ -1823,29 +1845,6 @@ p, li { white-space: pre-wrap; }
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
-            <maxDouble>3</maxDouble>
-            <minDouble>0</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.001</stepDouble>
-            <valDouble>1</valDouble>
-            <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
-            <vTx>9</vTx>
-        </booster_exponent>
-        <booster_scale>
-            <longName>Booster Scale</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster Scale.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster output = pow(booster_base, booster_exponent) * booster_scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_SCALE</cDefine>
-            <editorDecimalsDouble>3</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
             <maxDouble>10</maxDouble>
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
@@ -1854,7 +1853,52 @@ p, li { white-space: pre-wrap; }
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> </suffix>
             <vTx>9</vTx>
-        </booster_scale>
+        </booster_exponent>
+        <booster_out_scale>
+            <longName>Booster Out Scale</longName>
+            <type>1</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster Scale.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster output = pow(booster_base, booster_exponent) * booster_out_scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_OUT_SCALE</cDefine>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxDouble>100</maxDouble>
+            <minDouble>0</minDouble>
+            <showDisplay>0</showDisplay>
+            <stepDouble>0.001</stepDouble>
+            <valDouble>1</valDouble>
+            <vTxDoubleScale>1</vTxDoubleScale>
+            <suffix> </suffix>
+            <vTx>9</vTx>
+        </booster_out_scale>
+        <booster_limit>
+            <longName>Booster Max Current</longName>
+            <type>1</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Limit the booster's current.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_LIMIT</cDefine>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxDouble>50</maxDouble>
+            <minDouble>0</minDouble>
+            <showDisplay>0</showDisplay>
+            <stepDouble>0.001</stepDouble>
+            <valDouble>27</valDouble>
+            <vTxDoubleScale>1</vTxDoubleScale>
+            <suffix> </suffix>
+            <vTx>9</vTx>
+        </booster_limit>
         <booster_min_pitch_b>
             <longName>Booster Start Pitch (B)</longName>
             <type>1</type>
@@ -1865,13 +1909,13 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Pitch at which booster is applied (actually measued as absolute deviation from setpoint).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
             <cDefine>APPCONF_BALANCE_BOOSTER_MIN_PITCH_B</cDefine>
-            <editorDecimalsDouble>1</editorDecimalsDouble>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
             <maxDouble>50</maxDouble>
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
-            <stepDouble>0.1</stepDouble>
+            <stepDouble>0.001</stepDouble>
             <valDouble>0</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> </suffix>
@@ -1887,18 +1931,40 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Limit booster pitch, clip the pitch to the value specified here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
             <cDefine>APPCONF_BALANCE_BOOSTER_MAX_PITCH_B</cDefine>
-            <editorDecimalsDouble>1</editorDecimalsDouble>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
             <maxDouble>50</maxDouble>
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
-            <stepDouble>0.1</stepDouble>
+            <stepDouble>0.001</stepDouble>
             <valDouble>2</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> </suffix>
             <vTx>9</vTx>
         </booster_max_pitch_b>
+        <booster_pitch_scale_b>
+            <longName>Booster Pitch Scale (B)</longName>
+            <type>1</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Scale pitch by the specified value. this value doesn't effect min &amp;amp; max pitch!! scale them too if you want to.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_PITCH_SCALE_B</cDefine>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxDouble>50</maxDouble>
+            <minDouble>0</minDouble>
+            <showDisplay>0</showDisplay>
+            <stepDouble>0.001</stepDouble>
+            <valDouble>1</valDouble>
+            <vTxDoubleScale>1</vTxDoubleScale>
+            <suffix> </suffix>
+            <vTx>9</vTx>
+        </booster_pitch_scale_b>
         <booster_base_b>
             <longName>Booster Base Amps (B)</longName>
             <type>1</type>
@@ -1910,13 +1976,13 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Base amps to apply to booster calculation.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster output = pow(booster_base, booster_exponent) * booster_scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
             <cDefine>APPCONF_BALANCE_BOOSTER_BASE_B</cDefine>
-            <editorDecimalsDouble>1</editorDecimalsDouble>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
             <maxDouble>50</maxDouble>
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
-            <stepDouble>0.1</stepDouble>
+            <stepDouble>0.001</stepDouble>
             <valDouble>15</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> </suffix>
@@ -1936,29 +2002,6 @@ p, li { white-space: pre-wrap; }
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
-            <maxDouble>3</maxDouble>
-            <minDouble>0</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.001</stepDouble>
-            <valDouble>1</valDouble>
-            <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
-            <vTx>9</vTx>
-        </booster_exponent_b>
-        <booster_scale_b>
-            <longName>Booster Scale (B)</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster Scale.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster output = pow(booster_base, booster_exponent) * booster_scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_SCALE_B</cDefine>
-            <editorDecimalsDouble>3</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
             <maxDouble>10</maxDouble>
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
@@ -1967,7 +2010,52 @@ p, li { white-space: pre-wrap; }
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix> </suffix>
             <vTx>9</vTx>
-        </booster_scale_b>
+        </booster_exponent_b>
+        <booster_out_scale_b>
+            <longName>Booster Out Scale (B)</longName>
+            <type>1</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster Scale.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster output = pow(booster_base, booster_exponent) * booster_out_scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_OUT_SCALE_B</cDefine>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxDouble>100</maxDouble>
+            <minDouble>0</minDouble>
+            <showDisplay>0</showDisplay>
+            <stepDouble>0.001</stepDouble>
+            <valDouble>1</valDouble>
+            <vTxDoubleScale>1</vTxDoubleScale>
+            <suffix> </suffix>
+            <vTx>9</vTx>
+        </booster_out_scale_b>
+        <booster_limit_b>
+            <longName>Booster Max Current (B)</longName>
+            <type>1</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Limit the booster's current.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_LIMIT_B</cDefine>
+            <editorDecimalsDouble>3</editorDecimalsDouble>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxDouble>50</maxDouble>
+            <minDouble>0</minDouble>
+            <showDisplay>0</showDisplay>
+            <stepDouble>0.001</stepDouble>
+            <valDouble>27</valDouble>
+            <vTxDoubleScale>1</vTxDoubleScale>
+            <suffix> </suffix>
+            <vTx>9</vTx>
+        </booster_limit_b>
     </Params>
     <SerOrder>
         <ser>pitch_th</ser>
@@ -2053,14 +2141,18 @@ p, li { white-space: pre-wrap; }
         <ser>asym_max_accel</ser>
         <ser>booster_min_pitch</ser>
         <ser>booster_max_pitch</ser>
+        <ser>booster_pitch_scale</ser>
         <ser>booster_base</ser>
         <ser>booster_exponent</ser>
-        <ser>booster_scale</ser>
+        <ser>booster_out_scale</ser>
+        <ser>booster_limit</ser>
         <ser>booster_min_pitch_b</ser>
         <ser>booster_max_pitch_b</ser>
+        <ser>booster_pitch_scale_b</ser>
         <ser>booster_base_b</ser>
         <ser>booster_exponent_b</ser>
-        <ser>booster_scale_b</ser>
+        <ser>booster_out_scale_b</ser>
+        <ser>booster_limit_b</ser>
     </SerOrder>
     <Grouping>
         <group>
@@ -2085,9 +2177,11 @@ p, li { white-space: pre-wrap; }
                     <param>::sep::Booster</param>
                     <param>booster_min_pitch</param>
                     <param>booster_max_pitch</param>
+                    <param>booster_pitch_scale</param>
                     <param>booster_base</param>
                     <param>booster_exponent</param>
-                    <param>booster_scale</param>
+                    <param>booster_out_scale</param>
+                    <param>booster_limit</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>
@@ -2106,9 +2200,11 @@ p, li { white-space: pre-wrap; }
                     <param>::sep::Booster</param>
                     <param>booster_min_pitch_b</param>
                     <param>booster_max_pitch_b</param>
+                    <param>booster_pitch_scale_b</param>
                     <param>booster_base_b</param>
                     <param>booster_exponent_b</param>
-                    <param>booster_scale_b</param>
+                    <param>booster_out_scale_b</param>
+                    <param>booster_limit_b</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>

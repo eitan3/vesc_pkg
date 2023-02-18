@@ -1043,15 +1043,17 @@ static void do_rc_move(data *d)
 }
 
 static float calc_nl_booster(data *d, float proportional, float min_pitch, float max_pitch, 
-							 float booster_base, float booster_exponent, float booster_scale) 
+							 float pitch_scale, float booster_base, float booster_exponent, 
+							 float booster_out_scale, float booster_limit) 
 {
 	max_pitch = max_pitch - min_pitch;
-	float booster_weight = fabsf(proportional) - min_pitch;
+	float booster_weight = fabsf(proportional) * pitch_scale - min_pitch;
 	booster_weight = fmaxf(booster_weight, 0.0);
 	booster_weight = fminf(booster_weight, max_pitch);
 	booster_weight = booster_weight / max_pitch; // Between 0-1, 0: pitch below min_pitch, 1: pitch above max_pitch
 	float booster_amps = booster_base * booster_weight;
-	float final_out_amps = powf(booster_amps, booster_exponent) * booster_scale;
+	float final_out_amps = powf(booster_amps, booster_exponent) * booster_out_scale;
+	final_out_amps = fminf(final_out_amps, booster_limit);
 	final_out_amps *= SIGN(proportional);
 
 	// Limit booster while duty cycle
@@ -1100,7 +1102,9 @@ static float normal_ride_current(data *d, const float prev_current)
 
 		// Add booster
 		float booster_current = calc_nl_booster(d, d->proportional, d->balance_conf.booster_min_pitch, d->balance_conf.booster_max_pitch, 
-												d->balance_conf.booster_base, d->balance_conf.booster_exponent, d->balance_conf.booster_scale);
+												d->balance_conf.booster_pitch_scale, d->balance_conf.booster_base, 
+												d->balance_conf.booster_exponent, d->balance_conf.booster_out_scale,
+												d->balance_conf.booster_limit);
 		d->normal_booster_current = 0.01 * booster_current + 0.99 * d->normal_booster_current;
 		output_current += d->normal_booster_current;
 	}
@@ -1138,7 +1142,9 @@ static float brake_ride_current(data *d, const float prev_current)
 
 		// Add booster
 		float booster_current = calc_nl_booster(d, d->proportional, d->balance_conf.booster_min_pitch_b, d->balance_conf.booster_max_pitch_b, 
-												d->balance_conf.booster_base_b, d->balance_conf.booster_exponent_b, d->balance_conf.booster_scale_b);
+												d->balance_conf.booster_pitch_scale_b, d->balance_conf.booster_base_b, 
+												d->balance_conf.booster_exponent_b, d->balance_conf.booster_out_scale_b,
+												d->balance_conf.booster_limit_b);
 		d->brake_booster_current = 0.01 * booster_current + 0.99 * d->brake_booster_current;
 		output_current += d->brake_booster_current;
 	}

@@ -66,9 +66,10 @@ Item {
                               ["int", "yaw_turntilt_erpm_boost"], ["int", "yaw_turntilt_erpm_boost_end"],
                               ["int", "yaw_turntilt_aggregate"], ["bool", "enable_traction_control"], ["double", "traction_control_mul_by"],
                               ["int", "asym_erpm_start"], ["double", "asym_min_accel"], ["double", "asym_max_accel"], ["double", "booster_min_pitch"],
-                              ["double", "booster_max_pitch"], ["double", "booster_base"], ["double", "booster_exponent"], ["double", "booster_scale"], 
-                              ["double", "booster_min_pitch_b"], ["double", "booster_max_pitch_b"], ["double", "booster_base_b"], 
-                              ["double", "booster_exponent_b"], ["double", "booster_scale_b"]]
+                              ["double", "booster_max_pitch"], ["double", "booster_pitch_scale"], ["double", "booster_base"], 
+                              ["double", "booster_exponent"], ["double", "booster_out_scale"], ["double", "booster_limit"], 
+                              ["double", "booster_min_pitch_b"], ["double", "booster_max_pitch_b"], ["double", "booster_pitch_scale_b"], 
+                              ["double", "booster_base_b"],  ["double", "booster_exponent_b"], ["double", "booster_out_scale_b"],  ["double", "booster_limit_b"]]
     
     Settings {
         id: settingStorage
@@ -346,7 +347,7 @@ Item {
                         downloadTunesButton.text = "Downloading Tunes..."
                         downloadedTunesModel.clear()
                         var http = new XMLHttpRequest()
-                        var url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSIjzVhEx4VuMrkdj28TURG0gQv1-2HGH8ISZiRtTzs_gqY5uEwKmckzb9m7fNPzuKXZeJisi2IW6FG/pub?output=csv";
+                        var url = "http://eitan3.pythonanywhere.com/get_tunes"
                         http.open("GET", url, true);
                         http.onreadystatechange = function() {
                             if (http.readyState == XMLHttpRequest.DONE) {
@@ -739,6 +740,8 @@ Item {
                 }else if(key.startsWith("enum_")){
                     mCustomConf.updateParamEnum(key.substring(5), value);
                     found = true;
+                } else {
+                    VescIf.emitStatusMessage("Couldn't find key '" + key + "', Value: " + value, False);
                 }
             }
         }
