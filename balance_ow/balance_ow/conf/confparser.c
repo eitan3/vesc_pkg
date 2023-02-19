@@ -31,6 +31,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_uint16(buffer, conf->fault_delay_switch_full, &ind);
 	buffer_append_uint16(buffer, conf->fault_adc_half_erpm, &ind);
 	buffer[ind++] = conf->fault_is_single_switch;
+	buffer_append_uint16(buffer, conf->fault_adc_to_copy, &ind);
 	buffer_append_float16(buffer, conf->tiltback_duty_angle, 100, &ind);
 	buffer_append_float16(buffer, conf->tiltback_duty_speed, 100, &ind);
 	buffer_append_float16(buffer, conf->tiltback_duty, 1000, &ind);
@@ -139,6 +140,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->fault_delay_switch_full = buffer_get_uint16(buffer, &ind);
 	conf->fault_adc_half_erpm = buffer_get_uint16(buffer, &ind);
 	conf->fault_is_single_switch = buffer[ind++];
+	conf->fault_adc_to_copy = buffer_get_uint16(buffer, &ind);
 	conf->tiltback_duty_angle = buffer_get_float16(buffer, 100, &ind);
 	conf->tiltback_duty_speed = buffer_get_float16(buffer, 100, &ind);
 	conf->tiltback_duty = buffer_get_float16(buffer, 1000, &ind);
@@ -240,6 +242,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->fault_delay_switch_full = APPCONF_BALANCE_FAULT_DELAY_SWITCH_FULL;
 	conf->fault_adc_half_erpm = APPCONF_BALANCE_FAULT_ADC_HALF_ERPM;
 	conf->fault_is_single_switch = APPCONF_BALANCE_FAULT_IS_SINGLE_SWITCH;
+	conf->fault_adc_to_copy = APPCONF_BALANCE_FAULT_ADC_TO_COPY;
 	conf->tiltback_duty_angle = APPCONF_BALANCE_TILTBACK_DUTY_ANGLE;
 	conf->tiltback_duty_speed = APPCONF_BALANCE_TILTBACK_DUTY_SPEED;
 	conf->tiltback_duty = APPCONF_BALANCE_TILTBACK_DUTY;

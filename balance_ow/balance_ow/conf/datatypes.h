@@ -51,6 +51,7 @@ typedef struct {
 	uint16_t fault_delay_switch_full;
 	uint16_t fault_adc_half_erpm;
 	bool fault_is_single_switch;
+	uint16_t fault_adc_to_copy;
 	float tiltback_duty_angle;
 	float tiltback_duty_speed;
 	float tiltback_duty;

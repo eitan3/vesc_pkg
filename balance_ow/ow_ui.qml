@@ -307,6 +307,7 @@ Item {
                     text: "Export CSV to archive"
                     Layout.fillWidth: true
                     onClicked: {
+                        // REMOVE ME FOR PUBLIC RELEASE
                         mArchiveCsvWriter.openLogFileFromPath(cloudCsvFileName.text, "/storage/emulated/0/Documents/logs/")
                         mArchiveCsvWriter.writeToLogFile("_name,")
                         for(var i in paramsArr) {
@@ -336,6 +337,7 @@ Item {
                         }
                         mArchiveCsvWriter.closeLogFile()
                         VescIf.emitStatusMessage("Save Csv Complete!", true)
+                        // VescIf.emitStatusMessage("This feature is disabled!", true)
                     }
                 }
 
@@ -502,6 +504,7 @@ Item {
                                 Layout.fillWidth: true
                                 
                                 onClicked: {
+                                    // REMOVE ME FOR PUBLIC RELEASE
                                     if (enableDlaCaliDumping == 0) {
                                         enableDlaCaliDumping = 1
                                         mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
@@ -514,6 +517,7 @@ Item {
                                         // Close file when done to ensure that all data is written.
                                         mLogWriter.closeLogFile()
                                     }
+                                    // VescIf.emitStatusMessage("This feature is disabled!", true)
                                 }
                             }
                         }
@@ -652,6 +656,7 @@ Item {
                                    current_request.toFixed(3) + "," + normal_booster_current.toFixed(3) + "," + 
                                    brake_booster_current.toFixed(3) + "\n"
                     if (dumpingCount == 100){
+                        // REMOVE ME FOR PUBLIC RELEASE
                         mLogWriter.writeToLogFile(dumpingText)
                         dumpingText = ""
                         dumpingCount = 0

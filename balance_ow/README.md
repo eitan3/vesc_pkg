@@ -9,6 +9,12 @@ Most things should be similar to the regular balance app, except some of the tim
 
 Recent features:
 
+New booster.
+
+Added asymmetric tune (regular tune & braking tune).
+
+Added new tunes tab (thanks to mitch).
+
 Added Traction Control (thanks to surfdado).
 
 Added Angle P for normal riding and Angle P for braking.
@@ -22,3 +28,5 @@ Added Temp tiltback.
 Added reverse stop (thanks to surfdado).
 
 Added quickstop (thanks to surfdado).
+
+And much more!!

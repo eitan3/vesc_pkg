@@ -1223,6 +1223,12 @@ static void balance_thd(void *arg) {
 			// Returns -1.0 if the pin is missing on the hardware
 			d->adc2 = d->adc1;
 		}
+		else if (d->balance_conf.fault_adc_to_copy == 1) {
+			d->adc2 = d->adc1;
+		}
+		else if (d->balance_conf.fault_adc_to_copy == 2) {
+			d->adc1 = d->adc2;
+		}
 
 		// Calculate switch state from ADC values
 		d->switch_state = check_adcs(d);
