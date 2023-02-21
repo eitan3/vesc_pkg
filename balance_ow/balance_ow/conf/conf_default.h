@@ -43,12 +43,17 @@
 #define APPCONF_BALANCE_CURRENT_OUT_FILTER_B 0.4
 #endif
 
-// Normal To Brake Speed
+// Tune B Only for Braking?
+#ifndef APPCONF_BALANCE_TUNE_B_ONLY_FOR_BRAKES
+#define APPCONF_BALANCE_TUNE_B_ONLY_FOR_BRAKES 1
+#endif
+
+// Tune (A) To Tune (B) Speed
 #ifndef APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED
 #define APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED 4
 #endif
 
-// Brake To Normal Speed
+// Tune (B) to Tune (A) Speed
 #ifndef APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED
 #define APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED 1.5
 #endif
@@ -70,12 +75,12 @@
 
 // ADC1 Switch Voltage
 #ifndef APPCONF_BALANCE_FAULT_ADC1
-#define APPCONF_BALANCE_FAULT_ADC1 2.7
+#define APPCONF_BALANCE_FAULT_ADC1 2.5
 #endif
 
 // ADC2 Switch Voltage
 #ifndef APPCONF_BALANCE_FAULT_ADC2
-#define APPCONF_BALANCE_FAULT_ADC2 2.7
+#define APPCONF_BALANCE_FAULT_ADC2 2.5
 #endif
 
 // Pitch Fault Delay
@@ -213,6 +218,11 @@
 #define APPCONF_BALANCE_BRAKE_MAX_AMPS 20
 #endif
 
+// Brake max amp change (B)
+#ifndef APPCONF_BALANCE_BRAKE_MAX_AMPS_B
+#define APPCONF_BALANCE_BRAKE_MAX_AMPS_B 20
+#endif
+
 // Pitch Throttle Integral Limit
 #ifndef APPCONF_BALANCE_PITCH_THI_LIMIT
 #define APPCONF_BALANCE_PITCH_THI_LIMIT 30
@@ -221,16 +231,6 @@
 // Pitch Throttle Integral Limit (B)
 #ifndef APPCONF_BALANCE_PITCH_THI_LIMIT_B
 #define APPCONF_BALANCE_PITCH_THI_LIMIT_B 30
-#endif
-
-// Reset Integral On Entering
-#ifndef APPCONF_BALANCE_PITCH_THI_RESET_ON_ENTERING
-#define APPCONF_BALANCE_PITCH_THI_RESET_ON_ENTERING 0
-#endif
-
-// Reset Integral On Entering (B)
-#ifndef APPCONF_BALANCE_PITCH_THI_RESET_ON_ENTERING_B
-#define APPCONF_BALANCE_PITCH_THI_RESET_ON_ENTERING_B 0
 #endif
 
 // Integral Decay on Wheelslip
@@ -243,7 +243,7 @@
 #define APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_B -1
 #endif
 
-// Start Current Threshold
+// Start Current Threshold (A)
 #ifndef APPCONF_BALANCE_TORQUETILT_START_CURRENT
 #define APPCONF_BALANCE_TORQUETILT_START_CURRENT 15
 #endif

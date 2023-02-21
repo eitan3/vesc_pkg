@@ -18,6 +18,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->gyro_th_b, &ind);
 	buffer_append_float32_auto(buffer, conf->current_out_filter, &ind);
 	buffer_append_float32_auto(buffer, conf->current_out_filter_b, &ind);
+	buffer[ind++] = conf->tune_b_only_for_brakes;
 	buffer_append_float32(buffer, conf->normal_to_brake_speed, 100, &ind);
 	buffer_append_float32(buffer, conf->brake_to_normal_speed, 100, &ind);
 	buffer_append_uint16(buffer, conf->hertz, &ind);
@@ -52,10 +53,9 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->startup_speed, &ind);
 	buffer_append_float32_auto(buffer, conf->brake_current, &ind);
 	buffer_append_float32_auto(buffer, conf->brake_max_amp_change, &ind);
+	buffer_append_float32_auto(buffer, conf->brake_max_amp_change_b, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_limit_b, &ind);
-	buffer[ind++] = conf->pitch_thi_reset_on_entering;
-	buffer[ind++] = conf->pitch_thi_reset_on_entering_b;
 	buffer_append_float32_auto(buffer, conf->pitch_thi_decay_on_wheelslip, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_decay_on_wheelslip_b, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_start_current, &ind);
@@ -131,6 +131,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->gyro_th_b = buffer_get_float32_auto(buffer, &ind);
 	conf->current_out_filter = buffer_get_float32_auto(buffer, &ind);
 	conf->current_out_filter_b = buffer_get_float32_auto(buffer, &ind);
+	conf->tune_b_only_for_brakes = buffer[ind++];
 	conf->normal_to_brake_speed = buffer_get_float32(buffer, 100, &ind);
 	conf->brake_to_normal_speed = buffer_get_float32(buffer, 100, &ind);
 	conf->hertz = buffer_get_uint16(buffer, &ind);
@@ -165,10 +166,9 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->startup_speed = buffer_get_float32_auto(buffer, &ind);
 	conf->brake_current = buffer_get_float32_auto(buffer, &ind);
 	conf->brake_max_amp_change = buffer_get_float32_auto(buffer, &ind);
+	conf->brake_max_amp_change_b = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_limit_b = buffer_get_float32_auto(buffer, &ind);
-	conf->pitch_thi_reset_on_entering = buffer[ind++];
-	conf->pitch_thi_reset_on_entering_b = buffer[ind++];
 	conf->pitch_thi_decay_on_wheelslip = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_decay_on_wheelslip_b = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_start_current = buffer_get_float32_auto(buffer, &ind);
@@ -237,6 +237,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->gyro_th_b = APPCONF_BALANCE_GYRO_TH_B;
 	conf->current_out_filter = APPCONF_BALANCE_CURRENT_OUT_FILTER;
 	conf->current_out_filter_b = APPCONF_BALANCE_CURRENT_OUT_FILTER_B;
+	conf->tune_b_only_for_brakes = APPCONF_BALANCE_TUNE_B_ONLY_FOR_BRAKES;
 	conf->normal_to_brake_speed = APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED;
 	conf->brake_to_normal_speed = APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED;
 	conf->hertz = APPCONF_BALANCE_HERTZ;
@@ -271,10 +272,9 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->startup_speed = APPCONF_BALANCE_STARTUP_SPEED;
 	conf->brake_current = APPCONF_BALANCE_BRAKE_CURRENT;
 	conf->brake_max_amp_change = APPCONF_BALANCE_BRAKE_MAX_AMPS;
+	conf->brake_max_amp_change_b = APPCONF_BALANCE_BRAKE_MAX_AMPS_B;
 	conf->pitch_thi_limit = APPCONF_BALANCE_PITCH_THI_LIMIT;
 	conf->pitch_thi_limit_b = APPCONF_BALANCE_PITCH_THI_LIMIT_B;
-	conf->pitch_thi_reset_on_entering = APPCONF_BALANCE_PITCH_THI_RESET_ON_ENTERING;
-	conf->pitch_thi_reset_on_entering_b = APPCONF_BALANCE_PITCH_THI_RESET_ON_ENTERING_B;
 	conf->pitch_thi_decay_on_wheelslip = APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP;
 	conf->pitch_thi_decay_on_wheelslip_b = APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_B;
 	conf->torquetilt_start_current = APPCONF_BALANCE_TORQUETILT_START_CURRENT;

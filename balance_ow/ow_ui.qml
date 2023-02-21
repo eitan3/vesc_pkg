@@ -70,8 +70,8 @@ Item {
                               ["double", "booster_exponent"], ["double", "booster_out_scale"], ["double", "booster_limit"], 
                               ["double", "booster_min_pitch_b"], ["double", "booster_max_pitch_b"], ["double", "booster_pitch_scale_b"], 
                               ["double", "booster_base_b"],  ["double", "booster_exponent_b"], ["double", "booster_out_scale_b"],  
-                              ["double", "booster_limit_b"], ["bool", "pitch_thi_reset_on_entering"], ["bool", "pitch_thi_reset_on_entering_b"],
-                              ["double", "pitch_thi_decay_on_wheelslip"],  ["double", "pitch_thi_decay_on_wheelslip_b"]]
+                              ["double", "booster_limit_b"], ["double", "pitch_thi_decay_on_wheelslip"], ["double", "pitch_thi_decay_on_wheelslip_b"], 
+                              ["double", "brake_max_amp_change_b"], ["bool", "tune_b_only_for_brakes"]]
     
     Settings {
         id: settingStorage

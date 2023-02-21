@@ -139,10 +139,6 @@ typedef struct {
 	float mc_max_current;
 	float mc_brake_max_current;
 
-	float normal_ride_current;
-	float brake_ride_current;
-	float current_out_weight;
-
 	bool braking;
 	float tb_highvoltage_timer;
 	float brake_max_amp_change; // Brake Amp Rate Limiting
@@ -180,6 +176,10 @@ typedef struct {
 	unsigned int start_counter_clicks, start_counter_clicks_max, start_click_current;
 
 	// Asymmetric Tune
+	float normal_ride_current;
+	float brake_ride_current;
+	float current_out_weight;
+	float last_current_out_target;
 	float asym_max_accel;
 
 	// Odometer
@@ -368,6 +368,7 @@ static void reset_vars(data *d) {
 	d->normal_ride_current = 0;
 	d->brake_ride_current = 0;
 	d->current_out_weight = 0;
+	d->last_current_out_target = 0;
 
 	// Acceleration:
 	d->acceleration = 0;
@@ -1334,38 +1335,20 @@ static void balance_thd(void *arg) {
 			
 			// Calculate current weight target (blend between normal & brake)
 			float current_out_target = 0.0; // 0 = normal, 1 = brake
-			float abs_accel = fabsf(d->acceleration);
-			if (d->braking && 
-				d->abs_erpm > d->balance_conf.asym_erpm_start && 
-				abs_accel - d->balance_conf.asym_min_accel > 0) 
+			bool asym_braking_coef = d->balance_conf.tune_b_only_for_brakes ? d->braking : true;
+			if (asym_braking_coef && d->abs_erpm > d->balance_conf.asym_erpm_start) 
 			{
 				// calculate how much weight to give to "brake ride" based on acceleration
-				float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel, d->asym_max_accel) / d->asym_max_accel;
-				current_out_target += acc_coeff;
-			}
-
-			// Calculate output current
-			if (current_out_target == 0 && d->current_out_weight == 0) {
-				d->normal_ride_current = normal_ride_current(d, d->normal_ride_current);
-				d->brake_ride_current = d->normal_ride_current;
-				d->brake_booster_current = d->normal_booster_current;
-				if (d->balance_conf.pitch_thi_reset_on_entering_b)
-					d->integral_b = 0;
-			}
-			else if (current_out_target == 1 && d->current_out_weight == 1) {
-				d->brake_ride_current = brake_ride_current(d, d->brake_ride_current);
-				d->normal_ride_current = d->brake_ride_current;
-				d->normal_booster_current = d->brake_booster_current;
-				if (d->balance_conf.pitch_thi_reset_on_entering)
-					d->integral = 0;
-			}
-			else {
-				d->normal_ride_current = normal_ride_current(d, d->normal_ride_current);
-				d->brake_ride_current = brake_ride_current(d, d->brake_ride_current);
+				float abs_accel = fabsf(d->acceleration);
+				if (abs_accel - d->balance_conf.asym_min_accel > 0) 
+				{
+					float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel, d->asym_max_accel) / d->asym_max_accel;
+					current_out_target += acc_coeff;
+				}
 			}
 
 			// Calculate current_out_weight and step size for interpolation
-			float cow_ss = d->braking ? d->normal_to_brake_step_size : d->brake_to_normal_step_size;
+			float cow_ss = current_out_target > d->last_current_out_target ? d->normal_to_brake_step_size : d->brake_to_normal_step_size;
 			if (fabsf(current_out_target - d->current_out_weight) <= cow_ss) {
 				d->current_out_weight = current_out_target;
 			} else if (current_out_target - d->current_out_weight > 0) {
@@ -1373,6 +1356,13 @@ static void balance_thd(void *arg) {
 			} else {
 				d->current_out_weight -= cow_ss;
 			}
+
+			// Set d->last_current_out_target to the new value
+			d->last_current_out_target = current_out_target;
+
+			// Calculate output current
+			d->normal_ride_current = normal_ride_current(d, d->normal_ride_current);
+			d->brake_ride_current = brake_ride_current(d, d->brake_ride_current);
 
 			// Blend between normal & brake rides, and apply filtering
 			float new_output_current = d->normal_ride_current * (1.0 - d->current_out_weight) + d->brake_ride_current * d->current_out_weight;
@@ -1391,16 +1381,18 @@ static void balance_thd(void *arg) {
 			}
 
 			// Freewheel while traction loss is detected
+			float brake_max_amp_change = d->brake_max_amp_change * (1.0 - d->current_out_weight);
+			brake_max_amp_change += d->balance_conf.brake_max_amp_change_b * d->current_out_weight;
 			if (d->traction_control && d->balance_conf.enable_traction_control) {
 				d->current_request = d->current_request * d->balance_conf.traction_control_mul_by;
 			}
 			// Brake Amp Rate Limiting
-			else if (d->braking && (fabsf(d->current_request - new_output_current) > d->brake_max_amp_change)) {
+			else if (d->braking && (fabsf(d->current_request - new_output_current) > brake_max_amp_change)) {
 				if (new_output_current > d->current_request) {
-					d->current_request += d->brake_max_amp_change;
+					d->current_request += brake_max_amp_change;
 				}
 				else {
-					d->current_request -= d->brake_max_amp_change;
+					d->current_request -= brake_max_amp_change;
 				}
 			}
 			// Everything ok, set new_output_current as the final current

@@ -38,6 +38,7 @@ typedef struct {
 	float gyro_th_b;
 	float current_out_filter;
 	float current_out_filter_b;
+	bool tune_b_only_for_brakes;
 	float normal_to_brake_speed;
 	float brake_to_normal_speed;
 	uint16_t hertz;
@@ -72,10 +73,9 @@ typedef struct {
 	float startup_speed;
 	float brake_current;
 	float brake_max_amp_change;
+	float brake_max_amp_change_b;
 	float pitch_thi_limit;
 	float pitch_thi_limit_b;
-	bool pitch_thi_reset_on_entering;
-	bool pitch_thi_reset_on_entering_b;
 	float pitch_thi_decay_on_wheelslip;
 	float pitch_thi_decay_on_wheelslip_b;
 	float torquetilt_start_current;
