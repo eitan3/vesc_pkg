@@ -54,6 +54,10 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->brake_max_amp_change, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_limit_b, &ind);
+	buffer[ind++] = conf->pitch_thi_reset_on_entering;
+	buffer[ind++] = conf->pitch_thi_reset_on_entering_b;
+	buffer_append_float32_auto(buffer, conf->pitch_thi_decay_on_wheelslip, &ind);
+	buffer_append_float32_auto(buffer, conf->pitch_thi_decay_on_wheelslip_b, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_start_current, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_start_current_b, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_angle_limit, &ind);
@@ -163,6 +167,10 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->brake_max_amp_change = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_limit_b = buffer_get_float32_auto(buffer, &ind);
+	conf->pitch_thi_reset_on_entering = buffer[ind++];
+	conf->pitch_thi_reset_on_entering_b = buffer[ind++];
+	conf->pitch_thi_decay_on_wheelslip = buffer_get_float32_auto(buffer, &ind);
+	conf->pitch_thi_decay_on_wheelslip_b = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_start_current = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_start_current_b = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_angle_limit = buffer_get_float32_auto(buffer, &ind);
@@ -265,6 +273,10 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->brake_max_amp_change = APPCONF_BALANCE_BRAKE_MAX_AMPS;
 	conf->pitch_thi_limit = APPCONF_BALANCE_PITCH_THI_LIMIT;
 	conf->pitch_thi_limit_b = APPCONF_BALANCE_PITCH_THI_LIMIT_B;
+	conf->pitch_thi_reset_on_entering = APPCONF_BALANCE_PITCH_THI_RESET_ON_ENTERING;
+	conf->pitch_thi_reset_on_entering_b = APPCONF_BALANCE_PITCH_THI_RESET_ON_ENTERING_B;
+	conf->pitch_thi_decay_on_wheelslip = APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP;
+	conf->pitch_thi_decay_on_wheelslip_b = APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_B;
 	conf->torquetilt_start_current = APPCONF_BALANCE_TORQUETILT_START_CURRENT;
 	conf->torquetilt_start_current_b = APPCONF_BALANCE_TORQUETILT_START_CURRENT_B;
 	conf->torquetilt_angle_limit = APPCONF_BALANCE_TORQUETILT_ANGLE_LIMIT;

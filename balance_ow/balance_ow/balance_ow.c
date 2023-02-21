@@ -119,8 +119,8 @@ typedef struct {
 	// Rumtime state values
 	BalanceState state;
 	bool running;
-	float proportional, integral, proportional2;
-	float integral_b;
+	float proportional, integral, proportional2, integral_decay;
+	float integral_b, integral_decay_b;
 	float current_request;
 	float setpoint, setpoint_target, setpoint_target_interpolated;
 	float noseangling_interpolated;
@@ -317,6 +317,22 @@ static void configure(data *d) {
 		d->asym_max_accel = 0.1;
 	else 
 		d->asym_max_accel = d->balance_conf.asym_max_accel - d->balance_conf.asym_min_accel;
+
+	// integral reset on wheelslip (tune A)
+	if (d->balance_conf.pitch_thi_decay_on_wheelslip < 0)
+		d->integral_decay = 1.0;
+	else if ((1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip) > d->balance_conf.hertz)
+		d->integral_decay = 0;
+	else
+		d->integral_decay = 1.0 - (1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip) / d->balance_conf.hertz;
+	
+	// integral reset on wheelslip (tune B)
+	if (d->balance_conf.pitch_thi_decay_on_wheelslip_b < 0)
+		d->integral_decay_b = 1.0;
+	else if ((1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip_b) > d->balance_conf.hertz)
+		d->integral_decay_b = 0;
+	else
+		d->integral_decay_b = 1.0 - (1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip_b) / d->balance_conf.hertz;
 
 	// Odometer
 	d->odometer_dirty = 0;
@@ -1311,6 +1327,8 @@ static void balance_thd(void *arg) {
 				d->torquetilt_target *= 0.99;
 				d->yaw_turntilt_target *= 0.99;
 				d->roll_turntilt_target *= 0.99;
+				d->integral *= d->integral_decay;
+				d->integral_b *= d->integral_decay_b;
 			}
 			calc_final_setpoint(d);
 			
@@ -1327,14 +1345,23 @@ static void balance_thd(void *arg) {
 			}
 
 			// Calculate output current
-			d->normal_ride_current = normal_ride_current(d, d->normal_ride_current);
-			if (current_out_target > 0.0 || d->current_out_weight > 0) {
-				d->brake_ride_current = brake_ride_current(d, d->brake_ride_current);
-			}
-			else {
+			if (current_out_target == 0 && d->current_out_weight == 0) {
+				d->normal_ride_current = normal_ride_current(d, d->normal_ride_current);
 				d->brake_ride_current = d->normal_ride_current;
 				d->brake_booster_current = d->normal_booster_current;
-				d->integral_b = 0;
+				if (d->balance_conf.pitch_thi_reset_on_entering_b)
+					d->integral_b = 0;
+			}
+			else if (current_out_target == 1 && d->current_out_weight == 1) {
+				d->brake_ride_current = brake_ride_current(d, d->brake_ride_current);
+				d->normal_ride_current = d->brake_ride_current;
+				d->normal_booster_current = d->brake_booster_current;
+				if (d->balance_conf.pitch_thi_reset_on_entering)
+					d->integral = 0;
+			}
+			else {
+				d->normal_ride_current = normal_ride_current(d, d->normal_ride_current);
+				d->brake_ride_current = brake_ride_current(d, d->brake_ride_current);
 			}
 
 			// Calculate current_out_weight and step size for interpolation

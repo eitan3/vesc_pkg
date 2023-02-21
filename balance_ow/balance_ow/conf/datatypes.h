@@ -74,6 +74,10 @@ typedef struct {
 	float brake_max_amp_change;
 	float pitch_thi_limit;
 	float pitch_thi_limit_b;
+	bool pitch_thi_reset_on_entering;
+	bool pitch_thi_reset_on_entering_b;
+	float pitch_thi_decay_on_wheelslip;
+	float pitch_thi_decay_on_wheelslip_b;
 	float torquetilt_start_current;
 	float torquetilt_start_current_b;
 	float torquetilt_angle_limit;
