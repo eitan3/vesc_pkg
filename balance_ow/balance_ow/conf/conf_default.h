@@ -58,6 +58,36 @@
 #define APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED 1.5
 #endif
 
+// Tunes Miximg
+#ifndef APPCONF_BALANCE_TUNES_MIXING
+#define APPCONF_BALANCE_TUNES_MIXING 0
+#endif
+
+// Asym Start ERPM
+#ifndef APPCONF_BALANCE_ASYM_ERPM_START
+#define APPCONF_BALANCE_ASYM_ERPM_START 750
+#endif
+
+// Asym Min Acceleration
+#ifndef APPCONF_BALANCE_ASYM_MIN_ACCEL
+#define APPCONF_BALANCE_ASYM_MIN_ACCEL 0.75
+#endif
+
+// Asym Max Acceleration
+#ifndef APPCONF_BALANCE_ASYM_MAX_ACCEL
+#define APPCONF_BALANCE_ASYM_MAX_ACCEL 2
+#endif
+
+// Asym Min Duty Cycle
+#ifndef APPCONF_BALANCE_ASYM_MIN_DUTY
+#define APPCONF_BALANCE_ASYM_MIN_DUTY 65
+#endif
+
+// Asym Max Duty Cycle
+#ifndef APPCONF_BALANCE_ASYM_MAX_DUTY
+#define APPCONF_BALANCE_ASYM_MAX_DUTY 90
+#endif
+
 // Loop Hertz
 #ifndef APPCONF_BALANCE_HERTZ
 #define APPCONF_BALANCE_HERTZ 800
@@ -421,21 +451,6 @@
 // Decrease Current While TC
 #ifndef APPCONF_BALANCE_TRACTION_CONTROL_MUL_BY
 #define APPCONF_BALANCE_TRACTION_CONTROL_MUL_BY 0.75
-#endif
-
-// Asym Start ERPM
-#ifndef APPCONF_BALANCE_ASYM_ERPM_START
-#define APPCONF_BALANCE_ASYM_ERPM_START 750
-#endif
-
-// Asym Min Acceleration
-#ifndef APPCONF_BALANCE_ASYM_MIN_ACCEL
-#define APPCONF_BALANCE_ASYM_MIN_ACCEL 0.75
-#endif
-
-// Asym Max Acceleration
-#ifndef APPCONF_BALANCE_ASYM_MAX_ACCEL
-#define APPCONF_BALANCE_ASYM_MAX_ACCEL 2
 #endif
 
 // Booster Start Pitch

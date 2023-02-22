@@ -71,7 +71,8 @@ Item {
                               ["double", "booster_min_pitch_b"], ["double", "booster_max_pitch_b"], ["double", "booster_pitch_scale_b"], 
                               ["double", "booster_base_b"],  ["double", "booster_exponent_b"], ["double", "booster_out_scale_b"],  
                               ["double", "booster_limit_b"], ["double", "pitch_thi_decay_on_wheelslip"], ["double", "pitch_thi_decay_on_wheelslip_b"], 
-                              ["double", "brake_max_amp_change_b"], ["bool", "tune_b_only_for_brakes"]]
+                              ["double", "brake_max_amp_change_b"], ["bool", "tune_b_only_for_brakes"], ["enum", "tunes_mixing"],
+                              ["double", "asym_min_duty"], ["double", "asym_max_duty"]]
     
     Settings {
         id: settingStorage

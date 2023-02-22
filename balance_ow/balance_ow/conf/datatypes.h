@@ -29,6 +29,12 @@ typedef enum {
 	MAX = 2
 } TURNTILT_MIXING_MODE;
 
+typedef enum {
+	NO_TUNE_B = 0,
+	ACCELERATION = 1,
+	DUTY_CYCLE = 2
+} TUNES_MIXING_MODE;
+
 typedef struct {
 	float pitch_th;
 	float pitch_th_b;
@@ -41,6 +47,12 @@ typedef struct {
 	bool tune_b_only_for_brakes;
 	float normal_to_brake_speed;
 	float brake_to_normal_speed;
+	TUNES_MIXING_MODE tunes_mixing;
+	uint16_t asym_erpm_start;
+	float asym_min_accel;
+	float asym_max_accel;
+	float asym_min_duty;
+	float asym_max_duty;
 	uint16_t hertz;
 	float fault_pitch;
 	float fault_roll;
@@ -114,9 +126,6 @@ typedef struct {
 	uint16_t startup_click_current;
 	bool enable_traction_control;
 	float traction_control_mul_by;
-	uint16_t asym_erpm_start;
-	float asym_min_accel;
-	float asym_max_accel;
 	float booster_min_pitch;
 	float booster_max_pitch;
 	float booster_pitch_scale;

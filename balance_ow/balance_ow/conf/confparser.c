@@ -21,6 +21,12 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer[ind++] = conf->tune_b_only_for_brakes;
 	buffer_append_float32(buffer, conf->normal_to_brake_speed, 100, &ind);
 	buffer_append_float32(buffer, conf->brake_to_normal_speed, 100, &ind);
+	buffer[ind++] = conf->tunes_mixing;
+	buffer_append_uint16(buffer, conf->asym_erpm_start, &ind);
+	buffer_append_float32_auto(buffer, conf->asym_min_accel, &ind);
+	buffer_append_float32_auto(buffer, conf->asym_max_accel, &ind);
+	buffer_append_float32_auto(buffer, conf->asym_min_duty, &ind);
+	buffer_append_float32_auto(buffer, conf->asym_max_duty, &ind);
 	buffer_append_uint16(buffer, conf->hertz, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_roll, &ind);
@@ -94,9 +100,6 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_uint16(buffer, conf->startup_click_current, &ind);
 	buffer[ind++] = conf->enable_traction_control;
 	buffer_append_float32_auto(buffer, conf->traction_control_mul_by, &ind);
-	buffer_append_uint16(buffer, conf->asym_erpm_start, &ind);
-	buffer_append_float32_auto(buffer, conf->asym_min_accel, &ind);
-	buffer_append_float32_auto(buffer, conf->asym_max_accel, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_min_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_pitch_scale, &ind);
@@ -134,6 +137,12 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->tune_b_only_for_brakes = buffer[ind++];
 	conf->normal_to_brake_speed = buffer_get_float32(buffer, 100, &ind);
 	conf->brake_to_normal_speed = buffer_get_float32(buffer, 100, &ind);
+	conf->tunes_mixing = buffer[ind++];
+	conf->asym_erpm_start = buffer_get_uint16(buffer, &ind);
+	conf->asym_min_accel = buffer_get_float32_auto(buffer, &ind);
+	conf->asym_max_accel = buffer_get_float32_auto(buffer, &ind);
+	conf->asym_min_duty = buffer_get_float32_auto(buffer, &ind);
+	conf->asym_max_duty = buffer_get_float32_auto(buffer, &ind);
 	conf->hertz = buffer_get_uint16(buffer, &ind);
 	conf->fault_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->fault_roll = buffer_get_float32_auto(buffer, &ind);
@@ -207,9 +216,6 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->startup_click_current = buffer_get_uint16(buffer, &ind);
 	conf->enable_traction_control = buffer[ind++];
 	conf->traction_control_mul_by = buffer_get_float32_auto(buffer, &ind);
-	conf->asym_erpm_start = buffer_get_uint16(buffer, &ind);
-	conf->asym_min_accel = buffer_get_float32_auto(buffer, &ind);
-	conf->asym_max_accel = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_min_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_pitch_scale = buffer_get_float32_auto(buffer, &ind);
@@ -240,6 +246,12 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->tune_b_only_for_brakes = APPCONF_BALANCE_TUNE_B_ONLY_FOR_BRAKES;
 	conf->normal_to_brake_speed = APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED;
 	conf->brake_to_normal_speed = APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED;
+	conf->tunes_mixing = APPCONF_BALANCE_TUNES_MIXING;
+	conf->asym_erpm_start = APPCONF_BALANCE_ASYM_ERPM_START;
+	conf->asym_min_accel = APPCONF_BALANCE_ASYM_MIN_ACCEL;
+	conf->asym_max_accel = APPCONF_BALANCE_ASYM_MAX_ACCEL;
+	conf->asym_min_duty = APPCONF_BALANCE_ASYM_MIN_DUTY;
+	conf->asym_max_duty = APPCONF_BALANCE_ASYM_MAX_DUTY;
 	conf->hertz = APPCONF_BALANCE_HERTZ;
 	conf->fault_pitch = APPCONF_BALANCE_FAULT_PITCH;
 	conf->fault_roll = APPCONF_BALANCE_FAULT_ROLL;
@@ -313,9 +325,6 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->startup_click_current = APPCONF_BALANCE_STARTUP_CLICK_CURRENT;
 	conf->enable_traction_control = APPCONF_BALANCE_ENABLE_TRACTION_CONTROL;
 	conf->traction_control_mul_by = APPCONF_BALANCE_TRACTION_CONTROL_MUL_BY;
-	conf->asym_erpm_start = APPCONF_BALANCE_ASYM_ERPM_START;
-	conf->asym_min_accel = APPCONF_BALANCE_ASYM_MIN_ACCEL;
-	conf->asym_max_accel = APPCONF_BALANCE_ASYM_MAX_ACCEL;
 	conf->booster_min_pitch = APPCONF_BALANCE_BOOSTER_MIN_PITCH;
 	conf->booster_max_pitch = APPCONF_BALANCE_BOOSTER_MAX_PITCH;
 	conf->booster_pitch_scale = APPCONF_BALANCE_BOOSTER_PITCH_SCALE;
