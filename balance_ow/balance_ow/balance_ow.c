@@ -1141,7 +1141,7 @@ static float normal_ride_current(data *d, const float prev_current)
 			output_current = d->current_request + d->balance_conf.brake_max_amp_change;
 		}
 		else {
-			output_current = d->current_request + d->balance_conf.brake_max_amp_change;
+			output_current = d->current_request - d->balance_conf.brake_max_amp_change;
 		}
 	}
 
@@ -1192,7 +1192,7 @@ static float brake_ride_current(data *d, const float prev_current)
 			output_current = d->current_request + d->balance_conf.brake_max_amp_change_b;
 		}
 		else {
-			output_current = d->current_request + d->balance_conf.brake_max_amp_change_b;
+			output_current = d->current_request - d->balance_conf.brake_max_amp_change_b;
 		}
 	}
 

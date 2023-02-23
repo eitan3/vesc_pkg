@@ -45,34 +45,38 @@ Item {
     property var enableDlaCaliDumping: 0
     property var dumpingText: 0
     property var dumpingCount: 0
-    property var paramsArr:  [["double", "pitch_th"], ["double", "pitch_th_b"], ["double", "pitch_thi"], ["double", "pitch_thi_b"], 
-                              ["double", "gyro_th"], ["double", "gyro_th_b"], ["double", "current_out_filter"], ["double", "mahony_kp"],
-                              ["double", "current_out_filter_b"], ["double", "tunea_transition_speed"], ["double", "tuneb_transition_speed"], 
-                              ["double", "fault_pitch"], ["double", "fault_roll"], ["int", "fault_delay_pitch"], ["int", "fault_delay_roll"], 
-                              ["double", "tiltback_duty_angle"], ["double", "tiltback_duty_speed"], ["double", "tiltback_duty"], 
-                              ["double", "tiltback_hv_angle"], ["double", "tiltback_hv_speed"], ["double", "tiltback_lv_angle"], 
-                              ["double", "tiltback_lv_speed"], ["double", "tiltback_return_speed"], ["double", "tiltback_constant"], 
-                              ["int", "tiltback_constant_erpm"], ["double", "tiltback_variable"], ["double", "tiltback_variable_max"], 
-                              ["double", "noseangling_speed"], ["double", "startup_pitch_tolerance"], ["double", "startup_roll_tolerance"], 
-                              ["double", "startup_speed"], ["double", "brake_current"], ["double", "brake_max_amp_change"], 
-                              ["double", "pitch_thi_limit"], ["double", "pitch_thi_limit_b"], ["double", "torquetilt_start_current"],
-                              ["double", "torquetilt_start_current_b"], ["double", "torquetilt_angle_limit"], ["double", "torquetilt_on_speed"], 
+    property var paramsArr:  [["double", "pitch_th"], ["double", "pitch_th_b"], ["double", "pitch_thi"], ["double", "pitch_thi_b"], ["double", "gyro_th"],
+                              ["double", "gyro_th_b"], ["double", "current_out_filter"], ["double", "current_out_filter_b"], 
+                              ["bool", "tune_b_only_for_brakes"], ["double", "brake_max_amp_change"], ["double", "brake_max_amp_change_b"],
+                              ["double", "pitch_thi_limit"], ["double", "pitch_thi_limit_b"], ["bool", "reset_pitch_thi_on_entering_b"],
+                              ["double", "pitch_thi_decay_on_wheelslip"], ["double", "pitch_thi_decay_on_wheelslip_b"], ["double", "tunea_transition_speed"],
+                              ["double", "tuneb_transition_speed"], ["enum", "tunes_mixing"], ["double", "asym_min_accel"], ["double", "asym_max_accel"],
+                              ["int", "asym_min_erpm"], ["int", "asym_max_erpm"], ["double", "mahony_kp"], ["double", "fault_pitch"], 
+                              ["double", "fault_roll"], ["int", "fault_delay_pitch"], ["int", "fault_delay_roll"], ["double", "tiltback_duty_angle"],
+                              ["double", "tiltback_duty_speed"], ["double", "tiltback_duty"], ["double", "tiltback_hv_angle"],
+                              ["double", "tiltback_hv_speed"], ["double", "tiltback_lv_angle"], ["double", "tiltback_lv_speed"], 
+                              ["double", "tiltback_return_speed"], ["double", "tiltback_constant"], ["int", "tiltback_constant_erpm"], 
+                              ["double", "tiltback_variable"], ["double", "tiltback_variable_max"], ["double", "noseangling_speed"], 
+                              ["double", "startup_pitch_tolerance"], ["double", "startup_roll_tolerance"], ["double", "torquetilt_start_current"],
+                              ["double", "torquetilt_start_current_b"], ["double", "torquetilt_angle_limit"], ["double", "torquetilt_on_speed"],
                               ["double", "torquetilt_off_speed"], ["double", "torquetilt_strength"], ["double", "torquetilt_strength_regen"], 
                               ["double", "torquetilt_filter"], ["enum", "turntilt_mixing_mode"], ["double", "roll_turntilt_weight"], 
-                              ["double", "roll_turntilt_strength"], ["double", "roll_turntilt_angle_limit"], ["double", "roll_turntilt_start_angle"], 
-                              ["int", "roll_turntilt_start_erpm"], ["double", "roll_turntilt_speed"], ["int", "roll_turntilt_erpm_boost"], 
-                              ["int", "roll_turntilt_erpm_boost_end"], ["double", "yaw_turntilt_weight"], ["double", "yaw_turntilt_strength"], 
-                              ["double", "yaw_turntilt_angle_limit"], ["double", "yaw_turntilt_start_angle"], ["int", "yaw_turntilt_start_erpm"], 
+                              ["double", "roll_turntilt_strength"], ["double", "roll_turntilt_angle_limit"], ["double", "roll_turntilt_start_angle"],
+                              ["int", "roll_turntilt_start_erpm"], ["double", "roll_turntilt_speed"], ["int", "roll_turntilt_erpm_boost"],
+                              ["int", "roll_turntilt_erpm_boost_end"], ["double", "yaw_turntilt_weight"], ["double", "yaw_turntilt_strength"],
+                              ["double", "yaw_turntilt_angle_limit"], ["double", "yaw_turntilt_start_angle"], ["int", "yaw_turntilt_start_erpm"],
                               ["double", "yaw_turntilt_speed"], ["int", "yaw_turntilt_erpm_boost"], ["int", "yaw_turntilt_erpm_boost_end"],
                               ["int", "yaw_turntilt_aggregate"], ["bool", "enable_traction_control"], ["double", "traction_control_mul_by"],
-                              ["double", "asym_min_accel"], ["double", "asym_max_accel"], ["double", "booster_min_pitch"],
-                              ["double", "booster_max_pitch"], ["double", "booster_pitch_scale"], ["double", "booster_base"], 
-                              ["double", "booster_exponent"], ["double", "booster_out_scale"], ["double", "booster_limit"], 
+                              ["double", "booster_min_pitch"], ["double", "booster_max_pitch"], ["double", "booster_pitch_scale"],
+                              ["double", "booster_base"], ["double", "booster_exponent"], ["double", "booster_out_scale"], ["double", "booster_limit"],
                               ["double", "booster_min_pitch_b"], ["double", "booster_max_pitch_b"], ["double", "booster_pitch_scale_b"], 
-                              ["double", "booster_base_b"],  ["double", "booster_exponent_b"], ["double", "booster_out_scale_b"],  
-                              ["double", "booster_limit_b"], ["double", "pitch_thi_decay_on_wheelslip"], ["double", "pitch_thi_decay_on_wheelslip_b"], 
-                              ["double", "brake_max_amp_change_b"], ["bool", "tune_b_only_for_brakes"], ["enum", "tunes_mixing"],
-                              ["double", "asym_min_duty"], ["double", "asym_max_duty"], ["bool", "reset_pitch_thi_on_entering_b"]]
+                              ["double", "booster_base_b"], ["double", "booster_exponent_b"], ["double", "booster_out_scale_b"], ["double", "booster_limit_b"]]
+    property var extraParams: [["int", "hertz"], ["double", "fault_adc1"], ["double", "fault_adc2"], ["int", "fault_delay_switch_half"],
+                               ["int", "fault_delay_switch_full"], ["int", "fault_adc_half_erpm"], ["bool", "fault_is_single_switch"],
+                               ["int", "fault_adc_to_copy"], ["double", "tiltback_hv"], ["double", "tiltback_lv"], ["double", "startup_speed"],
+                               ["double", "brake_current"], ["double", "temp_tiltback_start_offset"], ["double", "temp_tiltback_speed"],
+                               ["double", "temp_tiltback_angle"], ["bool", "enable_reverse_stop"], ["bool", "enable_quickstop"], 
+                               ["int", "quickstop_erpm"], ["double", "quickstop_angle"], ["int", "startup_click_current"]]
     
     Settings {
         id: settingStorage
@@ -352,7 +356,7 @@ Item {
                         downloadTunesButton.text = "Downloading Tunes..."
                         downloadedTunesModel.clear()
                         var http = new XMLHttpRequest()
-                        var url = "http://eitan3.pythonanywhere.com/get_tunes"
+                        var url = "http://eitan3.pythonanywhere.com/get_tunes?version=1"
                         http.open("GET", url, true);
                         http.onreadystatechange = function() {
                             if (http.readyState == XMLHttpRequest.DONE) {
@@ -669,39 +673,49 @@ Item {
         }
     }
 
-    function quickSaveTune(saveName){
-        for(var i in paramsArr) {
-            if (paramsArr[i][0] == "double") {
-                settingStorage.setValue(saveName + "_" + paramsArr[i][1], mCustomConf.getParamDouble(paramsArr[i][1]))
+    function quickSaveTuneOneArr(saveName, arr) {
+        for(var i in arr) {
+            if (arr[i][0] == "double") {
+                settingStorage.setValue(saveName + "_" + arr[i][1], mCustomConf.getParamDouble(arr[i][1]))
             }
-            else if (paramsArr[i][0] == "int") {
-                settingStorage.setValue(saveName + "_" + paramsArr[i][1], mCustomConf.getParamInt(paramsArr[i][1]))
+            else if (arr[i][0] == "int") {
+                settingStorage.setValue(saveName + "_" + arr[i][1], mCustomConf.getParamInt(arr[i][1]))
             }
-            else if (paramsArr[i][0] == "bool") {
-                settingStorage.setValue(saveName + "_" + paramsArr[i][1], mCustomConf.getParamBool(paramsArr[i][1])?1:0)
+            else if (arr[i][0] == "bool") {
+                settingStorage.setValue(saveName + "_" + arr[i][1], mCustomConf.getParamBool(arr[i][1])?1:0)
             }
-            else if (paramsArr[i][0] == "enum") {
-                settingStorage.setValue(saveName + "_" + paramsArr[i][1], mCustomConf.getParamEnum(paramsArr[i][1]))
+            else if (arr[i][0] == "enum") {
+                settingStorage.setValue(saveName + "_" + arr[i][1], mCustomConf.getParamEnum(arr[i][1]))
             }
         }
     }
 
-    function quickLoadTune(saveName){
-        for(var i in paramsArr) {
-            if (paramsArr[i][0] == "double") {
-                mCustomConf.updateParamDouble(paramsArr[i][1], settingStorage.value(saveName + "_" + paramsArr[i][1], 0))
+    function quickSaveTune(saveName){
+        quickSaveTuneOneArr(saveName, paramsArr)
+        quickSaveTuneOneArr(saveName, extraParams)
+    }
+
+    function quickLoadTuneOneArr(saveName, arr){
+        for(var i in arr) {
+            if (arr[i][0] == "double") {
+                mCustomConf.updateParamDouble(arr[i][1], settingStorage.value(saveName + "_" + arr[i][1], 0))
             }
-            else if (paramsArr[i][0] == "int") {
-                mCustomConf.updateParamInt(paramsArr[i][1], settingStorage.value(saveName + "_" + paramsArr[i][1], 0))
+            else if (arr[i][0] == "int") {
+                mCustomConf.updateParamInt(arr[i][1], settingStorage.value(saveName + "_" + arr[i][1], 0))
             }
-            else if (paramsArr[i][0] == "bool") {
-                mCustomConf.updateParamBool(paramsArr[i][1], parseInt(settingStorage.value(saveName + "_" + paramsArr[i][1], 0)))
+            else if (arr[i][0] == "bool") {
+                mCustomConf.updateParamBool(arr[i][1], parseInt(settingStorage.value(saveName + "_" + arr[i][1], 0)))
             }
-            else if (paramsArr[i][0] == "enum") {
-                mCustomConf.updateParamEnum(paramsArr[i][1], settingStorage.value(saveName + "_" + paramsArr[i][1], 0))
+            else if (arr[i][0] == "enum") {
+                mCustomConf.updateParamEnum(arr[i][1], settingStorage.value(saveName + "_" + arr[i][1], 0))
             }
         }
         mCommands.customConfigSet(0, mCustomConf)
+    }
+
+    function quickLoadTune(saveName){
+        quickLoadTuneOneArr(saveName, paramsArr)
+        quickLoadTuneOneArr(saveName, extraParams)
     }
 
     function displaySavedTunes(){
