@@ -42,7 +42,7 @@ Item {
     property ConfigParams mMcConf: VescIf.mcConfig()
     property ConfigParams mCustomConf: VescIf.customConfig(0)
     property var dialogParent: ApplicationWindow.overlay
-    property var enableDlaCaliDumping: 0
+    property var enableDataDumping: 0
     property var dumpingText: 0
     property var dumpingCount: 0
     property var paramsArr:  [["double", "pitch_th"], ["double", "pitch_th_b"], ["double", "pitch_thi"], ["double", "pitch_thi_b"], ["double", "gyro_th"],
@@ -159,7 +159,7 @@ Item {
             property int buttonWidth: 120
 
             Repeater {
-                model: ["Info", "Tunes", "Control", "DLA"]
+                model: ["Info", "Tunes", "Control", "Dev"]
                 TabButton {
                     text: modelData
                     onClicked:{
@@ -477,7 +477,7 @@ Item {
                 }
             }
 
-            ColumnLayout { // DLA Page
+            ColumnLayout { // Dev Page
                 Layout.fillWidth: true
 
                 ScrollView {
@@ -492,7 +492,7 @@ Item {
                         ColumnLayout {
                             Layout.fillWidth: true
                             Text{
-                                text: "Dla calibration file name"
+                                text: "Dumping file name"
                             }
 
                             TextInput {
@@ -506,21 +506,21 @@ Item {
                             }
 
                             Button {
-                                id: toggleDlaCalibDump
+                                id: toggleDataDump
                                 text: "Null"
                                 Layout.fillWidth: true
                                 
                                 onClicked: {
                                     // REMOVE ME FOR PUBLIC RELEASE
-                                    if (enableDlaCaliDumping == 0) {
-                                        enableDlaCaliDumping = 1
+                                    if (enableDataDumping == 0) {
+                                        enableDataDumping = 1
                                         mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
                                         var header = "erpm,braking,current_out_weight,normal_ride_current,brake_ride_current,"
                                         header += "current_request,normal_booster_current,brake_booster_current\n"
                                         mLogWriter.writeToLogFile(header)
                                     }
                                     else {
-                                        enableDlaCaliDumping = 0
+                                        enableDataDumping = 0
                                         // Close file when done to ensure that all data is written.
                                         mLogWriter.closeLogFile()
                                     }
@@ -651,11 +651,11 @@ Item {
                 "Roll Turntilt SP  : " + roll_setpoint.toFixed(2) + "\n" +
                 "Total Turntilt SP : " + turntilt_setpoint.toFixed(4) + "\n";
 
-            if (enableDlaCaliDumping == 0) {
-                toggleDlaCalibDump.text = "Enable DLA Calib Csv Dump"
+            if (enableDataDumping == 0) {
+                toggleDataDump.text = "Enable Csv Dump"
             }
             else {
-                toggleDlaCalibDump.text = "Disable DLA Calib Csv Dump"
+                toggleDataDump.text = "Disable Csv Dump"
                 if (running == 1) {
                     dumpingCount += 1
                     dumpingText += erpm + "," + braking + "," + current_out_weight.toFixed(3) + "," + 
