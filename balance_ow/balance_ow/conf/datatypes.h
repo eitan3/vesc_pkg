@@ -31,8 +31,8 @@ typedef enum {
 
 typedef enum {
 	NO_TUNE_B = 0,
-	ACCELERATION = 1,
-	DUTY_CYCLE = 2
+	ACCELERATION_BASED = 1,
+	ERPM_BASED = 2
 } TUNES_MIXING_MODE;
 
 typedef struct {
@@ -48,11 +48,10 @@ typedef struct {
 	float normal_to_brake_speed;
 	float brake_to_normal_speed;
 	TUNES_MIXING_MODE tunes_mixing;
-	uint16_t asym_erpm_start;
 	float asym_min_accel;
 	float asym_max_accel;
-	float asym_min_duty;
-	float asym_max_duty;
+	uint16_t asym_min_erpm;
+	uint16_t asym_max_erpm;
 	uint16_t hertz;
 	float fault_pitch;
 	float fault_roll;
@@ -88,6 +87,7 @@ typedef struct {
 	float brake_max_amp_change_b;
 	float pitch_thi_limit;
 	float pitch_thi_limit_b;
+	bool reset_pitch_thi_on_entering_b;
 	float pitch_thi_decay_on_wheelslip;
 	float pitch_thi_decay_on_wheelslip_b;
 	float torquetilt_start_current;

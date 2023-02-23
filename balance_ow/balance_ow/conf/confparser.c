@@ -22,11 +22,10 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32(buffer, conf->normal_to_brake_speed, 100, &ind);
 	buffer_append_float32(buffer, conf->brake_to_normal_speed, 100, &ind);
 	buffer[ind++] = conf->tunes_mixing;
-	buffer_append_uint16(buffer, conf->asym_erpm_start, &ind);
 	buffer_append_float32_auto(buffer, conf->asym_min_accel, &ind);
 	buffer_append_float32_auto(buffer, conf->asym_max_accel, &ind);
-	buffer_append_float32_auto(buffer, conf->asym_min_duty, &ind);
-	buffer_append_float32_auto(buffer, conf->asym_max_duty, &ind);
+	buffer_append_uint16(buffer, conf->asym_min_erpm, &ind);
+	buffer_append_uint16(buffer, conf->asym_max_erpm, &ind);
 	buffer_append_uint16(buffer, conf->hertz, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_roll, &ind);
@@ -62,6 +61,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->brake_max_amp_change_b, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_limit_b, &ind);
+	buffer[ind++] = conf->reset_pitch_thi_on_entering_b;
 	buffer_append_float32_auto(buffer, conf->pitch_thi_decay_on_wheelslip, &ind);
 	buffer_append_float32_auto(buffer, conf->pitch_thi_decay_on_wheelslip_b, &ind);
 	buffer_append_float32_auto(buffer, conf->torquetilt_start_current, &ind);
@@ -138,11 +138,10 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->normal_to_brake_speed = buffer_get_float32(buffer, 100, &ind);
 	conf->brake_to_normal_speed = buffer_get_float32(buffer, 100, &ind);
 	conf->tunes_mixing = buffer[ind++];
-	conf->asym_erpm_start = buffer_get_uint16(buffer, &ind);
 	conf->asym_min_accel = buffer_get_float32_auto(buffer, &ind);
 	conf->asym_max_accel = buffer_get_float32_auto(buffer, &ind);
-	conf->asym_min_duty = buffer_get_float32_auto(buffer, &ind);
-	conf->asym_max_duty = buffer_get_float32_auto(buffer, &ind);
+	conf->asym_min_erpm = buffer_get_uint16(buffer, &ind);
+	conf->asym_max_erpm = buffer_get_uint16(buffer, &ind);
 	conf->hertz = buffer_get_uint16(buffer, &ind);
 	conf->fault_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->fault_roll = buffer_get_float32_auto(buffer, &ind);
@@ -178,6 +177,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->brake_max_amp_change_b = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_limit_b = buffer_get_float32_auto(buffer, &ind);
+	conf->reset_pitch_thi_on_entering_b = buffer[ind++];
 	conf->pitch_thi_decay_on_wheelslip = buffer_get_float32_auto(buffer, &ind);
 	conf->pitch_thi_decay_on_wheelslip_b = buffer_get_float32_auto(buffer, &ind);
 	conf->torquetilt_start_current = buffer_get_float32_auto(buffer, &ind);
@@ -247,11 +247,10 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->normal_to_brake_speed = APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED;
 	conf->brake_to_normal_speed = APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED;
 	conf->tunes_mixing = APPCONF_BALANCE_TUNES_MIXING;
-	conf->asym_erpm_start = APPCONF_BALANCE_ASYM_ERPM_START;
 	conf->asym_min_accel = APPCONF_BALANCE_ASYM_MIN_ACCEL;
 	conf->asym_max_accel = APPCONF_BALANCE_ASYM_MAX_ACCEL;
-	conf->asym_min_duty = APPCONF_BALANCE_ASYM_MIN_DUTY;
-	conf->asym_max_duty = APPCONF_BALANCE_ASYM_MAX_DUTY;
+	conf->asym_min_erpm = APPCONF_BALANCE_ASYM_MIN_ERPM;
+	conf->asym_max_erpm = APPCONF_BALANCE_ASYM_MAX_ERPM;
 	conf->hertz = APPCONF_BALANCE_HERTZ;
 	conf->fault_pitch = APPCONF_BALANCE_FAULT_PITCH;
 	conf->fault_roll = APPCONF_BALANCE_FAULT_ROLL;
@@ -287,6 +286,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->brake_max_amp_change_b = APPCONF_BALANCE_BRAKE_MAX_AMPS_B;
 	conf->pitch_thi_limit = APPCONF_BALANCE_PITCH_THI_LIMIT;
 	conf->pitch_thi_limit_b = APPCONF_BALANCE_PITCH_THI_LIMIT_B;
+	conf->reset_pitch_thi_on_entering_b = APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_B;
 	conf->pitch_thi_decay_on_wheelslip = APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP;
 	conf->pitch_thi_decay_on_wheelslip_b = APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_B;
 	conf->torquetilt_start_current = APPCONF_BALANCE_TORQUETILT_START_CURRENT;

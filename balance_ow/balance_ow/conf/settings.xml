@@ -282,28 +282,8 @@ p, li { white-space: pre-wrap; }
             <valInt>0</valInt>
             <enumNames>No Tune B</enumNames>
             <enumNames>Acceleration Based</enumNames>
-            <enumNames>Duty Cycle Based</enumNames>
+            <enumNames>ERPM Based</enumNames>
         </tunes_mixing>
-        <asym_erpm_start>
-            <longName>Asym Start ERPM</longName>
-            <type>2</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;At which ERPM we start interpolate to brake tune.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_ASYM_ERPM_START</cDefine>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxInt>20000</maxInt>
-            <minInt>0</minInt>
-            <showDisplay>0</showDisplay>
-            <stepInt>1</stepInt>
-            <valInt>750</valInt>
-            <suffix></suffix>
-            <vTx>3</vTx>
-        </asym_erpm_start>
         <asym_min_accel>
             <longName>Asym Min Acceleration</longName>
             <type>1</type>
@@ -348,50 +328,46 @@ p, li { white-space: pre-wrap; }
             <suffix></suffix>
             <vTx>9</vTx>
         </asym_max_accel>
-        <asym_min_duty>
-            <longName>Asym Min Duty Cycle</longName>
-            <type>1</type>
+        <asym_min_erpm>
+            <longName>Asym Min ERPM</longName>
+            <type>2</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Interpolate to Tune (B) if duty cycle is higher than the value specified here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_ASYM_MIN_DUTY</cDefine>
-            <editorDecimalsDouble>1</editorDecimalsDouble>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;At which ERPM we start interpolate to Tune (B).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_ASYM_MIN_ERPM</cDefine>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
-            <maxDouble>100</maxDouble>
-            <minDouble>0</minDouble>
+            <maxInt>20000</maxInt>
+            <minInt>0</minInt>
             <showDisplay>0</showDisplay>
-            <stepDouble>0.1</stepDouble>
-            <valDouble>65</valDouble>
-            <vTxDoubleScale>1</vTxDoubleScale>
+            <stepInt>1</stepInt>
+            <valInt>2000</valInt>
             <suffix></suffix>
-            <vTx>9</vTx>
-        </asym_min_duty>
-        <asym_max_duty>
-            <longName>Asym Max Duty Cycle</longName>
-            <type>1</type>
+            <vTx>3</vTx>
+        </asym_min_erpm>
+        <asym_max_erpm>
+            <longName>Asym Max ERPM</longName>
+            <type>2</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Use 100% of the Tune (B) if duty cycle is higher than the value specified here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_ASYM_MAX_DUTY</cDefine>
-            <editorDecimalsDouble>1</editorDecimalsDouble>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Use 100% of the Tune (B) if abs(erpm) is higher than the value specified here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_ASYM_MAX_ERPM</cDefine>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
-            <maxDouble>100</maxDouble>
-            <minDouble>0</minDouble>
+            <maxInt>20000</maxInt>
+            <minInt>0</minInt>
             <showDisplay>0</showDisplay>
-            <stepDouble>0.1</stepDouble>
-            <valDouble>90</valDouble>
-            <vTxDoubleScale>1</vTxDoubleScale>
+            <stepInt>1</stepInt>
+            <valInt>7500</valInt>
             <suffix></suffix>
-            <vTx>9</vTx>
-        </asym_max_duty>
+            <vTx>3</vTx>
+        </asym_max_erpm>
         <hertz>
             <longName>Loop Hertz</longName>
             <type>2</type>
@@ -1142,6 +1118,20 @@ p, li { white-space: pre-wrap; }
             <suffix> A</suffix>
             <vTx>9</vTx>
         </pitch_thi_limit_b>
+        <reset_pitch_thi_on_entering_b>
+            <longName>Reset Tune (B) Integral On Entering?</longName>
+            <type>5</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Reset Tune (B) Integral to 0 when Tune (B) is activate.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Depend on the use, it can prevent/make windups.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;I enable it when the tune is for braking only, but you can play with it however you want.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_B</cDefine>
+            <valInt>1</valInt>
+        </reset_pitch_thi_on_entering_b>
         <pitch_thi_decay_on_wheelslip>
             <longName>Integral Decay on Wheelslip</longName>
             <type>1</type>
@@ -2266,11 +2256,10 @@ p, li { white-space: pre-wrap; }
         <ser>normal_to_brake_speed</ser>
         <ser>brake_to_normal_speed</ser>
         <ser>tunes_mixing</ser>
-        <ser>asym_erpm_start</ser>
         <ser>asym_min_accel</ser>
         <ser>asym_max_accel</ser>
-        <ser>asym_min_duty</ser>
-        <ser>asym_max_duty</ser>
+        <ser>asym_min_erpm</ser>
+        <ser>asym_max_erpm</ser>
         <ser>hertz</ser>
         <ser>fault_pitch</ser>
         <ser>fault_roll</ser>
@@ -2306,6 +2295,7 @@ p, li { white-space: pre-wrap; }
         <ser>brake_max_amp_change_b</ser>
         <ser>pitch_thi_limit</ser>
         <ser>pitch_thi_limit_b</ser>
+        <ser>reset_pitch_thi_on_entering_b</ser>
         <ser>pitch_thi_decay_on_wheelslip</ser>
         <ser>pitch_thi_decay_on_wheelslip_b</ser>
         <ser>torquetilt_start_current</ser>
@@ -2413,16 +2403,16 @@ p, li { white-space: pre-wrap; }
                 <subgroupParams>
                     <param>::sep::Transitions</param>
                     <param>tune_b_only_for_brakes</param>
-                    <param>asym_erpm_start</param>
                     <param>tunes_mixing</param>
                     <param>asym_min_accel</param>
                     <param>asym_max_accel</param>
-                    <param>asym_min_duty</param>
-                    <param>asym_max_duty</param>
+                    <param>asym_min_erpm</param>
+                    <param>asym_max_erpm</param>
                     <param>::sep::Tune A</param>
                     <param>brake_to_normal_speed</param>
                     <param>::sep::Tune B</param>
                     <param>normal_to_brake_speed</param>
+                    <param>reset_pitch_thi_on_entering_b</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>

@@ -181,7 +181,7 @@ typedef struct {
 	float current_out_weight;
 	float last_current_out_target;
 	float asym_max_accel;
-	float asym_max_duty;
+	float asym_max_erpm;
 
 	// Odometer
 	float odo_timer;
@@ -319,10 +319,10 @@ static void configure(data *d) {
 	else 
 		d->asym_max_accel = d->balance_conf.asym_max_accel - d->balance_conf.asym_min_accel;
 
-	if (d->balance_conf.asym_max_duty < d->balance_conf.asym_min_duty)
-		d->asym_max_duty = 0.1;
+	if (d->balance_conf.asym_max_erpm < d->balance_conf.asym_min_erpm)
+		d->asym_max_erpm = 0.1;
 	else 
-		d->asym_max_duty = d->balance_conf.asym_max_duty - d->balance_conf.asym_min_duty;
+		d->asym_max_erpm = d->balance_conf.asym_max_erpm - d->balance_conf.asym_min_erpm;
 
 	// integral reset on wheelslip (tune A)
 	if (d->balance_conf.pitch_thi_decay_on_wheelslip < 0)
@@ -1343,10 +1343,10 @@ static void balance_thd(void *arg) {
 			// Calculate current weight target (blend between Tune (A) & Tune (B))
 			float current_out_target = 0.0; // 0 = Tune (A), 1 = Tune (B)
 			bool enable_second_tune = d->balance_conf.tune_b_only_for_brakes ? d->braking : true;
-			if (enable_second_tune && d->abs_erpm > d->balance_conf.asym_erpm_start) 
+			if (enable_second_tune) 
 			{
 				// calculate how much weight to give to Tune (B) based on acceleration
-				if (d->balance_conf.tunes_mixing == ACCELERATION) {
+				if (d->balance_conf.tunes_mixing == ACCELERATION_BASED) {
 					float abs_accel = fabsf(d->acceleration);
 					if (abs_accel - d->balance_conf.asym_min_accel > 0) 
 					{
@@ -1354,12 +1354,12 @@ static void balance_thd(void *arg) {
 						current_out_target += acc_coeff;
 					}
 				}
-				// calculate how much weight to give to Tune (B) based on duty cycle
-				else if (d->balance_conf.tunes_mixing == DUTY_CYCLE) {
-					if (d->abs_duty_cycle - d->balance_conf.asym_min_duty > 0) 
+				// calculate how much weight to give to Tune (B) based on ERPM
+				else if (d->balance_conf.tunes_mixing == ERPM_BASED) {
+					if (d->abs_duty_cycle - d->balance_conf.asym_min_erpm > 0) 
 					{
-						float dc_coeff = fminf(d->abs_duty_cycle - d->balance_conf.asym_min_duty, d->asym_max_duty) / d->asym_max_duty;
-						current_out_target += dc_coeff;
+						float erpm_coeff = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm, d->asym_max_erpm) / d->asym_max_erpm;
+						current_out_target += erpm_coeff;
 					}
 				}
 			}
@@ -1385,7 +1385,8 @@ static void balance_thd(void *arg) {
 			else {
 				d->brake_ride_current = d->normal_ride_current;
 				d->brake_booster_current = d->normal_booster_current;
-				d->integral_b = 0;
+				if (d->balance_conf.reset_pitch_thi_on_entering_b)
+					d->integral_b = 0;
 			}
 
 			// Blend between normal & brake rides, and apply filtering

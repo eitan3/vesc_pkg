@@ -63,11 +63,6 @@
 #define APPCONF_BALANCE_TUNES_MIXING 0
 #endif
 
-// Asym Start ERPM
-#ifndef APPCONF_BALANCE_ASYM_ERPM_START
-#define APPCONF_BALANCE_ASYM_ERPM_START 750
-#endif
-
 // Asym Min Acceleration
 #ifndef APPCONF_BALANCE_ASYM_MIN_ACCEL
 #define APPCONF_BALANCE_ASYM_MIN_ACCEL 0.75
@@ -78,14 +73,14 @@
 #define APPCONF_BALANCE_ASYM_MAX_ACCEL 2
 #endif
 
-// Asym Min Duty Cycle
-#ifndef APPCONF_BALANCE_ASYM_MIN_DUTY
-#define APPCONF_BALANCE_ASYM_MIN_DUTY 65
+// Asym Min ERPM
+#ifndef APPCONF_BALANCE_ASYM_MIN_ERPM
+#define APPCONF_BALANCE_ASYM_MIN_ERPM 2000
 #endif
 
-// Asym Max Duty Cycle
-#ifndef APPCONF_BALANCE_ASYM_MAX_DUTY
-#define APPCONF_BALANCE_ASYM_MAX_DUTY 90
+// Asym Max ERPM
+#ifndef APPCONF_BALANCE_ASYM_MAX_ERPM
+#define APPCONF_BALANCE_ASYM_MAX_ERPM 7500
 #endif
 
 // Loop Hertz
@@ -261,6 +256,11 @@
 // Pitch Throttle Integral Limit (B)
 #ifndef APPCONF_BALANCE_PITCH_THI_LIMIT_B
 #define APPCONF_BALANCE_PITCH_THI_LIMIT_B 30
+#endif
+
+// Reset Tune (B) Integral On Entering?
+#ifndef APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_B
+#define APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_B 1
 #endif
 
 // Integral Decay on Wheelslip
