@@ -45,8 +45,8 @@ typedef struct {
 	float current_out_filter;
 	float current_out_filter_b;
 	bool tune_b_only_for_brakes;
-	float normal_to_brake_speed;
-	float brake_to_normal_speed;
+	float tunea_transition_speed;
+	float tuneb_transition_speed;
 	TUNES_MIXING_MODE tunes_mixing;
 	float asym_min_accel;
 	float asym_max_accel;

@@ -99,7 +99,7 @@ typedef struct {
 	float tiltback_duty_step_size, tiltback_hv_step_size, tiltback_lv_step_size, tiltback_return_step_size;
 	float torquetilt_on_step_size, torquetilt_off_step_size;
 	float tiltback_variable, tiltback_variable_max_erpm, noseangling_step_size;
-	float normal_to_brake_step_size, brake_to_normal_step_size;
+	float tuneb_transition_step_size, tunea_transition_step_size;
 
 	// Feature: True Pitch
 	ATTITUDE_INFO m_att_ref;
@@ -251,8 +251,8 @@ static void configure(data *d) {
 	d->roll_turntilt_step_size = d->balance_conf.roll_turntilt_speed / d->balance_conf.hertz;
 	d->yaw_turntilt_step_size = d->balance_conf.yaw_turntilt_speed / d->balance_conf.hertz;
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
-	d->normal_to_brake_step_size = d->balance_conf.normal_to_brake_speed / d->balance_conf.hertz;
-	d->brake_to_normal_step_size = d->balance_conf.brake_to_normal_speed / d->balance_conf.hertz;
+	d->tunea_transition_step_size = d->balance_conf.tunea_transition_speed / d->balance_conf.hertz;
+	d->tuneb_transition_step_size = d->balance_conf.tuneb_transition_speed / d->balance_conf.hertz;
 
 	// Overwrite App CFG Mahony KP to Float CFG Value
 	if (VESC_IF->get_cfg_float(CFG_PARAM_IMU_mahony_kp) != d->balance_conf.mahony_kp) {
@@ -1371,7 +1371,7 @@ static void balance_thd(void *arg) {
 			}
 
 			// Calculate current_out_weight and step size for interpolation
-			float cow_ss = current_out_target > d->last_current_out_target ? d->normal_to_brake_step_size : d->brake_to_normal_step_size;
+			float cow_ss = current_out_target > d->last_current_out_target ? d->tuneb_transition_step_size : d->tunea_transition_step_size;
 			if (fabsf(current_out_target - d->current_out_weight) <= cow_ss) {
 				d->current_out_weight = current_out_target;
 			} else if (current_out_target - d->current_out_weight > 0) {

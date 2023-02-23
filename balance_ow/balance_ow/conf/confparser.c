@@ -19,8 +19,8 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->current_out_filter, &ind);
 	buffer_append_float32_auto(buffer, conf->current_out_filter_b, &ind);
 	buffer[ind++] = conf->tune_b_only_for_brakes;
-	buffer_append_float32(buffer, conf->normal_to_brake_speed, 100, &ind);
-	buffer_append_float32(buffer, conf->brake_to_normal_speed, 100, &ind);
+	buffer_append_float32(buffer, conf->tunea_transition_speed, 100, &ind);
+	buffer_append_float32(buffer, conf->tuneb_transition_speed, 100, &ind);
 	buffer[ind++] = conf->tunes_mixing;
 	buffer_append_float32_auto(buffer, conf->asym_min_accel, &ind);
 	buffer_append_float32_auto(buffer, conf->asym_max_accel, &ind);
@@ -136,8 +136,8 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->current_out_filter = buffer_get_float32_auto(buffer, &ind);
 	conf->current_out_filter_b = buffer_get_float32_auto(buffer, &ind);
 	conf->tune_b_only_for_brakes = buffer[ind++];
-	conf->normal_to_brake_speed = buffer_get_float32(buffer, 100, &ind);
-	conf->brake_to_normal_speed = buffer_get_float32(buffer, 100, &ind);
+	conf->tunea_transition_speed = buffer_get_float32(buffer, 100, &ind);
+	conf->tuneb_transition_speed = buffer_get_float32(buffer, 100, &ind);
 	conf->tunes_mixing = buffer[ind++];
 	conf->asym_min_accel = buffer_get_float32_auto(buffer, &ind);
 	conf->asym_max_accel = buffer_get_float32_auto(buffer, &ind);
@@ -246,8 +246,8 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->current_out_filter = APPCONF_BALANCE_CURRENT_OUT_FILTER;
 	conf->current_out_filter_b = APPCONF_BALANCE_CURRENT_OUT_FILTER_B;
 	conf->tune_b_only_for_brakes = APPCONF_BALANCE_TUNE_B_ONLY_FOR_BRAKES;
-	conf->normal_to_brake_speed = APPCONF_BALANCE_NORMAL_TO_BRAKE_SPEED;
-	conf->brake_to_normal_speed = APPCONF_BALANCE_BRAKE_TO_NORMAL_SPEED;
+	conf->tunea_transition_speed = APPCONF_BALANCE_TUNEA_TRANSITION_SPEED;
+	conf->tuneb_transition_speed = APPCONF_BALANCE_TUNEB_TRANSITION_SPEED;
 	conf->tunes_mixing = APPCONF_BALANCE_TUNES_MIXING;
 	conf->asym_min_accel = APPCONF_BALANCE_ASYM_MIN_ACCEL;
 	conf->asym_max_accel = APPCONF_BALANCE_ASYM_MAX_ACCEL;
