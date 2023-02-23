@@ -8,7 +8,7 @@
 #include <stdbool.h>
 
 // Constants
-#define DATA_BALANCE_CONFIG__SIZE		10087
+#define DATA_BALANCE_CONFIG__SIZE		10179
 
 // Variables
 extern uint8_t data_balance_config_[];

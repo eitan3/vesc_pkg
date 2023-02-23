@@ -254,10 +254,16 @@ static void configure(data *d) {
 	d->normal_to_brake_step_size = d->balance_conf.normal_to_brake_speed / d->balance_conf.hertz;
 	d->brake_to_normal_step_size = d->balance_conf.brake_to_normal_speed / d->balance_conf.hertz;
 
+	// Overwrite App CFG Mahony KP to Float CFG Value
+	if (VESC_IF->get_cfg_float(CFG_PARAM_IMU_mahony_kp) != d->balance_conf.mahony_kp) {
+		VESC_IF->set_cfg_float(CFG_PARAM_IMU_mahony_kp, d->balance_conf.mahony_kp);
+	}
+
+	// Maximum amps allow
 	d->mc_max_current = VESC_IF->get_cfg_float(CFG_PARAM_l_current_max);
 	d->mc_brake_max_current = fabsf(VESC_IF->get_cfg_float(CFG_PARAM_l_current_min));
 
-	// Maximum amps change when braking
+	// Maximum amps change (difference between prev value and the new value) when braking
 	d->brake_max_amp_change = d->balance_conf.brake_max_amp_change;
 	if (d->brake_max_amp_change < 0.1) {
 		d->brake_max_amp_change = 5;

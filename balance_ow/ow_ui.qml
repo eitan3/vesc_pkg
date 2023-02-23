@@ -46,7 +46,7 @@ Item {
     property var dumpingText: 0
     property var dumpingCount: 0
     property var paramsArr:  [["double", "pitch_th"], ["double", "pitch_th_b"], ["double", "pitch_thi"], ["double", "pitch_thi_b"], 
-                              ["double", "gyro_th"], ["double", "gyro_th_b"], ["double", "current_out_filter"], 
+                              ["double", "gyro_th"], ["double", "gyro_th_b"], ["double", "current_out_filter"], ["double", "mahony_kp"],
                               ["double", "current_out_filter_b"], ["double", "normal_to_brake_speed"], ["double", "brake_to_normal_speed"], 
                               ["double", "fault_pitch"], ["double", "fault_roll"], ["int", "fault_delay_pitch"], ["int", "fault_delay_roll"], 
                               ["double", "tiltback_duty_angle"], ["double", "tiltback_duty_speed"], ["double", "tiltback_duty"], 

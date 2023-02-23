@@ -26,6 +26,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->asym_max_accel, &ind);
 	buffer_append_uint16(buffer, conf->asym_min_erpm, &ind);
 	buffer_append_uint16(buffer, conf->asym_max_erpm, &ind);
+	buffer_append_float32_auto(buffer, conf->mahony_kp, &ind);
 	buffer_append_uint16(buffer, conf->hertz, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_roll, &ind);
@@ -142,6 +143,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->asym_max_accel = buffer_get_float32_auto(buffer, &ind);
 	conf->asym_min_erpm = buffer_get_uint16(buffer, &ind);
 	conf->asym_max_erpm = buffer_get_uint16(buffer, &ind);
+	conf->mahony_kp = buffer_get_float32_auto(buffer, &ind);
 	conf->hertz = buffer_get_uint16(buffer, &ind);
 	conf->fault_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->fault_roll = buffer_get_float32_auto(buffer, &ind);
@@ -251,6 +253,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->asym_max_accel = APPCONF_BALANCE_ASYM_MAX_ACCEL;
 	conf->asym_min_erpm = APPCONF_BALANCE_ASYM_MIN_ERPM;
 	conf->asym_max_erpm = APPCONF_BALANCE_ASYM_MAX_ERPM;
+	conf->mahony_kp = APPCONF_BALANCE_MAHONY_KP;
 	conf->hertz = APPCONF_BALANCE_HERTZ;
 	conf->fault_pitch = APPCONF_BALANCE_FAULT_PITCH;
 	conf->fault_roll = APPCONF_BALANCE_FAULT_ROLL;
