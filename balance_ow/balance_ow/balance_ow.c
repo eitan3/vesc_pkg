@@ -141,7 +141,6 @@ typedef struct {
 
 	bool braking;
 	float tb_highvoltage_timer;
-	float brake_max_amp_change; // Brake Amp Rate Limiting
 
 	float max_duty_with_margin;
 	float wheelslip_timer, wheelslip_end_timer;
@@ -262,12 +261,6 @@ static void configure(data *d) {
 	// Maximum amps allow
 	d->mc_max_current = VESC_IF->get_cfg_float(CFG_PARAM_l_current_max);
 	d->mc_brake_max_current = fabsf(VESC_IF->get_cfg_float(CFG_PARAM_l_current_min));
-
-	// Maximum amps change (difference between prev value and the new value) when braking
-	d->brake_max_amp_change = d->balance_conf.brake_max_amp_change;
-	if (d->brake_max_amp_change < 0.1) {
-		d->brake_max_amp_change = 5;
-	}
 
 	d->max_duty_with_margin = VESC_IF->get_cfg_float(CFG_PARAM_l_max_duty) - 0.1;
 
@@ -1141,6 +1134,17 @@ static float normal_ride_current(data *d, const float prev_current)
 		output_current += d->normal_booster_current;
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter) + output_current * d->balance_conf.current_out_filter;
+
+	// Brake Amp Rate Limiting
+	if (d->braking && (fabsf(output_current - d->current_request) > d->balance_conf.brake_max_amp_change)) {
+		if (output_current > d->current_request) {
+			output_current = d->current_request + d->balance_conf.brake_max_amp_change;
+		}
+		else {
+			output_current = d->current_request + d->balance_conf.brake_max_amp_change;
+		}
+	}
+
 	return output_current;
 }
 
@@ -1181,6 +1185,17 @@ static float brake_ride_current(data *d, const float prev_current)
 		output_current += d->brake_booster_current;
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter_b) + output_current * d->balance_conf.current_out_filter_b;
+
+	// Brake Amp Rate Limiting
+	if (d->braking && (fabsf(output_current - d->current_request) > d->balance_conf.brake_max_amp_change_b)) {
+		if (output_current > d->current_request) {
+			output_current = d->current_request + d->balance_conf.brake_max_amp_change_b;
+		}
+		else {
+			output_current = d->current_request + d->balance_conf.brake_max_amp_change_b;
+		}
+	}
+
 	return output_current;
 }
 
@@ -1412,25 +1427,13 @@ static void balance_thd(void *arg) {
 			}
 
 			// Freewheel while traction loss is detected
-			float brake_max_amp_change = d->brake_max_amp_change * (1.0 - d->current_out_weight);
-			brake_max_amp_change += d->balance_conf.brake_max_amp_change_b * d->current_out_weight;
 			if (d->traction_control && d->balance_conf.enable_traction_control) {
 				d->current_request = d->current_request * d->balance_conf.traction_control_mul_by;
-			}
-			// Brake Amp Rate Limiting
-			else if (d->braking && (fabsf(d->current_request - new_output_current) > brake_max_amp_change)) {
-				if (new_output_current > d->current_request) {
-					d->current_request += brake_max_amp_change;
-				}
-				else {
-					d->current_request -= brake_max_amp_change;
-				}
 			}
 			// Everything ok, set new_output_current as the final current
 			else {
 				d->current_request = new_output_current;
 			}
-
 
 			// Output to motor
 			if (d->start_counter_clicks && d->abs_erpm < 200) {

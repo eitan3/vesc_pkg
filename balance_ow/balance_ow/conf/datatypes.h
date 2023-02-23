@@ -45,6 +45,13 @@ typedef struct {
 	float current_out_filter;
 	float current_out_filter_b;
 	bool tune_b_only_for_brakes;
+	float brake_max_amp_change;
+	float brake_max_amp_change_b;
+	float pitch_thi_limit;
+	float pitch_thi_limit_b;
+	bool reset_pitch_thi_on_entering_b;
+	float pitch_thi_decay_on_wheelslip;
+	float pitch_thi_decay_on_wheelslip_b;
 	float tunea_transition_speed;
 	float tuneb_transition_speed;
 	TUNES_MIXING_MODE tunes_mixing;
@@ -84,13 +91,6 @@ typedef struct {
 	float startup_roll_tolerance;
 	float startup_speed;
 	float brake_current;
-	float brake_max_amp_change;
-	float brake_max_amp_change_b;
-	float pitch_thi_limit;
-	float pitch_thi_limit_b;
-	bool reset_pitch_thi_on_entering_b;
-	float pitch_thi_decay_on_wheelslip;
-	float pitch_thi_decay_on_wheelslip_b;
 	float torquetilt_start_current;
 	float torquetilt_start_current_b;
 	float torquetilt_angle_limit;

@@ -48,6 +48,41 @@
 #define APPCONF_BALANCE_TUNE_B_ONLY_FOR_BRAKES 1
 #endif
 
+// Brake max amp change
+#ifndef APPCONF_BALANCE_BRAKE_MAX_AMPS
+#define APPCONF_BALANCE_BRAKE_MAX_AMPS 20
+#endif
+
+// Brake max amp change (B)
+#ifndef APPCONF_BALANCE_BRAKE_MAX_AMPS_B
+#define APPCONF_BALANCE_BRAKE_MAX_AMPS_B 20
+#endif
+
+// Pitch Throttle Integral Limit
+#ifndef APPCONF_BALANCE_PITCH_THI_LIMIT
+#define APPCONF_BALANCE_PITCH_THI_LIMIT 30
+#endif
+
+// Pitch Throttle Integral Limit (B)
+#ifndef APPCONF_BALANCE_PITCH_THI_LIMIT_B
+#define APPCONF_BALANCE_PITCH_THI_LIMIT_B 30
+#endif
+
+// Reset Tune (B) Integral On Entering?
+#ifndef APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_B
+#define APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_B 1
+#endif
+
+// Integral Decay on Wheelslip
+#ifndef APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP
+#define APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP -1
+#endif
+
+// Integral Decay on Wheelslip (B)
+#ifndef APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_B
+#define APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_B -1
+#endif
+
 // Tune (A) Transition Speed
 #ifndef APPCONF_BALANCE_TUNEA_TRANSITION_SPEED
 #define APPCONF_BALANCE_TUNEA_TRANSITION_SPEED 1.5
@@ -241,41 +276,6 @@
 // Brake Current
 #ifndef APPCONF_BALANCE_BRAKE_CURRENT
 #define APPCONF_BALANCE_BRAKE_CURRENT 6
-#endif
-
-// Brake max amp change
-#ifndef APPCONF_BALANCE_BRAKE_MAX_AMPS
-#define APPCONF_BALANCE_BRAKE_MAX_AMPS 20
-#endif
-
-// Brake max amp change (B)
-#ifndef APPCONF_BALANCE_BRAKE_MAX_AMPS_B
-#define APPCONF_BALANCE_BRAKE_MAX_AMPS_B 20
-#endif
-
-// Pitch Throttle Integral Limit
-#ifndef APPCONF_BALANCE_PITCH_THI_LIMIT
-#define APPCONF_BALANCE_PITCH_THI_LIMIT 30
-#endif
-
-// Pitch Throttle Integral Limit (B)
-#ifndef APPCONF_BALANCE_PITCH_THI_LIMIT_B
-#define APPCONF_BALANCE_PITCH_THI_LIMIT_B 30
-#endif
-
-// Reset Tune (B) Integral On Entering?
-#ifndef APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_B
-#define APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_B 1
-#endif
-
-// Integral Decay on Wheelslip
-#ifndef APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP
-#define APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP -1
-#endif
-
-// Integral Decay on Wheelslip (B)
-#ifndef APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_B
-#define APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_B -1
 #endif
 
 // Start Current Threshold (A)
