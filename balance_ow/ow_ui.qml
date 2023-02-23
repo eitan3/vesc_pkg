@@ -698,16 +698,16 @@ Item {
     function quickLoadTuneOneArr(saveName, arr){
         for(var i in arr) {
             if (arr[i][0] == "double") {
-                mCustomConf.updateParamDouble(arr[i][1], settingStorage.value(saveName + "_" + arr[i][1], 0))
+                mCustomConf.updateParamDouble(arr[i][1], settingStorage.value(saveName + "_" + arr[i][1], mCustomConf.getParamDouble(arr[i][1])))
             }
             else if (arr[i][0] == "int") {
-                mCustomConf.updateParamInt(arr[i][1], settingStorage.value(saveName + "_" + arr[i][1], 0))
+                mCustomConf.updateParamInt(arr[i][1], settingStorage.value(saveName + "_" + arr[i][1], mCustomConf.getParamInt(arr[i][1])))
             }
             else if (arr[i][0] == "bool") {
-                mCustomConf.updateParamBool(arr[i][1], parseInt(settingStorage.value(saveName + "_" + arr[i][1], 0)))
+                mCustomConf.updateParamBool(arr[i][1], parseInt(settingStorage.value(saveName + "_" + arr[i][1], mCustomConf.getParamBool(arr[i][1])?1:0)))
             }
             else if (arr[i][0] == "enum") {
-                mCustomConf.updateParamEnum(arr[i][1], settingStorage.value(saveName + "_" + arr[i][1], 0))
+                mCustomConf.updateParamEnum(arr[i][1], settingStorage.value(saveName + "_" + arr[i][1], mCustomConf.getParamEnum(arr[i][1])))
             }
         }
         mCommands.customConfigSet(0, mCustomConf)
