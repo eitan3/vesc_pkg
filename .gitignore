@@ -54,3 +54,4 @@ dkms.conf
 # Eclipse
 .cproject
 .settings
+.vscode
