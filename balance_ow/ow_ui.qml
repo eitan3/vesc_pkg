@@ -515,8 +515,8 @@ Item {
                                     if (enableDataDumping == 0) {
                                         enableDataDumping = 1
                                         mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
-                                        var header = "erpm,braking,current_out_weight,normal_ride_current,brake_ride_current,"
-                                        header += "current_request,normal_booster_current,brake_booster_current\n"
+                                        var header = "erpm,braking,tuneB_weight,tuneA_current,tuneB_current,"
+                                        header += "current_request,tuneA_booster_current,tuneB_booster_current\n"
                                         mLogWriter.writeToLogFile(header)
                                     }
                                     else {
@@ -572,11 +572,11 @@ Item {
             var yaw_setpoint = dv.getFloat32(ind); ind += 4;
             var roll_setpoint = dv.getFloat32(ind); ind += 4;
             var turntilt_setpoint = dv.getFloat32(ind); ind += 4;
-            var normal_ride_current = dv.getFloat32(ind); ind += 4;
-            var brake_ride_current = dv.getFloat32(ind); ind += 4;
-            var current_out_weight = dv.getFloat32(ind); ind += 4;
-            var normal_booster_current = dv.getFloat32(ind); ind += 4;
-            var brake_booster_current = dv.getFloat32(ind); ind += 4;
+            var tuneA_current = dv.getFloat32(ind); ind += 4;
+            var tuneB_current = dv.getFloat32(ind); ind += 4;
+            var tuneB_weight = dv.getFloat32(ind); ind += 4;
+            var tuneA_booster_current = dv.getFloat32(ind); ind += 4;
+            var tuneB_booster_current = dv.getFloat32(ind); ind += 4;
 
             var stateString
             if(state == 0){
@@ -626,14 +626,14 @@ Item {
             rt_data_text.text =
                 "Time               : " + (1/time_diff).toFixed(0) + " hz\n" +
                 "State              : " + stateString + "\n" +
-                "Normal Current     : " + normal_ride_current.toFixed(2) + " A\n" +
-                "Brake Current      : " + brake_ride_current.toFixed(2) + " A\n" +
-                "Current Out Weight : " + current_out_weight.toFixed(2) + "\n" +
+                "Tune A Current     : " + tuneA_current.toFixed(2) + " A\n" +
+                "Tune B Current     : " + tuneB_current.toFixed(2) + " A\n" +
+                "Current Out Weight : " + tuneB_weight.toFixed(2) + "\n" +
                 "Current (Request)  : " + current_request.toFixed(2) + " A\n" +
                 "Current (Motor)    : " + motor_current.toFixed(2) + " A\n" +
                 "Current (Filtered) : " + filtered_current.toFixed(2) + " A\n" +
-                "Normal Booster     : " + normal_booster_current.toFixed(2) + " A\n" + 
-                "Brake Booster      : " + brake_booster_current.toFixed(2) + " A\n" + 
+                "Tune A Booster     : " + tuneA_booster_current.toFixed(2) + " A\n" + 
+                "Tune B Booster     : " + tuneB_booster_current.toFixed(2) + " A\n" + 
                 "ERPM               : " + (erpm / 1000).toFixed(3) + " / 1000 \n" +
                 "Acceleration       : " + acceleration.toFixed(2) + "\n" +
                 "Braking            : " + braking + "\n" + 
@@ -658,10 +658,10 @@ Item {
                 toggleDataDump.text = "Disable Csv Dump"
                 if (running == 1) {
                     dumpingCount += 1
-                    dumpingText += erpm + "," + braking + "," + current_out_weight.toFixed(3) + "," + 
-                                   normal_ride_current.toFixed(3) + "," + brake_ride_current.toFixed(3) + "," + 
-                                   current_request.toFixed(3) + "," + normal_booster_current.toFixed(3) + "," + 
-                                   brake_booster_current.toFixed(3) + "\n"
+                    dumpingText += erpm + "," + braking + "," + tuneB_weight.toFixed(3) + "," + 
+                                   tuneA_current.toFixed(3) + "," + tuneB_current.toFixed(3) + "," + 
+                                   current_request.toFixed(3) + "," + tuneA_booster_current.toFixed(3) + "," + 
+                                   tuneB_booster_current.toFixed(3) + "\n"
                     if (dumpingCount == 100){
                         // REMOVE ME FOR PUBLIC RELEASE
                         mLogWriter.writeToLogFile(dumpingText)

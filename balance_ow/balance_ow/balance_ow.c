@@ -132,8 +132,8 @@ typedef struct {
 	float fault_angle_pitch_timer, fault_angle_roll_timer, fault_switch_timer, fault_switch_half_timer; // Seconds
 	float motor_timeout_seconds;
 	float brake_timeout; // Seconds
-	float normal_booster_current;
-	float brake_booster_current;
+	float tuneA_booster_current;
+	float tuneB_booster_current;
 	bool traction_control;
 
 	float mc_max_current;
@@ -175,10 +175,10 @@ typedef struct {
 	unsigned int start_counter_clicks, start_counter_clicks_max, start_click_current;
 
 	// Asymmetric Tune
-	float normal_ride_current;
-	float brake_ride_current;
-	float current_out_weight;
-	float last_current_out_target;
+	float tuneA_current;
+	float tuneB_current;
+	float tuneB_weight;
+	float last_tuneB_weight_target;
 	float asym_max_accel;
 	float asym_max_erpm;
 
@@ -365,16 +365,16 @@ static void reset_vars(data *d) {
 	d->diff_time = 0;
 	d->brake_timeout = 0;
 	d->current_request = 0;
-	d->normal_booster_current = 0;
-	d->brake_booster_current = 0;
 	biquad_reset(&d->smooth_erpm_biquad);
 	d->smooth_erpm = 0;
 
 	// Asymmetric Tune
-	d->normal_ride_current = 0;
-	d->brake_ride_current = 0;
-	d->current_out_weight = 0;
-	d->last_current_out_target = 0;
+	d->tuneA_current = 0;
+	d->tuneB_current = 0;
+	d->tuneB_weight = 0;
+	d->last_tuneB_weight_target = 0;
+	d->tuneA_booster_current = 0;
+	d->tuneB_booster_current = 0;
 
 	// Acceleration:
 	d->acceleration = 0;
@@ -1093,7 +1093,7 @@ static float calc_nl_booster(data *d, float proportional, float min_pitch, float
 	return final_out_amps;
 }
 
-static float normal_ride_current(data *d, const float prev_current)
+static float get_tuneA_current(data *d, const float prev_current)
 {
 	// Calculate proportional
 	d->proportional = d->setpoint - d->pitch_angle;
@@ -1130,8 +1130,8 @@ static float normal_ride_current(data *d, const float prev_current)
 												d->balance_conf.booster_pitch_scale, d->balance_conf.booster_base, 
 												d->balance_conf.booster_exponent, d->balance_conf.booster_out_scale,
 												d->balance_conf.booster_limit);
-		d->normal_booster_current = 0.01 * booster_current + 0.99 * d->normal_booster_current;
-		output_current += d->normal_booster_current;
+		d->tuneA_booster_current = 0.01 * booster_current + 0.99 * d->tuneA_booster_current;
+		output_current += d->tuneA_booster_current;
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter) + output_current * d->balance_conf.current_out_filter;
 
@@ -1148,7 +1148,7 @@ static float normal_ride_current(data *d, const float prev_current)
 	return output_current;
 }
 
-static float brake_ride_current(data *d, const float prev_current)
+static float get_tuneB_current(data *d, const float prev_current)
 {
 	// Apply integral_b and limiter
 	if (d->abs_erpm > 250) {
@@ -1181,8 +1181,8 @@ static float brake_ride_current(data *d, const float prev_current)
 												d->balance_conf.booster_pitch_scale_b, d->balance_conf.booster_base_b, 
 												d->balance_conf.booster_exponent_b, d->balance_conf.booster_out_scale_b,
 												d->balance_conf.booster_limit_b);
-		d->brake_booster_current = 0.01 * booster_current + 0.99 * d->brake_booster_current;
-		output_current += d->brake_booster_current;
+		d->tuneB_booster_current = 0.01 * booster_current + 0.99 * d->tuneB_booster_current;
+		output_current += d->tuneB_booster_current;
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter_b) + output_current * d->balance_conf.current_out_filter_b;
 
@@ -1362,7 +1362,7 @@ static void balance_thd(void *arg) {
 			calc_final_setpoint(d);
 			
 			// Calculate current weight target (blend between Tune (A) & Tune (B))
-			float current_out_target = 0.0; // 0 = Tune (A), 1 = Tune (B)
+			float tuneB_weight_target = 0.0; // 0 = Tune (A), 1 = Tune (B)
 			bool enable_second_tune = d->balance_conf.tune_b_only_for_brakes ? d->braking : true;
 			if (enable_second_tune) 
 			{
@@ -1372,7 +1372,7 @@ static void balance_thd(void *arg) {
 					if (abs_accel - d->balance_conf.asym_min_accel > 0) 
 					{
 						float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel, d->asym_max_accel) / d->asym_max_accel;
-						current_out_target += acc_coeff;
+						tuneB_weight_target += acc_coeff;
 					}
 				}
 				// calculate how much weight to give to Tune (B) based on ERPM
@@ -1380,38 +1380,38 @@ static void balance_thd(void *arg) {
 					if (d->abs_duty_cycle - d->balance_conf.asym_min_erpm > 0) 
 					{
 						float erpm_coeff = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm, d->asym_max_erpm) / d->asym_max_erpm;
-						current_out_target += erpm_coeff;
+						tuneB_weight_target += erpm_coeff;
 					}
 				}
 			}
 
-			// Calculate current_out_weight and step size for interpolation
-			float cow_ss = current_out_target > d->last_current_out_target ? d->tuneb_transition_step_size : d->tunea_transition_step_size;
-			if (fabsf(current_out_target - d->current_out_weight) <= cow_ss) {
-				d->current_out_weight = current_out_target;
-			} else if (current_out_target - d->current_out_weight > 0) {
-				d->current_out_weight += cow_ss;
+			// Calculate tuneB_weight and step size for interpolation
+			float cow_ss = tuneB_weight_target > d->last_tuneB_weight_target ? d->tuneb_transition_step_size : d->tunea_transition_step_size;
+			if (fabsf(tuneB_weight_target - d->tuneB_weight) <= cow_ss) {
+				d->tuneB_weight = tuneB_weight_target;
+			} else if (tuneB_weight_target - d->tuneB_weight > 0) {
+				d->tuneB_weight += cow_ss;
 			} else {
-				d->current_out_weight -= cow_ss;
+				d->tuneB_weight -= cow_ss;
 			}
 
-			// Set d->last_current_out_target to the new value
-			d->last_current_out_target = current_out_target;
+			// Set d->last_tuneB_weight_target to the new value
+			d->last_tuneB_weight_target = tuneB_weight_target;
 
 			// Calculate output current
-			d->normal_ride_current = normal_ride_current(d, d->normal_ride_current);
-			if (current_out_target > 0.0 || d->current_out_weight > 0) {
-				d->brake_ride_current = brake_ride_current(d, d->brake_ride_current);
+			d->tuneA_current = get_tuneA_current(d, d->tuneA_current);
+			if (tuneB_weight_target > 0.0 || d->tuneB_weight > 0) {
+				d->tuneB_current = get_tuneB_current(d, d->tuneB_current);
 			}
 			else {
-				d->brake_ride_current = d->normal_ride_current;
-				d->brake_booster_current = d->normal_booster_current;
+				d->tuneB_current = d->tuneA_current;
+				d->tuneB_booster_current = d->tuneA_booster_current;
 				if (d->balance_conf.reset_pitch_thi_on_entering_b)
 					d->integral_b = 0;
 			}
 
-			// Blend between normal & brake rides, and apply filtering
-			float new_output_current = d->normal_ride_current * (1.0 - d->current_out_weight) + d->brake_ride_current * d->current_out_weight;
+			// Blend between Tune A & Tune B, and apply filtering
+			float new_output_current = d->tuneA_current * (1.0 - d->tuneB_weight) + d->tuneB_current * d->tuneB_weight;
 			new_output_current = d->current_request * 0.65 + new_output_current * 0.35;
 			
 			// Current Limiting!
@@ -1544,11 +1544,11 @@ static void send_realtime_data(data *d){
 	buffer_append_float32_auto(send_buffer, d->yaw_turntilt_interpolated * d->balance_conf.yaw_turntilt_weight, &ind);
 	buffer_append_float32_auto(send_buffer, d->roll_turntilt_interpolated * d->balance_conf.roll_turntilt_weight, &ind);
 	buffer_append_float32_auto(send_buffer, d->total_turntilt_interpolated, &ind);
-	buffer_append_float32_auto(send_buffer, d->normal_ride_current, &ind);
-	buffer_append_float32_auto(send_buffer, d->brake_ride_current, &ind);
-	buffer_append_float32_auto(send_buffer, d->current_out_weight, &ind);
-	buffer_append_float32_auto(send_buffer, d->normal_booster_current, &ind);
-	buffer_append_float32_auto(send_buffer, d->brake_booster_current, &ind);
+	buffer_append_float32_auto(send_buffer, d->tuneA_current, &ind);
+	buffer_append_float32_auto(send_buffer, d->tuneB_current, &ind);
+	buffer_append_float32_auto(send_buffer, d->tuneB_weight, &ind);
+	buffer_append_float32_auto(send_buffer, d->tuneA_booster_current, &ind);
+	buffer_append_float32_auto(send_buffer, d->tuneB_booster_current, &ind);
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 
