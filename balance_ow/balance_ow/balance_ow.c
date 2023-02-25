@@ -99,7 +99,7 @@ typedef struct {
 	float tiltback_duty_step_size, tiltback_hv_step_size, tiltback_lv_step_size, tiltback_return_step_size;
 	float torquetilt_on_step_size, torquetilt_off_step_size;
 	float tiltback_variable, tiltback_variable_max_erpm, noseangling_step_size;
-	float tuneb_transition_step_size, tunea_transition_step_size;
+	float tunea_transition_step_size, tuneb_transition_step_size, tunec_transition_step_size;
 
 	// Feature: True Pitch
 	ATTITUDE_INFO m_att_ref;
@@ -120,7 +120,7 @@ typedef struct {
 	BalanceState state;
 	bool running;
 	float proportional, integral, proportional2, integral_decay;
-	float integral_b, integral_decay_b;
+	float integral_b, integral_decay_b, integral_c, integral_decay_c;
 	float current_request;
 	float setpoint, setpoint_target, setpoint_target_interpolated;
 	float noseangling_interpolated;
@@ -134,6 +134,7 @@ typedef struct {
 	float brake_timeout; // Seconds
 	float tuneA_booster_current;
 	float tuneB_booster_current;
+	float tuneC_booster_current;
 	bool traction_control;
 
 	float mc_max_current;
@@ -179,8 +180,13 @@ typedef struct {
 	float tuneB_current;
 	float tuneB_weight;
 	float last_tuneB_weight_target;
-	float asym_max_accel;
-	float asym_max_erpm;
+	float asym_max_accel_b;
+	uint32_t asym_max_erpm_b;
+	float tuneC_current;
+	float tuneC_weight;
+	float last_tuneC_weight_target;
+	float asym_max_accel_c;
+	uint32_t asym_max_erpm_c;
 
 	// Odometer
 	float odo_timer;
@@ -252,8 +258,9 @@ static void configure(data *d) {
 	d->noseangling_step_size = d->balance_conf.noseangling_speed / d->balance_conf.hertz;
 	d->tunea_transition_step_size = d->balance_conf.tunea_transition_speed / d->balance_conf.hertz;
 	d->tuneb_transition_step_size = d->balance_conf.tuneb_transition_speed / d->balance_conf.hertz;
+	d->tunec_transition_step_size = d->balance_conf.tunec_transition_speed / d->balance_conf.hertz;
 
-	// Overwrite App CFG Mahony KP to Float CFG Value
+	// Overwrite App CFG Mahony KP to pkg Value
 	if (VESC_IF->get_cfg_float(CFG_PARAM_IMU_mahony_kp) != d->balance_conf.mahony_kp) {
 		VESC_IF->set_cfg_float(CFG_PARAM_IMU_mahony_kp, d->balance_conf.mahony_kp);
 	}
@@ -313,15 +320,25 @@ static void configure(data *d) {
 	d->start_counter_clicks_max = 3;
 
 	// Asymmetric Tune
-	if (d->balance_conf.asym_max_accel < d->balance_conf.asym_min_accel)
-		d->asym_max_accel = 0.1;
+	if (d->balance_conf.asym_max_accel_b < d->balance_conf.asym_min_accel_b)
+		d->asym_max_accel_b = 0.1;
 	else 
-		d->asym_max_accel = d->balance_conf.asym_max_accel - d->balance_conf.asym_min_accel;
+		d->asym_max_accel_b = d->balance_conf.asym_max_accel_b - d->balance_conf.asym_min_accel_b;
 
-	if (d->balance_conf.asym_max_erpm < d->balance_conf.asym_min_erpm)
-		d->asym_max_erpm = 0.1;
+	if (d->balance_conf.asym_max_erpm_b < d->balance_conf.asym_min_erpm_b)
+		d->asym_max_erpm_b = 1000;
 	else 
-		d->asym_max_erpm = d->balance_conf.asym_max_erpm - d->balance_conf.asym_min_erpm;
+		d->asym_max_erpm_b = d->balance_conf.asym_max_erpm_b - d->balance_conf.asym_min_erpm_b;
+	
+	if (d->balance_conf.asym_max_accel_c < d->balance_conf.asym_min_accel_c)
+		d->asym_max_accel_c = 0.1;
+	else 
+		d->asym_max_accel_c = d->balance_conf.asym_max_accel_c - d->balance_conf.asym_min_accel_c;
+
+	if (d->balance_conf.asym_max_erpm_c < d->balance_conf.asym_min_erpm_c)
+		d->asym_max_erpm_c = 1000;
+	else 
+		d->asym_max_erpm_c = d->balance_conf.asym_max_erpm_c - d->balance_conf.asym_min_erpm_c;
 
 	// integral reset on wheelslip (tune A)
 	if (d->balance_conf.pitch_thi_decay_on_wheelslip < 0)
@@ -331,13 +348,21 @@ static void configure(data *d) {
 	else
 		d->integral_decay = 1.0 - (1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip) / d->balance_conf.hertz;
 	
-	// integral reset on wheelslip (tune B)
+	// integral decay on wheelslip (tune B)
 	if (d->balance_conf.pitch_thi_decay_on_wheelslip_b < 0)
 		d->integral_decay_b = 1.0;
 	else if ((1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip_b) > d->balance_conf.hertz)
 		d->integral_decay_b = 0;
 	else
 		d->integral_decay_b = 1.0 - (1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip_b) / d->balance_conf.hertz;
+	
+	// integral decay on wheelslip (tune C)
+	if (d->balance_conf.pitch_thi_decay_on_wheelslip_c < 0)
+		d->integral_decay_c = 1.0;
+	else if ((1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip_c) > d->balance_conf.hertz)
+		d->integral_decay_c = 0;
+	else
+		d->integral_decay_c = 1.0 - (1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip_c) / d->balance_conf.hertz;
 
 	// Odometer
 	d->odometer_dirty = 0;
@@ -349,6 +374,7 @@ static void reset_vars(data *d) {
 	// Clear accumulated values.
 	d->integral = 0;
 	d->integral_b = 0;
+	d->integral_c = 0;
 	// Set values for startup
 	d->setpoint = d->pitch_angle;
 	d->setpoint_target_interpolated = d->pitch_angle;
@@ -375,6 +401,7 @@ static void reset_vars(data *d) {
 	d->last_tuneB_weight_target = 0;
 	d->tuneA_booster_current = 0;
 	d->tuneB_booster_current = 0;
+	d->tuneC_booster_current = 0;
 
 	// Acceleration:
 	d->acceleration = 0;
@@ -641,6 +668,7 @@ static void calculate_state_and_initial_setpoint(data *d) {
 					d->setpoint_target = 0;
 					d->integral = 0;
 					d->integral_b = 0;
+					d->integral_c = 0;
 				}
 			}
 		}
@@ -1199,6 +1227,57 @@ static float get_tuneB_current(data *d, const float prev_current)
 	return output_current;
 }
 
+static float get_tuneC_current(data *d, const float prev_current)
+{
+	// Apply integral_c and limiter
+	if (d->abs_erpm > 250) {
+		d->integral_c = d->integral_c + d->proportional;
+		if (d->balance_conf.pitch_thi_limit_c > 0 && fabsf(d->integral_c * d->balance_conf.pitch_thi_c) > d->balance_conf.pitch_thi_limit_c) {
+			d->integral_c = d->balance_conf.pitch_thi_limit_c / d->balance_conf.pitch_thi_c * SIGN(d->integral_c);
+		}
+	}
+	else {
+		d->integral_c = d->integral_c * 0.99;
+	}
+
+	// Lowering the integral_c while reverse stop
+	if (d->setpointAdjustmentType == REVERSESTOP) {
+		d->integral_c = d->integral_c * 0.9;
+	}
+
+	// Calculate new current
+	float output_current = d->balance_conf.pitch_th_c * d->proportional + d->balance_conf.pitch_thi_c * d->integral_c;
+			
+	// Start Rate PID and Booster portion a few cycles later, after the start clicks have been emitted
+	// this keeps the start smooth and predictable
+	if (d->start_counter_clicks == 0) {
+		if (d->balance_conf.gyro_th_c > 0) {
+			output_current += d->balance_conf.gyro_th_c * d->proportional2;
+		}
+
+		// Add booster
+		float booster_current = calc_nl_booster(d, d->proportional, d->balance_conf.booster_min_pitch_c, d->balance_conf.booster_max_pitch_c, 
+												d->balance_conf.booster_pitch_scale_c, d->balance_conf.booster_base_c, 
+												d->balance_conf.booster_exponent_c, d->balance_conf.booster_out_scale_c,
+												d->balance_conf.booster_limit_c);
+		d->tuneC_booster_current = 0.01 * booster_current + 0.99 * d->tuneC_booster_current;
+		output_current += d->tuneC_booster_current;
+	}
+	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter_c) + output_current * d->balance_conf.current_out_filter_c;
+
+	// Brake Amp Rate Limiting
+	if (d->braking && (fabsf(output_current - d->current_request) > d->balance_conf.brake_max_amp_change_c)) {
+		if (output_current > d->current_request) {
+			output_current = d->current_request + d->balance_conf.brake_max_amp_change_c;
+		}
+		else {
+			output_current = d->current_request - d->balance_conf.brake_max_amp_change_c;
+		}
+	}
+
+	return output_current;
+}
+
 static void imu_ref_callback(float *acc, float *gyro, float *mag, float dt) {
 	data *d = (data*)ARG;
 	VESC_IF->ahrs_update_mahony_imu(gyro, acc, dt, &d->m_att_ref);
@@ -1358,28 +1437,29 @@ static void balance_thd(void *arg) {
 				d->roll_turntilt_target *= 0.99;
 				d->integral *= d->integral_decay;
 				d->integral_b *= d->integral_decay_b;
+				d->integral_c *= d->integral_decay_c;
 			}
 			calc_final_setpoint(d);
 			
-			// Calculate current weight target (blend between Tune (A) & Tune (B))
+			// Calculate current weight target for Tune B (blend between Tune (A) & Tune (B))
 			float tuneB_weight_target = 0.0; // 0 = Tune (A), 1 = Tune (B)
 			bool enable_second_tune = d->balance_conf.tune_b_only_for_brakes ? d->braking : true;
 			if (enable_second_tune) 
 			{
 				// calculate how much weight to give to Tune (B) based on acceleration
-				if (d->balance_conf.tunes_mixing == ACCELERATION_BASED) {
+				if (d->balance_conf.tunes_mixing_b == ACCELERATION_BASED) {
 					float abs_accel = fabsf(d->acceleration);
-					if (abs_accel - d->balance_conf.asym_min_accel > 0) 
+					if (abs_accel - d->balance_conf.asym_min_accel_b > 0) 
 					{
-						float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel, d->asym_max_accel) / d->asym_max_accel;
+						float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel_b, d->asym_max_accel_b) / d->asym_max_accel_b;
 						tuneB_weight_target += acc_coeff;
 					}
 				}
 				// calculate how much weight to give to Tune (B) based on ERPM
-				else if (d->balance_conf.tunes_mixing == ERPM_BASED) {
-					if (d->abs_duty_cycle - d->balance_conf.asym_min_erpm > 0) 
+				else if (d->balance_conf.tunes_mixing_b == ERPM_BASED) {
+					if (d->abs_erpm - d->balance_conf.asym_min_erpm_b > 0) 
 					{
-						float erpm_coeff = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm, d->asym_max_erpm) / d->asym_max_erpm;
+						float erpm_coeff = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm_b, d->asym_max_erpm_b) / d->asym_max_erpm_b;
 						tuneB_weight_target += erpm_coeff;
 					}
 				}
@@ -1398,8 +1478,46 @@ static void balance_thd(void *arg) {
 			// Set d->last_tuneB_weight_target to the new value
 			d->last_tuneB_weight_target = tuneB_weight_target;
 
-			// Calculate output current
+			// Calculate current weight target for Tune C (blend between Tune (A) & Tune (C))
+			float tuneC_weight_target = 0.0; // 0 = Tune (A), 1 = Tune (C)
+			bool enable_third_tune = d->balance_conf.tune_c_only_for_brakes ? d->braking : true;
+			if (enable_third_tune) 
+			{
+				// calculate how much weight to give to Tune (C) based on acceleration
+				if (d->balance_conf.tunes_mixing_c == ACCELERATION_BASED) {
+					float abs_accel = fabsf(d->acceleration);
+					if (abs_accel - d->balance_conf.asym_min_accel_c > 0) 
+					{
+						float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel_c, d->asym_max_accel_c) / d->asym_max_accel_c;
+						tuneC_weight_target += acc_coeff;
+					}
+				}
+				// calculate how much weight to give to Tune (C) based on ERPM
+				else if (d->balance_conf.tunes_mixing_c == ERPM_BASED) {
+					if (d->abs_erpm - d->balance_conf.asym_min_erpm_c > 0) 
+					{
+						float erpm_coeff = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm_c, d->asym_max_erpm_c) / d->asym_max_erpm_c;
+						tuneC_weight_target += erpm_coeff;
+					}
+				}
+			}
+
+			// Calculate tuneC_weight and step size for interpolation
+			cow_ss = tuneC_weight_target > d->last_tuneC_weight_target ? d->tunec_transition_step_size : d->tunea_transition_step_size;
+			if (fabsf(tuneC_weight_target - d->tuneC_weight) <= cow_ss) {
+				d->tuneC_weight = tuneC_weight_target;
+			} else if (tuneC_weight_target - d->tuneC_weight > 0) {
+				d->tuneC_weight += cow_ss;
+			} else {
+				d->tuneC_weight -= cow_ss;
+			}
+
+			// Set d->last_tuneC_weight_target to the new value
+			d->last_tuneC_weight_target = tuneC_weight_target;
+
+			// Tune A Calculate output current
 			d->tuneA_current = get_tuneA_current(d, d->tuneA_current);
+			// Tune B Calculate output current
 			if (tuneB_weight_target > 0.0 || d->tuneB_weight > 0) {
 				d->tuneB_current = get_tuneB_current(d, d->tuneB_current);
 			}
@@ -1409,9 +1527,31 @@ static void balance_thd(void *arg) {
 				if (d->balance_conf.reset_pitch_thi_on_entering_b)
 					d->integral_b = 0;
 			}
+			// Tune C Calculate output current
+			if (tuneC_weight_target > 0.0 || d->tuneC_weight > 0) {
+				d->tuneC_current = get_tuneC_current(d, d->tuneC_current);
+			}
+			else {
+				d->tuneC_current = d->tuneA_current;
+				d->tuneC_booster_current = d->tuneA_booster_current;
+				if (d->balance_conf.reset_pitch_thi_on_entering_c)
+					d->integral_c = 0;
+			}
 
-			// Blend between Tune A & Tune B, and apply filtering
-			float new_output_current = d->tuneA_current * (1.0 - d->tuneB_weight) + d->tuneB_current * d->tuneB_weight;
+			// Blend between Tune A & Tune B & Tune C, and apply filtering
+			float tuneA_weight = 1.0;
+			float tuneB_weight = 0;
+			float tuneC_weight = 0;
+			if (d->tuneB_weight > 0 || d->tuneC_weight) {
+				float BC_weights = d->tuneB_weight + d->tuneC_weight;
+				float tuneB_scaleBy = d->tuneB_weight / BC_weights;
+				float tuneC_scaleBy = d->tuneC_weight / BC_weights;
+				tuneB_weight = d->tuneB_weight * tuneB_scaleBy;
+				tuneC_weight = d->tuneC_weight * tuneC_scaleBy;
+				tuneA_weight = 1.0 - (tuneB_weight + tuneC_weight);
+			}
+
+			float new_output_current = d->tuneA_current * tuneA_weight + d->tuneB_current * tuneB_weight + d->tuneC_current * tuneC_weight;
 			new_output_current = d->current_request * 0.65 + new_output_current * 0.35;
 			
 			// Current Limiting!
@@ -1521,7 +1661,7 @@ static float app_balance_get_debug(int index) {
 
 static void send_realtime_data(data *d){
 	int32_t ind = 0;
-	uint8_t send_buffer[100];
+	uint8_t send_buffer[120];
 	send_buffer[ind++] = 101;
 	buffer_append_uint16(send_buffer, d->running, &ind);
 	buffer_append_float32_auto(send_buffer, d->diff_time, &ind);
@@ -1546,9 +1686,12 @@ static void send_realtime_data(data *d){
 	buffer_append_float32_auto(send_buffer, d->total_turntilt_interpolated, &ind);
 	buffer_append_float32_auto(send_buffer, d->tuneA_current, &ind);
 	buffer_append_float32_auto(send_buffer, d->tuneB_current, &ind);
+	buffer_append_float32_auto(send_buffer, d->tuneC_current, &ind);
 	buffer_append_float32_auto(send_buffer, d->tuneB_weight, &ind);
+	buffer_append_float32_auto(send_buffer, d->tuneC_weight, &ind);
 	buffer_append_float32_auto(send_buffer, d->tuneA_booster_current, &ind);
 	buffer_append_float32_auto(send_buffer, d->tuneB_booster_current, &ind);
+	buffer_append_float32_auto(send_buffer, d->tuneC_booster_current, &ind);
 	VESC_IF->send_app_data(send_buffer, ind);
 }
 

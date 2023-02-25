@@ -45,37 +45,46 @@ Item {
     property var enableDataDumping: 0
     property var dumpingText: 0
     property var dumpingCount: 0
-    property var paramsArr:  [["double", "pitch_th"], ["double", "pitch_th_b"], ["double", "pitch_thi"], ["double", "pitch_thi_b"], ["double", "gyro_th"],
-                              ["double", "gyro_th_b"], ["double", "current_out_filter"], ["double", "current_out_filter_b"], 
-                              ["bool", "tune_b_only_for_brakes"], ["double", "brake_max_amp_change"], ["double", "brake_max_amp_change_b"],
-                              ["double", "pitch_thi_limit"], ["double", "pitch_thi_limit_b"], ["bool", "reset_pitch_thi_on_entering_b"],
-                              ["double", "pitch_thi_decay_on_wheelslip"], ["double", "pitch_thi_decay_on_wheelslip_b"], ["double", "tunea_transition_speed"],
-                              ["double", "tuneb_transition_speed"], ["enum", "tunes_mixing"], ["double", "asym_min_accel"], ["double", "asym_max_accel"],
-                              ["int", "asym_min_erpm"], ["int", "asym_max_erpm"], ["double", "mahony_kp"], ["double", "fault_pitch"], 
-                              ["double", "fault_roll"], ["int", "fault_delay_pitch"], ["int", "fault_delay_roll"], ["double", "tiltback_duty_angle"],
-                              ["double", "tiltback_duty_speed"], ["double", "tiltback_duty"], ["double", "tiltback_hv_angle"],
-                              ["double", "tiltback_hv_speed"], ["double", "tiltback_lv_angle"], ["double", "tiltback_lv_speed"], 
-                              ["double", "tiltback_return_speed"], ["double", "tiltback_constant"], ["int", "tiltback_constant_erpm"], 
-                              ["double", "tiltback_variable"], ["double", "tiltback_variable_max"], ["double", "noseangling_speed"], 
-                              ["double", "startup_pitch_tolerance"], ["double", "startup_roll_tolerance"], ["double", "torquetilt_start_current"],
-                              ["double", "torquetilt_start_current_b"], ["double", "torquetilt_angle_limit"], ["double", "torquetilt_on_speed"],
-                              ["double", "torquetilt_off_speed"], ["double", "torquetilt_strength"], ["double", "torquetilt_strength_regen"], 
-                              ["double", "torquetilt_filter"], ["enum", "turntilt_mixing_mode"], ["double", "roll_turntilt_weight"], 
-                              ["double", "roll_turntilt_strength"], ["double", "roll_turntilt_angle_limit"], ["double", "roll_turntilt_start_angle"],
-                              ["int", "roll_turntilt_start_erpm"], ["double", "roll_turntilt_speed"], ["int", "roll_turntilt_erpm_boost"],
-                              ["int", "roll_turntilt_erpm_boost_end"], ["double", "yaw_turntilt_weight"], ["double", "yaw_turntilt_strength"],
-                              ["double", "yaw_turntilt_angle_limit"], ["double", "yaw_turntilt_start_angle"], ["int", "yaw_turntilt_start_erpm"],
-                              ["double", "yaw_turntilt_speed"], ["int", "yaw_turntilt_erpm_boost"], ["int", "yaw_turntilt_erpm_boost_end"],
-                              ["int", "yaw_turntilt_aggregate"], ["bool", "enable_traction_control"], ["double", "traction_control_mul_by"],
-                              ["double", "booster_min_pitch"], ["double", "booster_max_pitch"], ["double", "booster_pitch_scale"],
-                              ["double", "booster_base"], ["double", "booster_exponent"], ["double", "booster_out_scale"], ["double", "booster_limit"],
-                              ["double", "booster_min_pitch_b"], ["double", "booster_max_pitch_b"], ["double", "booster_pitch_scale_b"], 
-                              ["double", "booster_base_b"], ["double", "booster_exponent_b"], ["double", "booster_out_scale_b"], ["double", "booster_limit_b"]]
+    property var paramsArr:  [["double", "pitch_th"], ["double", "pitch_th_b"], ["double", "pitch_th_c"], ["double", "pitch_thi"], 
+                              ["double", "pitch_thi_b"], ["double", "pitch_thi_c"], ["double", "gyro_th"], ["double", "gyro_th_b"],
+                              ["double", "gyro_th_c"], ["double", "current_out_filter"], ["double", "current_out_filter_b"],
+                              ["double", "current_out_filter_c"], ["bool", "tune_b_only_for_brakes"], ["bool", "tune_c_only_for_brakes"],
+                              ["double", "brake_max_amp_change"], ["double", "brake_max_amp_change_b"], ["double", "brake_max_amp_change_c"],
+                              ["double", "pitch_thi_limit"], ["double", "pitch_thi_limit_b"], ["double", "pitch_thi_limit_c"],
+                              ["bool", "reset_pitch_thi_on_entering_b"], ["bool", "reset_pitch_thi_on_entering_c"],
+                              ["double", "pitch_thi_decay_on_wheelslip"], ["double", "pitch_thi_decay_on_wheelslip_b"],
+                              ["double", "pitch_thi_decay_on_wheelslip_c"], ["double", "tunea_transition_speed"], ["double", "tuneb_transition_speed"],
+                              ["double", "tunec_transition_speed"], ["enum", "tunes_mixing_b"], ["enum", "tunes_mixing_c"], ["double", "asym_min_accel_b"],
+                              ["double", "asym_max_accel_b"], ["int", "asym_min_erpm_b"], ["int", "asym_max_erpm_b"], ["double", "asym_min_accel_c"],
+                              ["double", "asym_max_accel_c"], ["int", "asym_min_erpm_c"], ["int", "asym_max_erpm_c"], ["double", "mahony_kp"],
+                              ["double", "fault_pitch"], ["double", "fault_roll"], ["int", "fault_delay_pitch"], ["int", "fault_delay_roll"],
+                              ["double", "tiltback_duty_angle"], ["double", "tiltback_duty_speed"], ["double", "tiltback_duty"],
+                              ["double", "tiltback_hv_angle"], ["double", "tiltback_hv_speed"], ["double", "tiltback_lv_angle"],
+                              ["double", "tiltback_lv_speed"], ["double", "tiltback_return_speed"], ["double", "tiltback_constant"],
+                              ["int", "tiltback_constant_erpm"], ["double", "tiltback_variable"], ["double", "tiltback_variable_max"], 
+                              ["double", "noseangling_speed"], ["double", "startup_pitch_tolerance"], ["double", "startup_roll_tolerance"], 
+                              ["double", "torquetilt_start_current"], ["double", "torquetilt_start_current_b"],
+                              ["double", "torquetilt_angle_limit"], ["double", "torquetilt_on_speed"], ["double", "torquetilt_off_speed"],
+                              ["double", "torquetilt_strength"], ["double", "torquetilt_strength_regen"], ["double", "torquetilt_filter"],
+                              ["enum", "turntilt_mixing_mode"], ["double", "roll_turntilt_weight"], ["double", "roll_turntilt_strength"],
+                              ["double", "roll_turntilt_angle_limit"], ["double", "roll_turntilt_start_angle"], ["int", "roll_turntilt_start_erpm"],
+                              ["double", "roll_turntilt_speed"], ["int", "roll_turntilt_erpm_boost"], ["int", "roll_turntilt_erpm_boost_end"],
+                              ["double", "yaw_turntilt_weight"], ["double", "yaw_turntilt_strength"], ["double", "yaw_turntilt_angle_limit"], 
+                              ["double", "yaw_turntilt_start_angle"], ["int", "yaw_turntilt_start_erpm"], ["double", "yaw_turntilt_speed"],
+                              ["int", "yaw_turntilt_erpm_boost"], ["int", "yaw_turntilt_erpm_boost_end"], ["int", "yaw_turntilt_aggregate"],
+                              ["bool", "enable_traction_control"], ["double", "traction_control_mul_by"], ["double", "booster_min_pitch"],
+                              ["double", "booster_max_pitch"], ["double", "booster_pitch_scale"], ["double", "booster_base"],
+                              ["double", "booster_exponent"], ["double", "booster_out_scale"], ["double", "booster_limit"],
+                              ["double", "booster_min_pitch_b"], ["double", "booster_max_pitch_b"], ["double", "booster_pitch_scale_b"],
+                              ["double", "booster_base_b"], ["double", "booster_exponent_b"], ["double", "booster_out_scale_b"],
+                              ["double", "booster_limit_b"], ["double", "booster_min_pitch_c"], ["double", "booster_max_pitch_c"],
+                              ["double", "booster_pitch_scale_c"], ["double", "booster_base_c"], ["double", "booster_exponent_c"],
+                              ["double", "booster_out_scale_c"], ["double", "booster_limit_c"]]
     property var extraParams: [["int", "hertz"], ["double", "fault_adc1"], ["double", "fault_adc2"], ["int", "fault_delay_switch_half"],
                                ["int", "fault_delay_switch_full"], ["int", "fault_adc_half_erpm"], ["bool", "fault_is_single_switch"],
                                ["int", "fault_adc_to_copy"], ["double", "tiltback_hv"], ["double", "tiltback_lv"], ["double", "startup_speed"],
                                ["double", "brake_current"], ["double", "temp_tiltback_start_offset"], ["double", "temp_tiltback_speed"],
-                               ["double", "temp_tiltback_angle"], ["bool", "enable_reverse_stop"], ["bool", "enable_quickstop"], 
+                               ["double", "temp_tiltback_angle"], ["bool", "enable_reverse_stop"], ["bool", "enable_quickstop"],
                                ["int", "quickstop_erpm"], ["double", "quickstop_angle"], ["int", "startup_click_current"]]
     
     Settings {
@@ -515,8 +524,9 @@ Item {
                                     if (enableDataDumping == 0) {
                                         enableDataDumping = 1
                                         mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
-                                        var header = "erpm,braking,tuneB_weight,tuneA_current,tuneB_current,"
-                                        header += "current_request,tuneA_booster_current,tuneB_booster_current\n"
+                                        var header = "erpm,braking,tuneB_weight,tuneC_weight,"
+                                        header += "tuneA_current,tuneB_current,tuneC_current,"
+                                        header += "current_request,tuneA_booster,tuneB_booster,tuneC_booster\n"
                                         mLogWriter.writeToLogFile(header)
                                     }
                                     else {
@@ -574,9 +584,12 @@ Item {
             var turntilt_setpoint = dv.getFloat32(ind); ind += 4;
             var tuneA_current = dv.getFloat32(ind); ind += 4;
             var tuneB_current = dv.getFloat32(ind); ind += 4;
+            var tuneC_current = dv.getFloat32(ind); ind += 4;
             var tuneB_weight = dv.getFloat32(ind); ind += 4;
+            var tuneC_weight = dv.getFloat32(ind); ind += 4;
             var tuneA_booster_current = dv.getFloat32(ind); ind += 4;
             var tuneB_booster_current = dv.getFloat32(ind); ind += 4;
+            var tuneC_booster_current = dv.getFloat32(ind); ind += 4;
 
             var stateString
             if(state == 0){
@@ -628,12 +641,15 @@ Item {
                 "State              : " + stateString + "\n" +
                 "Tune A Current     : " + tuneA_current.toFixed(2) + " A\n" +
                 "Tune B Current     : " + tuneB_current.toFixed(2) + " A\n" +
-                "Current Out Weight : " + tuneB_weight.toFixed(2) + "\n" +
+                "Tune C Current     : " + tuneC_current.toFixed(2) + " A\n" +
+                "Tune (B) Weight    : " + tuneB_weight.toFixed(2) + "\n" +
+                "Tune (C) Weight    : " + tuneC_weight.toFixed(2) + "\n" +
                 "Current (Request)  : " + current_request.toFixed(2) + " A\n" +
                 "Current (Motor)    : " + motor_current.toFixed(2) + " A\n" +
                 "Current (Filtered) : " + filtered_current.toFixed(2) + " A\n" +
                 "Tune A Booster     : " + tuneA_booster_current.toFixed(2) + " A\n" + 
                 "Tune B Booster     : " + tuneB_booster_current.toFixed(2) + " A\n" + 
+                "Tune C Booster     : " + tuneC_booster_current.toFixed(2) + " A\n" + 
                 "ERPM               : " + (erpm / 1000).toFixed(3) + " / 1000 \n" +
                 "Acceleration       : " + acceleration.toFixed(2) + "\n" +
                 "Braking            : " + braking + "\n" + 
@@ -658,10 +674,10 @@ Item {
                 toggleDataDump.text = "Disable Csv Dump"
                 if (running == 1) {
                     dumpingCount += 1
-                    dumpingText += erpm + "," + braking + "," + tuneB_weight.toFixed(3) + "," + 
-                                   tuneA_current.toFixed(3) + "," + tuneB_current.toFixed(3) + "," + 
+                    dumpingText += erpm + "," + braking + "," + tuneB_weight.toFixed(3) + "," + tuneC_weight.toFixed(3) + "," + 
+                                   tuneA_current.toFixed(3) + "," + tuneB_current.toFixed(3) + "," + tuneC_current.toFixed(3) + "," + 
                                    current_request.toFixed(3) + "," + tuneA_booster_current.toFixed(3) + "," + 
-                                   tuneB_booster_current.toFixed(3) + "\n"
+                                   tuneB_booster_current.toFixed(3) + "," + tuneC_booster_current.toFixed(3) + "\n"
                     if (dumpingCount == 100){
                         // REMOVE ME FOR PUBLIC RELEASE
                         mLogWriter.writeToLogFile(dumpingText)
