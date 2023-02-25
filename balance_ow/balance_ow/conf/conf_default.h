@@ -13,6 +13,11 @@
 #define APPCONF_BALANCE_PITCH_TH_B 20
 #endif
 
+// Pitch Throttle (C)
+#ifndef APPCONF_BALANCE_PITCH_TH_C
+#define APPCONF_BALANCE_PITCH_TH_C 20
+#endif
+
 // Pitch Throttle Integral
 #ifndef APPCONF_BALANCE_PITCH_THI
 #define APPCONF_BALANCE_PITCH_THI 0.005
@@ -21,6 +26,11 @@
 // Pitch Throttle Integral (B)
 #ifndef APPCONF_BALANCE_PITCH_THI_B
 #define APPCONF_BALANCE_PITCH_THI_B 0.005
+#endif
+
+// Pitch Throttle Integral (C)
+#ifndef APPCONF_BALANCE_PITCH_THI_C
+#define APPCONF_BALANCE_PITCH_THI_C 0.005
 #endif
 
 // Gyro Throttle
@@ -33,6 +43,11 @@
 #define APPCONF_BALANCE_GYRO_TH_B 0.6
 #endif
 
+// Gyro Throttle (C)
+#ifndef APPCONF_BALANCE_GYRO_TH_C
+#define APPCONF_BALANCE_GYRO_TH_C 0.6
+#endif
+
 // Current Out Filter
 #ifndef APPCONF_BALANCE_CURRENT_OUT_FILTER
 #define APPCONF_BALANCE_CURRENT_OUT_FILTER 0.4
@@ -43,9 +58,19 @@
 #define APPCONF_BALANCE_CURRENT_OUT_FILTER_B 0.4
 #endif
 
+// Current Out Filter (C)
+#ifndef APPCONF_BALANCE_CURRENT_OUT_FILTER_C
+#define APPCONF_BALANCE_CURRENT_OUT_FILTER_C 0.4
+#endif
+
 // Tune B Only for Braking?
 #ifndef APPCONF_BALANCE_TUNE_B_ONLY_FOR_BRAKES
 #define APPCONF_BALANCE_TUNE_B_ONLY_FOR_BRAKES 1
+#endif
+
+// Tune C Only for Braking?
+#ifndef APPCONF_BALANCE_TUNE_C_ONLY_FOR_BRAKES
+#define APPCONF_BALANCE_TUNE_C_ONLY_FOR_BRAKES 1
 #endif
 
 // Brake max amp change
@@ -58,6 +83,11 @@
 #define APPCONF_BALANCE_BRAKE_MAX_AMPS_B 20
 #endif
 
+// Brake max amp change (C)
+#ifndef APPCONF_BALANCE_BRAKE_MAX_AMPS_C
+#define APPCONF_BALANCE_BRAKE_MAX_AMPS_C 20
+#endif
+
 // Pitch Throttle Integral Limit
 #ifndef APPCONF_BALANCE_PITCH_THI_LIMIT
 #define APPCONF_BALANCE_PITCH_THI_LIMIT 30
@@ -68,9 +98,19 @@
 #define APPCONF_BALANCE_PITCH_THI_LIMIT_B 30
 #endif
 
+// Pitch Throttle Integral Limit (C)
+#ifndef APPCONF_BALANCE_PITCH_THI_LIMIT_C
+#define APPCONF_BALANCE_PITCH_THI_LIMIT_C 30
+#endif
+
 // Reset Tune (B) Integral On Entering?
 #ifndef APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_B
 #define APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_B 1
+#endif
+
+// Reset Tune (C) Integral On Entering?
+#ifndef APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_C
+#define APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_C 1
 #endif
 
 // Integral Decay on Wheelslip
@@ -83,6 +123,11 @@
 #define APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_B -1
 #endif
 
+// Integral Decay on Wheelslip (C)
+#ifndef APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_C
+#define APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_C -1
+#endif
+
 // Tune (A) Transition Speed
 #ifndef APPCONF_BALANCE_TUNEA_TRANSITION_SPEED
 #define APPCONF_BALANCE_TUNEA_TRANSITION_SPEED 1.5
@@ -93,29 +138,59 @@
 #define APPCONF_BALANCE_TUNEB_TRANSITION_SPEED 4
 #endif
 
-// Tunes Miximg
-#ifndef APPCONF_BALANCE_TUNES_MIXING
-#define APPCONF_BALANCE_TUNES_MIXING 0
+// Tune (C) Transition Speed
+#ifndef APPCONF_BALANCE_TUNEC_TRANSITION_SPEED
+#define APPCONF_BALANCE_TUNEC_TRANSITION_SPEED 4
 #endif
 
-// Asym Min Acceleration
-#ifndef APPCONF_BALANCE_ASYM_MIN_ACCEL
-#define APPCONF_BALANCE_ASYM_MIN_ACCEL 0.75
+// Tune (B) Miximg
+#ifndef APPCONF_BALANCE_TUNES_MIXING_B
+#define APPCONF_BALANCE_TUNES_MIXING_B 0
 #endif
 
-// Asym Max Acceleration
-#ifndef APPCONF_BALANCE_ASYM_MAX_ACCEL
-#define APPCONF_BALANCE_ASYM_MAX_ACCEL 2
+// Tune (C) Miximg
+#ifndef APPCONF_BALANCE_TUNES_MIXING_C
+#define APPCONF_BALANCE_TUNES_MIXING_C 0
 #endif
 
-// Asym Min ERPM
-#ifndef APPCONF_BALANCE_ASYM_MIN_ERPM
-#define APPCONF_BALANCE_ASYM_MIN_ERPM 2000
+// Tune (B) Min Acceleration
+#ifndef APPCONF_BALANCE_ASYM_MIN_ACCEL_B
+#define APPCONF_BALANCE_ASYM_MIN_ACCEL_B 0.75
 #endif
 
-// Asym Max ERPM
-#ifndef APPCONF_BALANCE_ASYM_MAX_ERPM
-#define APPCONF_BALANCE_ASYM_MAX_ERPM 7500
+// Tune (B) Max Acceleration
+#ifndef APPCONF_BALANCE_ASYM_MAX_ACCEL_B
+#define APPCONF_BALANCE_ASYM_MAX_ACCEL_B 2
+#endif
+
+// Tune (B) Min ERPM
+#ifndef APPCONF_BALANCE_ASYM_MIN_ERPM_B
+#define APPCONF_BALANCE_ASYM_MIN_ERPM_B 2000
+#endif
+
+// Tune (B) Max ERPM
+#ifndef APPCONF_BALANCE_ASYM_MAX_ERPM_B
+#define APPCONF_BALANCE_ASYM_MAX_ERPM_B 7500
+#endif
+
+// Tune (C) Min Acceleration
+#ifndef APPCONF_BALANCE_ASYM_MIN_ACCEL_C
+#define APPCONF_BALANCE_ASYM_MIN_ACCEL_C 0.75
+#endif
+
+// Tune (C) Max Acceleration
+#ifndef APPCONF_BALANCE_ASYM_MAX_ACCEL_C
+#define APPCONF_BALANCE_ASYM_MAX_ACCEL_C 2
+#endif
+
+// Tune (C) Min ERPM
+#ifndef APPCONF_BALANCE_ASYM_MIN_ERPM_C
+#define APPCONF_BALANCE_ASYM_MIN_ERPM_C 2000
+#endif
+
+// Tune (C) Max ERPM
+#ifndef APPCONF_BALANCE_ASYM_MAX_ERPM_C
+#define APPCONF_BALANCE_ASYM_MAX_ERPM_C 7500
 #endif
 
 // Mahony KP
@@ -526,6 +601,41 @@
 // Booster Max Current (B)
 #ifndef APPCONF_BALANCE_BOOSTER_LIMIT_B
 #define APPCONF_BALANCE_BOOSTER_LIMIT_B 15
+#endif
+
+// Booster Start Pitch (C)
+#ifndef APPCONF_BALANCE_BOOSTER_MIN_PITCH_C
+#define APPCONF_BALANCE_BOOSTER_MIN_PITCH_C 0
+#endif
+
+// Booster Max Pitch (C)
+#ifndef APPCONF_BALANCE_BOOSTER_MAX_PITCH_C
+#define APPCONF_BALANCE_BOOSTER_MAX_PITCH_C 2
+#endif
+
+// Booster Pitch Scale (C)
+#ifndef APPCONF_BALANCE_BOOSTER_PITCH_SCALE_C
+#define APPCONF_BALANCE_BOOSTER_PITCH_SCALE_C 1
+#endif
+
+// Booster Base Amps (C)
+#ifndef APPCONF_BALANCE_BOOSTER_BASE_C
+#define APPCONF_BALANCE_BOOSTER_BASE_C 15
+#endif
+
+// Booster Exponent (C)
+#ifndef APPCONF_BALANCE_BOOSTER_EXPONENT_C
+#define APPCONF_BALANCE_BOOSTER_EXPONENT_C 1
+#endif
+
+// Booster Out Scale (C)
+#ifndef APPCONF_BALANCE_BOOSTER_OUT_SCALE_C
+#define APPCONF_BALANCE_BOOSTER_OUT_SCALE_C 1
+#endif
+
+// Booster Max Current (C)
+#ifndef APPCONF_BALANCE_BOOSTER_LIMIT_C
+#define APPCONF_BALANCE_BOOSTER_LIMIT_C 15
 #endif
 
 // CONF_DEFAULT_H_
