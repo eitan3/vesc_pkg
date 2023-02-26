@@ -1788,7 +1788,7 @@ static int get_cfg(uint8_t *buffer, bool is_default) {
 
 static bool set_cfg(uint8_t *buffer) {
 	data *d = (data*)ARG;
-	if (d->running)
+	if (d->running && d->abs_erpm > 500)
 		return false;
 
 	bool res = confparser_deserialize_balance_config(buffer, &(d->balance_conf));

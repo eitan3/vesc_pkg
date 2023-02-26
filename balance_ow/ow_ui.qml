@@ -45,6 +45,7 @@ Item {
     property var enableDataDumping: 0
     property var dumpingText: 0
     property var dumpingCount: 0
+    property var tuneInfoText: ""
     property var paramsArr:  [["double", "pitch_th"], ["double", "pitch_th_b"], ["double", "pitch_th_c"], ["double", "pitch_thi"], 
                               ["double", "pitch_thi_b"], ["double", "pitch_thi_c"], ["double", "gyro_th"], ["double", "gyro_th_b"],
                               ["double", "gyro_th_c"], ["double", "current_out_filter"], ["double", "current_out_filter_b"],
@@ -146,6 +147,31 @@ Item {
                 dv.setUint8(ind, movementStrengthSlider.value + 1); ind += 1; // Sum = time + current
                 mCommands.sendCustomAppData(buffer)
             }
+        }
+    }
+
+    Dialog {
+        id: tuneInfoPopup
+        title: "Tune Info"
+        standardButtons: Dialog.Ok
+        modal: true
+        focus: true
+        width: parent.width - 20
+        closePolicy: Popup.CloseOnEscape
+        x: 10
+        y: 10 + parent.height / 2 - height / 2
+        parent: ApplicationWindow.overlay
+        
+        Overlay.modal: Rectangle {
+            color: "#AA000000"
+        }
+        
+        Text {
+            color: Utility.getAppHexColor("lightText")
+            verticalAlignment: Text.AlignVCenter
+            anchors.fill: parent
+            wrapMode: Text.WordWrap
+            text: tuneInfoText
         }
     }
 
@@ -392,11 +418,24 @@ Item {
                     model: ListModel {
                         id: downloadedTunesModel
                     }
-                    delegate: Button {
-                        text: tune._name
+
+                    delegate: RowLayout {
                         width: parent.width
-                        onClicked: {
-                            applyDownloadedTune(tune)
+                        Layout.fillWidth: true
+                        Button {
+                            text: tune._name
+                            Layout.fillWidth: true
+                            onClicked: {
+                                applyDownloadedTune(tune)
+                            }
+                        }
+                        Button {
+                            text: "?"
+                            Layout.fillWidth: false
+                            onClicked: {
+                                tuneInfoText = tune._info
+                                tuneInfoPopup.open()
+                            }
                         }
                     }
                 }
