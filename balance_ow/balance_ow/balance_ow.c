@@ -1335,6 +1335,7 @@ static void balance_thd(void *arg) {
 		// Calculate erpm acceleration
 		float erpm_acceleration_raw = d->smooth_erpm - d->last_erpm;
 		d->acceleration += (erpm_acceleration_raw - d->accelhist[d->accelidx]) / ACCEL_ARRAY_SIZE;
+		float abs_accel = fabsf(d->acceleration);
 		d->accelhist[d->accelidx] = erpm_acceleration_raw;
 		d->accelidx++;
 		if (d->accelidx == ACCEL_ARRAY_SIZE)
@@ -1448,8 +1449,8 @@ static void balance_thd(void *arg) {
 			{
 				// calculate how much weight to give to Tune (B) based on acceleration
 				if (d->balance_conf.tunes_mixing_b == ACCELERATION_BASED) {
-					float abs_accel = fabsf(d->acceleration);
-					if (abs_accel - d->balance_conf.asym_min_accel_b > 0) 
+					if (abs_accel - d->balance_conf.asym_min_accel_b > 0 &&
+						d->abs_erpm - d->balance_conf.asym_min_erpm_b > 0) 
 					{
 						float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel_b, d->asym_max_accel_b) / d->asym_max_accel_b;
 						tuneB_weight_target += acc_coeff;
@@ -1457,7 +1458,8 @@ static void balance_thd(void *arg) {
 				}
 				// calculate how much weight to give to Tune (B) based on ERPM
 				else if (d->balance_conf.tunes_mixing_b == ERPM_BASED) {
-					if (d->abs_erpm - d->balance_conf.asym_min_erpm_b > 0) 
+					if (abs_accel - d->balance_conf.asym_min_accel_b > 0 &&
+						d->abs_erpm - d->balance_conf.asym_min_erpm_b > 0) 
 					{
 						float erpm_coeff = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm_b, d->asym_max_erpm_b) / d->asym_max_erpm_b;
 						tuneB_weight_target += erpm_coeff;
@@ -1485,8 +1487,8 @@ static void balance_thd(void *arg) {
 			{
 				// calculate how much weight to give to Tune (C) based on acceleration
 				if (d->balance_conf.tunes_mixing_c == ACCELERATION_BASED) {
-					float abs_accel = fabsf(d->acceleration);
-					if (abs_accel - d->balance_conf.asym_min_accel_c > 0) 
+					if (abs_accel - d->balance_conf.asym_min_accel_c > 0 &&
+						d->abs_erpm - d->balance_conf.asym_min_erpm_c > 0) 
 					{
 						float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel_c, d->asym_max_accel_c) / d->asym_max_accel_c;
 						tuneC_weight_target += acc_coeff;
@@ -1494,7 +1496,8 @@ static void balance_thd(void *arg) {
 				}
 				// calculate how much weight to give to Tune (C) based on ERPM
 				else if (d->balance_conf.tunes_mixing_c == ERPM_BASED) {
-					if (d->abs_erpm - d->balance_conf.asym_min_erpm_c > 0) 
+					if (abs_accel - d->balance_conf.asym_min_accel_c > 0 &&
+						d->abs_erpm - d->balance_conf.asym_min_erpm_c > 0) 
 					{
 						float erpm_coeff = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm_c, d->asym_max_erpm_c) / d->asym_max_erpm_c;
 						tuneC_weight_target += erpm_coeff;
