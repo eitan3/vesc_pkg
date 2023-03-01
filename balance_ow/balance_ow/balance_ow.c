@@ -163,13 +163,11 @@ typedef struct {
 
 	// Roll turntilt
 	float roll_turntilt_target, roll_turntilt_interpolated;
-	float roll_turntilt_boost_per_erpm, roll_turntilt_strength;
 	float roll_turntilt_step_size;
 
 	// Yaw Turntilt
 	float last_yaw_angle, yaw_angle, abs_yaw_change, last_yaw_change, yaw_change, yaw_aggregate, yaw_aggregate_target;
 	float yaw_turntilt_target, yaw_turntilt_interpolated;
-	float yaw_turntilt_boost_per_erpm, yaw_turntilt_strength;
 	float yaw_turntilt_step_size;
 
 	// Startup Clicks
@@ -306,14 +304,8 @@ static void configure(data *d) {
 	d->mc_mot_start_temp = VESC_IF->get_cfg_float(CFG_PARAM_l_temp_motor_start) - d->balance_conf.temp_tiltback_start_offset;
 	d->temp_tiltback_step_size = d->balance_conf.temp_tiltback_speed / d->balance_conf.hertz;
 
-	// Roll Turntilt
-	d->roll_turntilt_boost_per_erpm = (float)d->balance_conf.roll_turntilt_erpm_boost / 100.0 / (float)d->balance_conf.roll_turntilt_erpm_boost_end;
-	d->roll_turntilt_strength = d->balance_conf.roll_turntilt_strength;
-
 	// Yaw Turntilt
 	d->yaw_aggregate_target = fmaxf(50, d->balance_conf.yaw_turntilt_aggregate);
-	d->yaw_turntilt_boost_per_erpm = (float)d->balance_conf.yaw_turntilt_erpm_boost / 100.0 / (float)d->balance_conf.yaw_turntilt_erpm_boost_end;
-	d->yaw_turntilt_strength = d->balance_conf.yaw_turntilt_strength;
 
 	// Startup Clicks
 	d->start_click_current = d->balance_conf.startup_click_current;
@@ -838,13 +830,13 @@ static void calc_torquetilt_interpolation(data *d) {
 
 // Rool turntilt calculation
 static void calc_roll_turntilt_interpolation(data *d) {
-	if (d->roll_turntilt_strength == 0) {
+	if (d->balance_conf.roll_turntilt_strength == 0) {
 		d->roll_turntilt_interpolated = 0;
 		return;
 	}
 
 	// Apply cutzone
-	if ((d->state != RUNNING) || // Apply turntilt only when RUNNING
+	if ((d->running == false) || // Apply turntilt only when RUNNING
 		(d->abs_roll_angle < d->balance_conf.roll_turntilt_start_angle) || // Need to be above certain angle to apply turntilt
 		(d->abs_erpm < d->balance_conf.roll_turntilt_start_erpm) || // Need to be above certain erpm to apply turntilt
 		(fabsf(d->pitch_angle - d->noseangling_interpolated) > 4)) // No setpoint changes during heavy acceleration or braking
@@ -853,42 +845,37 @@ static void calc_roll_turntilt_interpolation(data *d) {
 	}
 	else {
 		// Calculate desired angle
-		d->roll_turntilt_target = d->abs_roll_angle_sin * d->roll_turntilt_strength;
+		d->roll_turntilt_target = d->abs_roll_angle_sin * d->balance_conf.roll_turntilt_strength;
 
 		// Apply speed scaling
-		float boost;
 		if (d->abs_erpm < d->balance_conf.roll_turntilt_erpm_boost_end) {
-			boost = 1.0 + d->abs_erpm * d->roll_turntilt_boost_per_erpm;
+			d->roll_turntilt_target *= 1 + ((d->balance_conf.roll_turntilt_erpm_boost / 100.0f) *
+					(d->abs_erpm / d->balance_conf.roll_turntilt_erpm_boost_end));
 		} else {
-			boost = 1.0 + (float)d->balance_conf.roll_turntilt_erpm_boost / 100.0;
+			d->roll_turntilt_target *= 1 + (d->balance_conf.roll_turntilt_erpm_boost / 100.0f);
 		}
-		d->roll_turntilt_target *= boost;
 
 		// Limit angle to max angle
-		if (d->roll_turntilt_target > 0) {
-			d->roll_turntilt_target = fminf(d->roll_turntilt_target, d->balance_conf.roll_turntilt_angle_limit);
-		} else {
-			d->roll_turntilt_target = fmaxf(d->roll_turntilt_target, -d->balance_conf.roll_turntilt_angle_limit);
-		}
+		d->roll_turntilt_target = fminf(d->roll_turntilt_target, d->balance_conf.roll_turntilt_angle_limit);
 
 		// Add directionality
 		d->roll_turntilt_target *= SIGN(d->erpm);
 
-		// ATR interference: Reduce turntilt_target during moments of high torque response
-		float atr_min = 2;
-		float atr_max = 5;
+		// Torque Tilt interference: Reduce turntilt_target during moments of high torque response
+		float torquetilt_min = 2;
+		float torquetilt_max = 5;
 		if (SIGN(d->torquetilt_target) != SIGN(d->roll_turntilt_target)) {
 			// further reduced turntilt during moderate to steep downhills
-			atr_min = 1;
-			atr_max = 4;
+			torquetilt_min = 1;
+			torquetilt_max = 4;
 		}
-		if (fabsf(d->torquetilt_target) > atr_min) {
-			// Start scaling turntilt when ATR>2, down to 0 turntilt for ATR > 5 degrees
-			float atr_scaling = (atr_max - fabsf(d->torquetilt_target)) / (atr_max-atr_min);
-			if (atr_scaling < 0) {
-				atr_scaling = 0;
+		if (fabsf(d->torquetilt_target) > torquetilt_min) {
+			// Start scaling turntilt when torquetilt>2, down to 0 turntilt for torquetilt > 5 degrees
+			float tt_scaling = (torquetilt_max - fabsf(d->torquetilt_target)) / (torquetilt_max-torquetilt_min);
+			if (tt_scaling < 0) {
+				tt_scaling = 0;
 			}
-			d->roll_turntilt_target *= atr_scaling;
+			d->roll_turntilt_target *= tt_scaling;
 		}
 	}
 
@@ -904,75 +891,70 @@ static void calc_roll_turntilt_interpolation(data *d) {
 
 // Yaw turntilt calculation
 static void calc_yaw_turntilt_interpolation(data *d) {
-	if (d->yaw_turntilt_strength == 0) {
+	if (d->balance_conf.yaw_turntilt_strength == 0) {
 		d->yaw_turntilt_interpolated = 0;
 		return;
 	}
 
 	// Apply cutzone
-	float turn_angle = d->abs_yaw_change * 100;
-	if ((d->state != RUNNING) || // Apply turntilt only when RUNNING
-		(turn_angle < d->balance_conf.yaw_turntilt_start_angle) || // Need to be above certain angle to apply turntilt
+	if ((d->running == false) || // Apply turntilt only when RUNNING
+		(d->abs_yaw_change * 100 < d->balance_conf.yaw_turntilt_start_angle) || // Need to be above certain angle to apply turntilt
 		(d->abs_erpm < d->balance_conf.yaw_turntilt_start_erpm) || // Need to be above certain erpm to apply turntilt
 		(fabsf(d->pitch_angle - d->noseangling_interpolated) > 4)) // No setpoint changes during heavy acceleration or braking
 	{
 		d->yaw_turntilt_target = 0.9 * d->yaw_turntilt_target;
+		
+		if (fabsf(d->pitch_angle - d->noseangling_interpolated) > 4) {
+			// Reset yaw_aggregate during heavy acceleration or braking
+			d->yaw_aggregate = 0;
+		}
 	}
 	else {
 		// Calculate desired angle
-		d->yaw_turntilt_target = d->abs_yaw_change * d->yaw_turntilt_strength;
+		d->yaw_turntilt_target = d->abs_yaw_change * d->balance_conf.yaw_turntilt_strength;
 
 		// Apply speed scaling
-		float boost;
 		if (d->abs_erpm < d->balance_conf.yaw_turntilt_erpm_boost_end) {
-			boost = 1.0 + d->abs_erpm * d->yaw_turntilt_boost_per_erpm;
+			d->yaw_turntilt_target *= 1 + ((d->balance_conf.yaw_turntilt_erpm_boost / 100.0f) *
+					(d->abs_erpm / d->balance_conf.yaw_turntilt_erpm_boost_end));
 		} else {
-			boost = 1.0 + (float)d->balance_conf.yaw_turntilt_erpm_boost / 100.0;
+			d->yaw_turntilt_target *= 1 + (d->balance_conf.yaw_turntilt_erpm_boost / 100.0f);
 		}
-		d->yaw_turntilt_target *= boost;
 
 		// Increase turntilt based on aggregate yaw change (at most: double it)
 		float aggregate_damper = 1.0;
 		if (d->abs_erpm < 2000) {
 			aggregate_damper = 0.5;
 		}
-		boost = 1 + aggregate_damper * fabsf(d->yaw_aggregate) / d->yaw_aggregate_target;
+		
+		float boost = 1 + aggregate_damper * d->yaw_aggregate / d->yaw_aggregate_target;
 		boost = fminf(boost, 2);
 		d->yaw_turntilt_target *= boost;
 
 		// Limit angle to max angle
-		if (d->yaw_turntilt_target > 0) {
-			d->yaw_turntilt_target = fminf(d->yaw_turntilt_target, d->balance_conf.yaw_turntilt_angle_limit);
-		} else {
-			d->yaw_turntilt_target = fmaxf(d->yaw_turntilt_target, -d->balance_conf.yaw_turntilt_angle_limit);
-		}
+		d->yaw_turntilt_target = fminf(d->yaw_turntilt_target, d->balance_conf.yaw_turntilt_angle_limit);
 
 		// Add directionality
 		d->yaw_turntilt_target *= SIGN(d->erpm);
 
-		// ATR interference: Reduce turntilt_target during moments of high torque response
-		float atr_min = 2;
-		float atr_max = 5;
+		// Torque Tilt interference: Reduce turntilt_target during moments of high torque response
+		float torquetilt_min = 2;
+		float torquetilt_max = 5;
 		if (SIGN(d->torquetilt_target) != SIGN(d->yaw_turntilt_target)) {
 			// further reduced turntilt during moderate to steep downhills
-			atr_min = 1;
-			atr_max = 4;
+			torquetilt_min = 1;
+			torquetilt_max = 4;
 		}
-		if (fabsf(d->torquetilt_target) > atr_min) {
-			// Start scaling turntilt when ATR>2, down to 0 turntilt for ATR > 5 degrees
-			float atr_scaling = (atr_max - fabsf(d->torquetilt_target)) / (atr_max-atr_min);
-			if (atr_scaling < 0) {
-				atr_scaling = 0;
+		if (fabsf(d->torquetilt_target) > torquetilt_min) {
+			// Start scaling turntilt when torquetilt>2, down to 0 turntilt for torquetilt > 5 degrees
+			float torquetilt_scaling = (torquetilt_max - fabsf(d->torquetilt_target)) / (torquetilt_max-torquetilt_min);
+			if (torquetilt_scaling < 0) {
+				torquetilt_scaling = 0;
 				// during heavy torque response clear the yaw aggregate too
 				d->yaw_aggregate = 0;
 			}
-			d->yaw_turntilt_target *= atr_scaling;
+			d->yaw_turntilt_target *= torquetilt_scaling;
 		}
-	}
-
-	// Reset yaw_aggregate during heavy acceleration or braking
-	if (fabsf(d->pitch_angle - d->noseangling_interpolated) > 4) {
-		d->yaw_aggregate = 0;
 	}
 
 	// Move towards target limited by max speed
@@ -1380,7 +1362,7 @@ static void balance_thd(void *arg) {
 			d->yaw_aggregate = 0;
 		d->abs_yaw_change = fabsf(d->yaw_change);
 		if ((d->abs_yaw_change > 0.04) && !unchanged)	// don't count tiny yaw changes towards aggregate
-			d->yaw_aggregate += d->yaw_change;
+			d->yaw_aggregate += d->abs_yaw_change;
 
 		// Control Loop State Logic
 		switch(d->state) {
