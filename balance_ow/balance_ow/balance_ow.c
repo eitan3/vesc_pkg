@@ -287,6 +287,7 @@ static void configure(data *d) {
 	d->tiltback_variable = d->balance_conf.tiltback_variable / 1000;
 	if (d->tiltback_variable > 0) {
 		d->tiltback_variable_max_erpm = fabsf(d->balance_conf.tiltback_variable_max / d->tiltback_variable);
+		d->tiltback_variable_max_erpm += d->balance_conf.tiltback_variable_start_erpm;
 	} else {
 		d->tiltback_variable_max_erpm = 100000;
 	}
@@ -773,10 +774,12 @@ static void calculate_state_and_initial_setpoint(data *d) {
 static void calc_noseangling_interpolation(data *d){
 	// Nose angle adjustment, add variable then constant tiltback
 	float noseangling_target = 0;
-	if (fabsf(d->erpm) > d->tiltback_variable_max_erpm) {
+	if (d->abs_erpm > d->tiltback_variable_max_erpm) {
 		noseangling_target = fabsf(d->balance_conf.tiltback_variable_max) * SIGN(d->erpm);
-	} else {
-		noseangling_target = d->tiltback_variable * d->erpm;
+	} else if (d->abs_erpm > d->balance_conf.tiltback_variable_start_erpm){
+		float erpm = d->abs_erpm - d->balance_conf.tiltback_variable_start_erpm;
+		erpm = erpm * SIGN(d->erpm);
+		noseangling_target = d->tiltback_variable * erpm;
 	}
 
 	if (d->erpm > d->balance_conf.tiltback_constant_erpm) {

@@ -63,8 +63,8 @@ Item {
                               ["double", "tiltback_hv_angle"], ["double", "tiltback_hv_speed"], ["double", "tiltback_lv_angle"],
                               ["double", "tiltback_lv_speed"], ["double", "tiltback_return_speed"], ["double", "tiltback_constant"],
                               ["int", "tiltback_constant_erpm"], ["double", "tiltback_variable"], ["double", "tiltback_variable_max"], 
-                              ["double", "noseangling_speed"], ["double", "startup_pitch_tolerance"], ["double", "startup_roll_tolerance"], 
-                              ["double", "torquetilt_start_current"], ["double", "torquetilt_start_current_b"],
+                              ["int", "tiltback_variable_start_erpm"], ["double", "noseangling_speed"], ["double", "startup_pitch_tolerance"], 
+                              ["double", "startup_roll_tolerance"], ["double", "torquetilt_start_current"], ["double", "torquetilt_start_current_b"],
                               ["double", "torquetilt_angle_limit"], ["double", "torquetilt_on_speed"], ["double", "torquetilt_off_speed"],
                               ["double", "torquetilt_strength"], ["double", "torquetilt_strength_regen"], ["double", "torquetilt_filter"],
                               ["enum", "turntilt_mixing_mode"], ["double", "roll_turntilt_weight"], ["double", "roll_turntilt_strength"],
@@ -422,6 +422,14 @@ Item {
                     delegate: RowLayout {
                         width: parent.width
                         Layout.fillWidth: true
+                        Button {
+                            text: "?"
+                            Layout.fillWidth: false
+                            onClicked: {
+                                tuneInfoText = tune._info
+                                tuneInfoPopup.open()
+                            }
+                        }
                         Button {
                             text: tune._name
                             Layout.fillWidth: true

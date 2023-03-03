@@ -101,6 +101,7 @@ typedef struct {
 	uint16_t tiltback_constant_erpm;
 	float tiltback_variable;
 	float tiltback_variable_max;
+	uint16_t tiltback_variable_start_erpm;
 	float noseangling_speed;
 	float startup_pitch_tolerance;
 	float startup_roll_tolerance;

@@ -75,6 +75,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_uint16(buffer, conf->tiltback_constant_erpm, &ind);
 	buffer_append_float32_auto(buffer, conf->tiltback_variable, &ind);
 	buffer_append_float32_auto(buffer, conf->tiltback_variable_max, &ind);
+	buffer_append_uint16(buffer, conf->tiltback_variable_start_erpm, &ind);
 	buffer_append_float16(buffer, conf->noseangling_speed, 100, &ind);
 	buffer_append_float32_auto(buffer, conf->startup_pitch_tolerance, &ind);
 	buffer_append_float32_auto(buffer, conf->startup_roll_tolerance, &ind);
@@ -214,6 +215,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->tiltback_constant_erpm = buffer_get_uint16(buffer, &ind);
 	conf->tiltback_variable = buffer_get_float32_auto(buffer, &ind);
 	conf->tiltback_variable_max = buffer_get_float32_auto(buffer, &ind);
+	conf->tiltback_variable_start_erpm = buffer_get_uint16(buffer, &ind);
 	conf->noseangling_speed = buffer_get_float16(buffer, 100, &ind);
 	conf->startup_pitch_tolerance = buffer_get_float32_auto(buffer, &ind);
 	conf->startup_roll_tolerance = buffer_get_float32_auto(buffer, &ind);
@@ -346,6 +348,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->tiltback_constant_erpm = APPCONF_BALANCE_TILTBACK_CONSTANT_ERPM;
 	conf->tiltback_variable = APPCONF_BALANCE_TILTBACK_VARIABLE;
 	conf->tiltback_variable_max = APPCONF_BALANCE_TILTBACK_VARIABLE_MAX;
+	conf->tiltback_variable_start_erpm = APPCONF_BALANCE_TILTBACK_VARIABLE_START_ERPM;
 	conf->noseangling_speed = APPCONF_BALANCE_NOSEANGLING_SPEED;
 	conf->startup_pitch_tolerance = APPCONF_BALANCE_STARTUP_PITCH_TOLERANCE;
 	conf->startup_roll_tolerance = APPCONF_BALANCE_STARTUP_ROLL_TOLERANCE;
