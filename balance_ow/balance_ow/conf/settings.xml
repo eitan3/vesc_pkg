@@ -42,7 +42,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>25</valDouble>
+            <valDouble>20</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -64,7 +64,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>45</valDouble>
+            <valDouble>40</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -86,7 +86,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.1</stepDouble>
-            <valDouble>20</valDouble>
+            <valDouble>30</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -267,7 +267,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0.1</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.01</stepDouble>
-            <valDouble>0.6</valDouble>
+            <valDouble>0.5</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> </suffix>
             <vTx>9</vTx>
@@ -289,7 +289,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0.1</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.01</stepDouble>
-            <valDouble>0.4</valDouble>
+            <valDouble>0.25</valDouble>
             <vTxDoubleScale>1000</vTxDoubleScale>
             <suffix> </suffix>
             <vTx>9</vTx>
@@ -476,77 +476,6 @@ p, li { white-space: pre-wrap; }
             <cDefine>APPCONF_BALANCE_RESET_PITCH_THI_ON_ENTERING_C</cDefine>
             <valInt>0</valInt>
         </reset_pitch_thi_on_entering_c>
-        <pitch_thi_decay_on_wheelslip>
-            <longName>Integral Decay on Wheelslip</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;How fast decrease Pitch Throttle Integral while wheelslip.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Below 0: disable the feature.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Above 0: the higher the slower it will decrease the integral.&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Set to 0.25 to decrease the integral from 30A to ~0.5A after 1 second.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Set to 0.5 to decrease the integral from 30A to ~5A after 1 second.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP</cDefine>
-            <editorDecimalsDouble>4</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxDouble>10000</maxDouble>
-            <minDouble>-1</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.0001</stepDouble>
-            <valDouble>-1</valDouble>
-            <vTxDoubleScale>1000</vTxDoubleScale>
-            <suffix></suffix>
-            <vTx>9</vTx>
-        </pitch_thi_decay_on_wheelslip>
-        <pitch_thi_decay_on_wheelslip_b>
-            <longName>Integral Decay on Wheelslip (B)</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_B</cDefine>
-            <editorDecimalsDouble>4</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxDouble>10000</maxDouble>
-            <minDouble>-1</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.0001</stepDouble>
-            <valDouble>-1</valDouble>
-            <vTxDoubleScale>1000</vTxDoubleScale>
-            <suffix></suffix>
-            <vTx>9</vTx>
-        </pitch_thi_decay_on_wheelslip_b>
-        <pitch_thi_decay_on_wheelslip_c>
-            <longName>Integral Decay on Wheelslip (C)</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_PITCH_THI_DECAY_ON_WHEELSLIP_C</cDefine>
-            <editorDecimalsDouble>4</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxDouble>10000</maxDouble>
-            <minDouble>-1</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.0001</stepDouble>
-            <valDouble>-1</valDouble>
-            <vTxDoubleScale>1000</vTxDoubleScale>
-            <suffix></suffix>
-            <vTx>9</vTx>
-        </pitch_thi_decay_on_wheelslip_c>
         <tunea_transition_speed>
             <longName>Tune (A) Transition Speed</longName>
             <type>1</type>
@@ -616,6 +545,26 @@ p, li { white-space: pre-wrap; }
             <suffix> /s</suffix>
             <vTx>8</vTx>
         </tunec_transition_speed>
+        <transitions_order>
+            <longName>Transitions Order</longName>
+            <type>4</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The order of the transitions between tunes.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;All Together: all the tunes calculate at the same time, each tune get its own weight.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;B then C: Blend between A and B first, and then blend the result with C.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;C then B: Blend between A and C first, and then blend the result with B.&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Personally, I prefer blend erpm base tune with tune A, and then blend acceleration base tune with the result of erpm &amp;amp; tune A.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_TRANSITIONS_ORDER</cDefine>
+            <valInt>2</valInt>
+            <enumNames>All Together</enumNames>
+            <enumNames>B Then C</enumNames>
+            <enumNames>C Then B</enumNames>
+        </transitions_order>
         <tunes_mixing_b>
             <longName>Tune (B) Miximg</longName>
             <type>4</type>
@@ -641,7 +590,7 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;How to mix between Tune (A) and Tune (C).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
             <cDefine>APPCONF_BALANCE_TUNES_MIXING_C</cDefine>
-            <valInt>0</valInt>
+            <valInt>2</valInt>
             <enumNames>No Tune C</enumNames>
             <enumNames>Acceleration Based</enumNames>
             <enumNames>ERPM Based</enumNames>
@@ -685,7 +634,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.001</stepDouble>
-            <valDouble>2.25</valDouble>
+            <valDouble>2.5</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -706,7 +655,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>1</stepInt>
-            <valInt>750</valInt>
+            <valInt>500</valInt>
             <suffix></suffix>
             <vTx>3</vTx>
         </asym_min_erpm_b>
@@ -726,7 +675,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>1</stepInt>
-            <valInt>20000</valInt>
+            <valInt>7500</valInt>
             <suffix></suffix>
             <vTx>3</vTx>
         </asym_max_erpm_b>
@@ -747,7 +696,7 @@ p, li { white-space: pre-wrap; }
             <minDouble>0</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.001</stepDouble>
-            <valDouble>0.75</valDouble>
+            <valDouble>0</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
             <suffix></suffix>
             <vTx>9</vTx>
@@ -790,7 +739,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>1</stepInt>
-            <valInt>2000</valInt>
+            <valInt>1000</valInt>
             <suffix></suffix>
             <vTx>3</vTx>
         </asym_min_erpm_c>
@@ -810,7 +759,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>1</stepInt>
-            <valInt>7500</valInt>
+            <valInt>15000</valInt>
             <suffix></suffix>
             <vTx>3</vTx>
         </asym_max_erpm_c>
@@ -1056,32 +1005,6 @@ p, li { white-space: pre-wrap; }
             <cDefine>APPCONF_BALANCE_FAULT_IS_SINGLE_SWITCH</cDefine>
             <valInt>0</valInt>
         </fault_is_single_switch>
-        <fault_adc_to_copy>
-            <longName>ADC To Copy</longName>
-            <type>2</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This feature is only for people with broken sensor!!!&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Remeber to set ADC1 &amp;amp; ADC2 switch voltage as the same value!!&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If for some reason you read ADC value only from one sensor, you can copy the value to the second ADC to make it like one sensor.&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If you set the value of this variable to 2, it will copy the value of ADC2 to ADC1.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If you set the value of this variable to 1, it will copy the value of ADC1 to ADC2.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_FAULT_ADC_TO_COPY</cDefine>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxInt>2</maxInt>
-            <minInt>0</minInt>
-            <showDisplay>0</showDisplay>
-            <stepInt>1</stepInt>
-            <valInt>0</valInt>
-            <suffix></suffix>
-            <vTx>3</vTx>
-        </fault_adc_to_copy>
         <tiltback_duty_angle>
             <longName>Angle</longName>
             <type>1</type>
@@ -1404,7 +1327,7 @@ p, li { white-space: pre-wrap; }
             <minInt>0</minInt>
             <showDisplay>0</showDisplay>
             <stepInt>100</stepInt>
-            <valInt>500</valInt>
+            <valInt>0</valInt>
             <suffix> ERPM</suffix>
             <vTx>3</vTx>
         </tiltback_variable_start_erpm>
@@ -2261,7 +2184,7 @@ p, li { white-space: pre-wrap; }
             <vTx>9</vTx>
         </traction_control_mul_by>
         <booster_min_pitch>
-            <longName>Booster Start Pitch</longName>
+            <longName>Booster Min Pitch</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -2304,39 +2227,16 @@ p, li { white-space: pre-wrap; }
             <suffix> </suffix>
             <vTx>9</vTx>
         </booster_max_pitch>
-        <booster_pitch_scale>
-            <longName>Booster Pitch Scale</longName>
+        <booster_max_pitch_amps>
+            <longName>Booster Max Pitch Amps</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Scale pitch by the specified value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_PITCH_SCALE</cDefine>
-            <editorDecimalsDouble>3</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxDouble>50</maxDouble>
-            <minDouble>0</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.001</stepDouble>
-            <valDouble>1</valDouble>
-            <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
-            <vTx>9</vTx>
-        </booster_pitch_scale>
-        <booster_base>
-            <longName>Booster Base Amps</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Base amps to apply to booster calculation.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster output = pow(booster_base, booster_exponent) * booster_out_scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_BASE</cDefine>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;How much amps to give above max_pitch, before scaling &amp;amp; EQ.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MAX_PITCH_AMPS</cDefine>
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -2346,57 +2246,73 @@ p, li { white-space: pre-wrap; }
             <stepDouble>0.001</stepDouble>
             <valDouble>15</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
+            <suffix> A</suffix>
             <vTx>9</vTx>
-        </booster_base>
-        <booster_exponent>
-            <longName>Booster Exponent</longName>
+        </booster_max_pitch_amps>
+        <booster_min_erpm>
+            <longName>Booster Scale Min ERPM</longName>
+            <type>2</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;When start scale up booster's amps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MIN_ERPM</cDefine>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxInt>20000</maxInt>
+            <minInt>1000</minInt>
+            <showDisplay>0</showDisplay>
+            <stepInt>1</stepInt>
+            <valInt>3000</valInt>
+            <suffix></suffix>
+            <vTx>3</vTx>
+        </booster_min_erpm>
+        <booster_max_erpm>
+            <longName>Booster Scale Max ERPM</longName>
+            <type>2</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;When the booster's scale will be at maximum value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MAX_ERPM</cDefine>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxInt>20000</maxInt>
+            <minInt>2000</minInt>
+            <showDisplay>0</showDisplay>
+            <stepInt>1</stepInt>
+            <valInt>13000</valInt>
+            <suffix></suffix>
+            <vTx>3</vTx>
+        </booster_max_erpm>
+        <booster_max_erpm_scaleby>
+            <longName>Booster Max ERPM Scale</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster Exponent.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster output = pow(booster_base, booster_exponent) * booster_out_scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_EXPONENT</cDefine>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;By how much we multiply at maximum erpm.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MAX_ERPM_SCALE</cDefine>
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
             <maxDouble>10</maxDouble>
-            <minDouble>0</minDouble>
+            <minDouble>1</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.001</stepDouble>
             <valDouble>1</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
+            <suffix> A</suffix>
             <vTx>9</vTx>
-        </booster_exponent>
-        <booster_out_scale>
-            <longName>Booster Out Scale</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster Scale.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Booster output = pow(booster_base, booster_exponent) * booster_out_scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_OUT_SCALE</cDefine>
-            <editorDecimalsDouble>3</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxDouble>100</maxDouble>
-            <minDouble>0</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.001</stepDouble>
-            <valDouble>1</valDouble>
-            <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
-            <vTx>9</vTx>
-        </booster_out_scale>
-        <booster_limit>
-            <longName>Booster Max Current</longName>
+        </booster_max_erpm_scaleby>
+        <booster_current_limit>
+            <longName>Booster Current Limit</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -2404,7 +2320,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Limit the booster's current.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_LIMIT</cDefine>
+            <cDefine>APPCONF_BALANCE_BOOSTER_CURRENT_LIMIT</cDefine>
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -2414,11 +2330,11 @@ p, li { white-space: pre-wrap; }
             <stepDouble>0.001</stepDouble>
             <valDouble>15</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
+            <suffix> A</suffix>
             <vTx>9</vTx>
-        </booster_limit>
+        </booster_current_limit>
         <booster_min_pitch_b>
-            <longName>Booster Start Pitch (B)</longName>
+            <longName>Booster Min Pitch (B)</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -2461,8 +2377,8 @@ p, li { white-space: pre-wrap; }
             <suffix> </suffix>
             <vTx>9</vTx>
         </booster_max_pitch_b>
-        <booster_pitch_scale_b>
-            <longName>Booster Pitch Scale (B)</longName>
+        <booster_max_pitch_amps_b>
+            <longName>Booster Max Pitch Amps (B)</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -2470,29 +2386,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_PITCH_SCALE_B</cDefine>
-            <editorDecimalsDouble>3</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxDouble>50</maxDouble>
-            <minDouble>0</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.001</stepDouble>
-            <valDouble>1</valDouble>
-            <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
-            <vTx>9</vTx>
-        </booster_pitch_scale_b>
-        <booster_base_b>
-            <longName>Booster Base Amps (B)</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_BASE_B</cDefine>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MAX_PITCH_AMPS_B</cDefine>
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -2502,11 +2396,51 @@ p, li { white-space: pre-wrap; }
             <stepDouble>0.001</stepDouble>
             <valDouble>15</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
+            <suffix> A</suffix>
             <vTx>9</vTx>
-        </booster_base_b>
-        <booster_exponent_b>
-            <longName>Booster Exponent (B)</longName>
+        </booster_max_pitch_amps_b>
+        <booster_min_erpm_b>
+            <longName>Booster Scale Min ERPM (B)</longName>
+            <type>2</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MIN_ERPM_B</cDefine>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxInt>20000</maxInt>
+            <minInt>1000</minInt>
+            <showDisplay>0</showDisplay>
+            <stepInt>1</stepInt>
+            <valInt>3000</valInt>
+            <suffix></suffix>
+            <vTx>3</vTx>
+        </booster_min_erpm_b>
+        <booster_max_erpm_b>
+            <longName>Booster Scale Max ERPM (B)</longName>
+            <type>2</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MAX_ERPM_B</cDefine>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxInt>20000</maxInt>
+            <minInt>2000</minInt>
+            <showDisplay>0</showDisplay>
+            <stepInt>1</stepInt>
+            <valInt>13000</valInt>
+            <suffix></suffix>
+            <vTx>3</vTx>
+        </booster_max_erpm_b>
+        <booster_max_erpm_scaleby_b>
+            <longName>Booster Max ERPM Scale (B)</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -2514,21 +2448,21 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_EXPONENT_B</cDefine>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MAX_ERPM_SCALE_B</cDefine>
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
             <maxDouble>10</maxDouble>
-            <minDouble>0</minDouble>
+            <minDouble>1</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.001</stepDouble>
             <valDouble>1</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
+            <suffix> A</suffix>
             <vTx>9</vTx>
-        </booster_exponent_b>
-        <booster_out_scale_b>
-            <longName>Booster Out Scale (B)</longName>
+        </booster_max_erpm_scaleby_b>
+        <booster_current_limit_b>
+            <longName>Booster Current Limit (B)</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -2536,29 +2470,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_OUT_SCALE_B</cDefine>
-            <editorDecimalsDouble>3</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxDouble>100</maxDouble>
-            <minDouble>0</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.001</stepDouble>
-            <valDouble>1</valDouble>
-            <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
-            <vTx>9</vTx>
-        </booster_out_scale_b>
-        <booster_limit_b>
-            <longName>Booster Max Current (B)</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_LIMIT_B</cDefine>
+            <cDefine>APPCONF_BALANCE_BOOSTER_CURRENT_LIMIT_B</cDefine>
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -2568,11 +2480,11 @@ p, li { white-space: pre-wrap; }
             <stepDouble>0.001</stepDouble>
             <valDouble>15</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
+            <suffix> A</suffix>
             <vTx>9</vTx>
-        </booster_limit_b>
+        </booster_current_limit_b>
         <booster_min_pitch_c>
-            <longName>Booster Start Pitch (C)</longName>
+            <longName>Booster Min Pitch (C)</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -2615,8 +2527,8 @@ p, li { white-space: pre-wrap; }
             <suffix> </suffix>
             <vTx>9</vTx>
         </booster_max_pitch_c>
-        <booster_pitch_scale_c>
-            <longName>Booster Pitch Scale (C)</longName>
+        <booster_max_pitch_amps_c>
+            <longName>Booster Max Pitch Amps (C)</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -2624,29 +2536,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_PITCH_SCALE_C</cDefine>
-            <editorDecimalsDouble>3</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxDouble>50</maxDouble>
-            <minDouble>0</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.001</stepDouble>
-            <valDouble>1</valDouble>
-            <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
-            <vTx>9</vTx>
-        </booster_pitch_scale_c>
-        <booster_base_c>
-            <longName>Booster Base Amps (C)</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_BASE_C</cDefine>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MAX_PITCH_AMPS_C</cDefine>
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -2656,11 +2546,51 @@ p, li { white-space: pre-wrap; }
             <stepDouble>0.001</stepDouble>
             <valDouble>15</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
+            <suffix> A</suffix>
             <vTx>9</vTx>
-        </booster_base_c>
-        <booster_exponent_c>
-            <longName>Booster Exponent (C)</longName>
+        </booster_max_pitch_amps_c>
+        <booster_min_erpm_c>
+            <longName>Booster Scale Min ERPM (C)</longName>
+            <type>2</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MIN_ERPM_C</cDefine>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxInt>20000</maxInt>
+            <minInt>1000</minInt>
+            <showDisplay>0</showDisplay>
+            <stepInt>1</stepInt>
+            <valInt>3000</valInt>
+            <suffix></suffix>
+            <vTx>3</vTx>
+        </booster_min_erpm_c>
+        <booster_max_erpm_c>
+            <longName>Booster Scale Max ERPM (C)</longName>
+            <type>2</type>
+            <transmittable>1</transmittable>
+            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MAX_ERPM_C</cDefine>
+            <editorScale>1</editorScale>
+            <editAsPercentage>0</editAsPercentage>
+            <maxInt>20000</maxInt>
+            <minInt>2000</minInt>
+            <showDisplay>0</showDisplay>
+            <stepInt>1</stepInt>
+            <valInt>13000</valInt>
+            <suffix></suffix>
+            <vTx>3</vTx>
+        </booster_max_erpm_c>
+        <booster_max_erpm_scaleby_c>
+            <longName>Booster Max ERPM Scale (C)</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -2668,21 +2598,21 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_EXPONENT_C</cDefine>
+            <cDefine>APPCONF_BALANCE_BOOSTER_MAX_ERPM_SCALE_C</cDefine>
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
             <maxDouble>10</maxDouble>
-            <minDouble>0</minDouble>
+            <minDouble>1</minDouble>
             <showDisplay>0</showDisplay>
             <stepDouble>0.001</stepDouble>
             <valDouble>1</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
+            <suffix> A</suffix>
             <vTx>9</vTx>
-        </booster_exponent_c>
-        <booster_out_scale_c>
-            <longName>Booster Out Scale (C)</longName>
+        </booster_max_erpm_scaleby_c>
+        <booster_current_limit_c>
+            <longName>Booster Current Limit (C)</longName>
             <type>1</type>
             <transmittable>1</transmittable>
             <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -2690,29 +2620,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_OUT_SCALE_C</cDefine>
-            <editorDecimalsDouble>3</editorDecimalsDouble>
-            <editorScale>1</editorScale>
-            <editAsPercentage>0</editAsPercentage>
-            <maxDouble>100</maxDouble>
-            <minDouble>0</minDouble>
-            <showDisplay>0</showDisplay>
-            <stepDouble>0.001</stepDouble>
-            <valDouble>1</valDouble>
-            <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
-            <vTx>9</vTx>
-        </booster_out_scale_c>
-        <booster_limit_c>
-            <longName>Booster Max Current (C)</longName>
-            <type>1</type>
-            <transmittable>1</transmittable>
-            <description>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Roboto'; ; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Same as Tune (A)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</description>
-            <cDefine>APPCONF_BALANCE_BOOSTER_LIMIT_C</cDefine>
+            <cDefine>APPCONF_BALANCE_BOOSTER_CURRENT_LIMIT_C</cDefine>
             <editorDecimalsDouble>3</editorDecimalsDouble>
             <editorScale>1</editorScale>
             <editAsPercentage>0</editAsPercentage>
@@ -2722,9 +2630,9 @@ p, li { white-space: pre-wrap; }
             <stepDouble>0.001</stepDouble>
             <valDouble>15</valDouble>
             <vTxDoubleScale>1</vTxDoubleScale>
-            <suffix> </suffix>
+            <suffix> A</suffix>
             <vTx>9</vTx>
-        </booster_limit_c>
+        </booster_current_limit_c>
     </Params>
     <SerOrder>
         <ser>pitch_th</ser>
@@ -2749,12 +2657,10 @@ p, li { white-space: pre-wrap; }
         <ser>pitch_thi_limit_c</ser>
         <ser>reset_pitch_thi_on_entering_b</ser>
         <ser>reset_pitch_thi_on_entering_c</ser>
-        <ser>pitch_thi_decay_on_wheelslip</ser>
-        <ser>pitch_thi_decay_on_wheelslip_b</ser>
-        <ser>pitch_thi_decay_on_wheelslip_c</ser>
         <ser>tunea_transition_speed</ser>
         <ser>tuneb_transition_speed</ser>
         <ser>tunec_transition_speed</ser>
+        <ser>transitions_order</ser>
         <ser>tunes_mixing_b</ser>
         <ser>tunes_mixing_c</ser>
         <ser>asym_min_accel_b</ser>
@@ -2777,7 +2683,6 @@ p, li { white-space: pre-wrap; }
         <ser>fault_delay_switch_full</ser>
         <ser>fault_adc_half_erpm</ser>
         <ser>fault_is_single_switch</ser>
-        <ser>fault_adc_to_copy</ser>
         <ser>tiltback_duty_angle</ser>
         <ser>tiltback_duty_speed</ser>
         <ser>tiltback_duty</ser>
@@ -2836,35 +2741,52 @@ p, li { white-space: pre-wrap; }
         <ser>traction_control_mul_by</ser>
         <ser>booster_min_pitch</ser>
         <ser>booster_max_pitch</ser>
-        <ser>booster_pitch_scale</ser>
-        <ser>booster_base</ser>
-        <ser>booster_exponent</ser>
-        <ser>booster_out_scale</ser>
-        <ser>booster_limit</ser>
+        <ser>booster_max_pitch_amps</ser>
+        <ser>booster_min_erpm</ser>
+        <ser>booster_max_erpm</ser>
+        <ser>booster_max_erpm_scaleby</ser>
+        <ser>booster_current_limit</ser>
         <ser>booster_min_pitch_b</ser>
         <ser>booster_max_pitch_b</ser>
-        <ser>booster_pitch_scale_b</ser>
-        <ser>booster_base_b</ser>
-        <ser>booster_exponent_b</ser>
-        <ser>booster_out_scale_b</ser>
-        <ser>booster_limit_b</ser>
+        <ser>booster_max_pitch_amps_b</ser>
+        <ser>booster_min_erpm_b</ser>
+        <ser>booster_max_erpm_b</ser>
+        <ser>booster_max_erpm_scaleby_b</ser>
+        <ser>booster_current_limit_b</ser>
         <ser>booster_min_pitch_c</ser>
         <ser>booster_max_pitch_c</ser>
-        <ser>booster_pitch_scale_c</ser>
-        <ser>booster_base_c</ser>
-        <ser>booster_exponent_c</ser>
-        <ser>booster_out_scale_c</ser>
-        <ser>booster_limit_c</ser>
+        <ser>booster_max_pitch_amps_c</ser>
+        <ser>booster_min_erpm_c</ser>
+        <ser>booster_max_erpm_c</ser>
+        <ser>booster_max_erpm_scaleby_c</ser>
+        <ser>booster_current_limit_c</ser>
     </SerOrder>
     <Grouping>
         <group>
             <groupName>General</groupName>
             <subgroup>
-                <subgroupName>Tune (A)</subgroupName>
+                <subgroupName>Spec</subgroupName>
                 <subgroupParams>
                     <param>::sep::Main Loop</param>
                     <param>hertz</param>
                     <param>mahony_kp</param>
+                    <param>::sep::Angle Faults</param>
+                    <param>fault_pitch</param>
+                    <param>fault_delay_pitch</param>
+                    <param>fault_roll</param>
+                    <param>fault_delay_roll</param>
+                    <param>::sep::Switches</param>
+                    <param>fault_adc1</param>
+                    <param>fault_adc2</param>
+                    <param>fault_delay_switch_half</param>
+                    <param>fault_delay_switch_full</param>
+                    <param>fault_adc_half_erpm</param>
+                    <param>fault_is_single_switch</param>
+                </subgroupParams>
+            </subgroup>
+            <subgroup>
+                <subgroupName>Tune (A)</subgroupName>
+                <subgroupParams>
                     <param>::sep::Throttle/PID (A)</param>
                     <param>pitch_th</param>
                     <param>pitch_thi</param>
@@ -2872,16 +2794,15 @@ p, li { white-space: pre-wrap; }
                     <param>current_out_filter</param>
                     <param>::sep::Limiters</param>
                     <param>pitch_thi_limit</param>
-                    <param>pitch_thi_decay_on_wheelslip</param>
                     <param>brake_max_amp_change</param>
                     <param>::sep::Booster</param>
                     <param>booster_min_pitch</param>
                     <param>booster_max_pitch</param>
-                    <param>booster_pitch_scale</param>
-                    <param>booster_base</param>
-                    <param>booster_exponent</param>
-                    <param>booster_out_scale</param>
-                    <param>booster_limit</param>
+                    <param>booster_max_pitch_amps</param>
+                    <param>booster_min_erpm</param>
+                    <param>booster_max_erpm</param>
+                    <param>booster_max_erpm_scaleby</param>
+                    <param>booster_current_limit</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>
@@ -2894,16 +2815,15 @@ p, li { white-space: pre-wrap; }
                     <param>current_out_filter_b</param>
                     <param>::sep::Limiters</param>
                     <param>pitch_thi_limit_b</param>
-                    <param>pitch_thi_decay_on_wheelslip_b</param>
                     <param>brake_max_amp_change_b</param>
                     <param>::sep::Booster</param>
                     <param>booster_min_pitch_b</param>
                     <param>booster_max_pitch_b</param>
-                    <param>booster_pitch_scale_b</param>
-                    <param>booster_base_b</param>
-                    <param>booster_exponent_b</param>
-                    <param>booster_out_scale_b</param>
-                    <param>booster_limit_b</param>
+                    <param>booster_max_pitch_amps_b</param>
+                    <param>booster_min_erpm_b</param>
+                    <param>booster_max_erpm_b</param>
+                    <param>booster_max_erpm_scaleby_b</param>
+                    <param>booster_current_limit_b</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>
@@ -2916,16 +2836,15 @@ p, li { white-space: pre-wrap; }
                     <param>current_out_filter_c</param>
                     <param>::sep::Limiters</param>
                     <param>pitch_thi_limit_c</param>
-                    <param>pitch_thi_decay_on_wheelslip_c</param>
                     <param>brake_max_amp_change_c</param>
                     <param>::sep::Booster</param>
                     <param>booster_min_pitch_c</param>
                     <param>booster_max_pitch_c</param>
-                    <param>booster_pitch_scale_c</param>
-                    <param>booster_base_c</param>
-                    <param>booster_exponent_c</param>
-                    <param>booster_out_scale_c</param>
-                    <param>booster_limit_c</param>
+                    <param>booster_max_pitch_amps_c</param>
+                    <param>booster_min_erpm_c</param>
+                    <param>booster_max_erpm_c</param>
+                    <param>booster_max_erpm_scaleby_c</param>
+                    <param>booster_current_limit_c</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>
@@ -2933,22 +2852,21 @@ p, li { white-space: pre-wrap; }
                 <subgroupParams>
                     <param>::sep::Tune (A)</param>
                     <param>tunea_transition_speed</param>
+                    <param>transitions_order</param>
                     <param>::sep::Tune (B)</param>
-                    <param>tuneb_transition_speed</param>
-                    <param>reset_pitch_thi_on_entering_b</param>
-                    <param>::sep::Tune (B) Transition</param>
                     <param>tunes_mixing_b</param>
+                    <param>tuneb_transition_speed</param>
                     <param>tune_b_only_for_brakes</param>
+                    <param>reset_pitch_thi_on_entering_b</param>
                     <param>asym_min_accel_b</param>
                     <param>asym_max_accel_b</param>
                     <param>asym_min_erpm_b</param>
                     <param>asym_max_erpm_b</param>
                     <param>::sep::Tune (C)</param>
-                    <param>tunec_transition_speed</param>
-                    <param>reset_pitch_thi_on_entering_c</param>
-                    <param>::sep::Tune (C) Transition</param>
                     <param>tunes_mixing_c</param>
+                    <param>tunec_transition_speed</param>
                     <param>tune_c_only_for_brakes</param>
+                    <param>reset_pitch_thi_on_entering_c</param>
                     <param>asym_min_accel_c</param>
                     <param>asym_max_accel_c</param>
                     <param>asym_min_erpm_c</param>
@@ -2967,24 +2885,6 @@ p, li { white-space: pre-wrap; }
                     <param>brake_current</param>
                     <param>::sep::Startup Click</param>
                     <param>startup_click_current</param>
-                </subgroupParams>
-            </subgroup>
-            <subgroup>
-                <subgroupName>Fault</subgroupName>
-                <subgroupParams>
-                    <param>::sep::Angle Faults</param>
-                    <param>fault_pitch</param>
-                    <param>fault_delay_pitch</param>
-                    <param>fault_roll</param>
-                    <param>fault_delay_roll</param>
-                    <param>::sep::Switches</param>
-                    <param>fault_adc1</param>
-                    <param>fault_adc2</param>
-                    <param>fault_delay_switch_half</param>
-                    <param>fault_delay_switch_full</param>
-                    <param>fault_adc_half_erpm</param>
-                    <param>fault_is_single_switch</param>
-                    <param>fault_adc_to_copy</param>
                 </subgroupParams>
             </subgroup>
             <subgroup>

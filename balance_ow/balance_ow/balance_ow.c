@@ -119,8 +119,8 @@ typedef struct {
 	// Rumtime state values
 	BalanceState state;
 	bool running;
-	float proportional, integral, proportional2, integral_decay;
-	float integral_b, integral_decay_b, integral_c, integral_decay_c;
+	float proportional, integral, proportional2;
+	float integral_b, integral_c;
 	float current_request;
 	float setpoint, setpoint_target, setpoint_target_interpolated;
 	float noseangling_interpolated;
@@ -332,30 +332,6 @@ static void configure(data *d) {
 		d->asym_max_erpm_c = 1000;
 	else 
 		d->asym_max_erpm_c = d->balance_conf.asym_max_erpm_c - d->balance_conf.asym_min_erpm_c;
-
-	// integral reset on wheelslip (tune A)
-	if (d->balance_conf.pitch_thi_decay_on_wheelslip < 0)
-		d->integral_decay = 1.0;
-	else if ((1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip) > d->balance_conf.hertz)
-		d->integral_decay = 0;
-	else
-		d->integral_decay = 1.0 - (1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip) / d->balance_conf.hertz;
-	
-	// integral decay on wheelslip (tune B)
-	if (d->balance_conf.pitch_thi_decay_on_wheelslip_b < 0)
-		d->integral_decay_b = 1.0;
-	else if ((1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip_b) > d->balance_conf.hertz)
-		d->integral_decay_b = 0;
-	else
-		d->integral_decay_b = 1.0 - (1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip_b) / d->balance_conf.hertz;
-	
-	// integral decay on wheelslip (tune C)
-	if (d->balance_conf.pitch_thi_decay_on_wheelslip_c < 0)
-		d->integral_decay_c = 1.0;
-	else if ((1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip_c) > d->balance_conf.hertz)
-		d->integral_decay_c = 0;
-	else
-		d->integral_decay_c = 1.0 - (1.0 / d->balance_conf.pitch_thi_decay_on_wheelslip_c) / d->balance_conf.hertz;
 
 	// Odometer
 	d->odometer_dirty = 0;
@@ -1079,31 +1055,34 @@ static void do_rc_move(data *d)
 	}
 }
 
-static float calc_nl_booster(data *d, float proportional, float min_pitch, float max_pitch, 
-							 float pitch_scale, float booster_base, float booster_exponent, 
-							 float booster_out_scale, float booster_limit) 
+static float calc_booster(data *d, float min_pitch, float max_pitch, float max_pitch_amps, 
+						  uint16_t min_erpm, uint16_t max_erpm, float max_erpm_scaleBy,
+						  float current_limit)
 {
-	min_pitch = min_pitch * pitch_scale;
-	max_pitch = max_pitch * pitch_scale - min_pitch;
-	float booster_weight = fabsf(proportional) * pitch_scale - min_pitch;
-	booster_weight = fmaxf(booster_weight, 0.0);
-	booster_weight = fminf(booster_weight, max_pitch);
-	booster_weight = booster_weight / max_pitch; // Between 0-1, 0: pitch below min_pitch, 1: pitch above max_pitch
-	float booster_amps = booster_base * booster_weight;
-	float final_out_amps = powf(booster_amps, booster_exponent) * booster_out_scale;
-	final_out_amps = fminf(final_out_amps, booster_limit);
-	final_out_amps *= SIGN(proportional);
+	float booster_current = 0;
+	float abs_proportional = fabsf(d->proportional);
+	if (abs_proportional >= min_pitch) {
+		booster_current = max_pitch_amps;
+		if (abs_proportional < max_pitch && max_pitch > min_pitch) {
+			booster_current *= ((abs_proportional - min_pitch) / (max_pitch - min_pitch));
+		}
 
-	// Limit booster while duty cycle
-	if (d->abs_duty_cycle > d->balance_conf.tiltback_duty) {
-		float dc_coeff = (d->abs_duty_cycle - d->balance_conf.tiltback_duty);
-		dc_coeff = dc_coeff / (1.0 - d->balance_conf.tiltback_duty);
-		dc_coeff = fminf(fmaxf(dc_coeff, 0.0), 1.0);
-		dc_coeff = 1.0 - dc_coeff;
-		final_out_amps *= dc_coeff;
+		if (d->abs_erpm > min_erpm) {
+			if (d->abs_erpm < max_erpm) {
+				max_erpm_scaleBy *= ((d->abs_erpm - min_erpm) / (max_erpm - min_erpm));
+			}
+
+			booster_current *= max_erpm_scaleBy;
+		}
+
+		if (booster_current > current_limit) {
+			booster_current = current_limit;
+		}
+
+		booster_current *= SIGN(d->proportional);
 	}
 
-	return final_out_amps;
+	return booster_current;
 }
 
 static float get_tuneA_current(data *d, const float prev_current)
@@ -1139,12 +1118,14 @@ static float get_tuneA_current(data *d, const float prev_current)
 		}
 
 		// Add booster
-		float booster_current = calc_nl_booster(d, d->proportional, d->balance_conf.booster_min_pitch, d->balance_conf.booster_max_pitch, 
-												d->balance_conf.booster_pitch_scale, d->balance_conf.booster_base, 
-												d->balance_conf.booster_exponent, d->balance_conf.booster_out_scale,
-												d->balance_conf.booster_limit);
-		d->tuneA_booster_current = 0.01 * booster_current + 0.99 * d->tuneA_booster_current;
-		output_current += d->tuneA_booster_current;
+		if (d->balance_conf.booster_current_limit > 0) {
+			float booster_current = calc_booster(d, d->balance_conf.booster_min_pitch, d->balance_conf.booster_max_pitch, 
+												 d->balance_conf.booster_max_pitch_amps, d->balance_conf.booster_min_erpm, 
+												 d->balance_conf.booster_max_erpm, d->balance_conf.booster_max_erpm_scaleby,
+												 d->balance_conf.booster_current_limit);
+			d->tuneA_booster_current = 0.01 * booster_current + 0.99 * d->tuneA_booster_current;
+			output_current += d->tuneA_booster_current;
+		}
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter) + output_current * d->balance_conf.current_out_filter;
 
@@ -1190,12 +1171,14 @@ static float get_tuneB_current(data *d, const float prev_current)
 		}
 
 		// Add booster
-		float booster_current = calc_nl_booster(d, d->proportional, d->balance_conf.booster_min_pitch_b, d->balance_conf.booster_max_pitch_b, 
-												d->balance_conf.booster_pitch_scale_b, d->balance_conf.booster_base_b, 
-												d->balance_conf.booster_exponent_b, d->balance_conf.booster_out_scale_b,
-												d->balance_conf.booster_limit_b);
-		d->tuneB_booster_current = 0.01 * booster_current + 0.99 * d->tuneB_booster_current;
-		output_current += d->tuneB_booster_current;
+		if (d->balance_conf.booster_current_limit_b > 0) {
+			float booster_current = calc_booster(d, d->balance_conf.booster_min_pitch_b, d->balance_conf.booster_max_pitch_b, 
+												 d->balance_conf.booster_max_pitch_amps_b, d->balance_conf.booster_min_erpm_b, 
+												 d->balance_conf.booster_max_erpm_b, d->balance_conf.booster_max_erpm_scaleby_b,
+												 d->balance_conf.booster_current_limit_b);
+			d->tuneB_booster_current = 0.01 * booster_current + 0.99 * d->tuneB_booster_current;
+			output_current += d->tuneB_booster_current;
+		}
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter_b) + output_current * d->balance_conf.current_out_filter_b;
 
@@ -1241,12 +1224,14 @@ static float get_tuneC_current(data *d, const float prev_current)
 		}
 
 		// Add booster
-		float booster_current = calc_nl_booster(d, d->proportional, d->balance_conf.booster_min_pitch_c, d->balance_conf.booster_max_pitch_c, 
-												d->balance_conf.booster_pitch_scale_c, d->balance_conf.booster_base_c, 
-												d->balance_conf.booster_exponent_c, d->balance_conf.booster_out_scale_c,
-												d->balance_conf.booster_limit_c);
-		d->tuneC_booster_current = 0.01 * booster_current + 0.99 * d->tuneC_booster_current;
-		output_current += d->tuneC_booster_current;
+		if (d->balance_conf.booster_current_limit_c > 0) {
+			float booster_current = calc_booster(d, d->balance_conf.booster_min_pitch_c, d->balance_conf.booster_max_pitch_c, 
+												 d->balance_conf.booster_max_pitch_amps_c, d->balance_conf.booster_min_erpm_c, 
+												 d->balance_conf.booster_max_erpm_c, d->balance_conf.booster_max_erpm_scaleby_c,
+												 d->balance_conf.booster_current_limit_c);
+			d->tuneC_booster_current = 0.01 * booster_current + 0.99 * d->tuneC_booster_current;
+			output_current += d->tuneC_booster_current;
+		}
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter_c) + output_current * d->balance_conf.current_out_filter_c;
 
@@ -1333,12 +1318,6 @@ static void balance_thd(void *arg) {
 			// Returns -1.0 if the pin is missing on the hardware
 			d->adc2 = d->adc1;
 		}
-		else if (d->balance_conf.fault_adc_to_copy == 1) {
-			d->adc2 = d->adc1;
-		}
-		else if (d->balance_conf.fault_adc_to_copy == 2) {
-			d->adc1 = d->adc2;
-		}
 
 		// Calculate switch state from ADC values
 		d->switch_state = check_adcs(d);
@@ -1421,9 +1400,6 @@ static void balance_thd(void *arg) {
 				d->torquetilt_target *= 0.99;
 				d->yaw_turntilt_target *= 0.99;
 				d->roll_turntilt_target *= 0.99;
-				d->integral *= d->integral_decay;
-				d->integral_b *= d->integral_decay_b;
-				d->integral_c *= d->integral_decay_c;
 			}
 			calc_final_setpoint(d);
 			
@@ -1437,8 +1413,7 @@ static void balance_thd(void *arg) {
 					if (abs_accel - d->balance_conf.asym_min_accel_b > 0 &&
 						d->abs_erpm - d->balance_conf.asym_min_erpm_b > 0) 
 					{
-						float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel_b, d->asym_max_accel_b) / d->asym_max_accel_b;
-						tuneB_weight_target += acc_coeff;
+						tuneB_weight_target = fminf(abs_accel - d->balance_conf.asym_min_accel_b, d->asym_max_accel_b) / d->asym_max_accel_b;
 					}
 				}
 				// calculate how much weight to give to Tune (B) based on ERPM
@@ -1446,13 +1421,12 @@ static void balance_thd(void *arg) {
 					if (abs_accel - d->balance_conf.asym_min_accel_b > 0 &&
 						d->abs_erpm - d->balance_conf.asym_min_erpm_b > 0) 
 					{
-						float erpm_coeff = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm_b, d->asym_max_erpm_b) / d->asym_max_erpm_b;
-						tuneB_weight_target += erpm_coeff;
+						tuneB_weight_target = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm_b, d->asym_max_erpm_b) / d->asym_max_erpm_b;
 					}
 				}
 			}
 
-			// Calculate tuneB_weight and step size for interpolation
+			// Calculate tuneB_weight and step size for interpolation (cow_ss = current out weight step size)
 			float cow_ss = tuneB_weight_target > d->last_tuneB_weight_target ? d->tuneb_transition_step_size : d->tunea_transition_step_size;
 			if (fabsf(tuneB_weight_target - d->tuneB_weight) <= cow_ss) {
 				d->tuneB_weight = tuneB_weight_target;
@@ -1475,8 +1449,7 @@ static void balance_thd(void *arg) {
 					if (abs_accel - d->balance_conf.asym_min_accel_c > 0 &&
 						d->abs_erpm - d->balance_conf.asym_min_erpm_c > 0) 
 					{
-						float acc_coeff = fminf(abs_accel - d->balance_conf.asym_min_accel_c, d->asym_max_accel_c) / d->asym_max_accel_c;
-						tuneC_weight_target += acc_coeff;
+						tuneC_weight_target = fminf(abs_accel - d->balance_conf.asym_min_accel_c, d->asym_max_accel_c) / d->asym_max_accel_c;
 					}
 				}
 				// calculate how much weight to give to Tune (C) based on ERPM
@@ -1484,13 +1457,12 @@ static void balance_thd(void *arg) {
 					if (abs_accel - d->balance_conf.asym_min_accel_c > 0 &&
 						d->abs_erpm - d->balance_conf.asym_min_erpm_c > 0) 
 					{
-						float erpm_coeff = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm_c, d->asym_max_erpm_c) / d->asym_max_erpm_c;
-						tuneC_weight_target += erpm_coeff;
+						tuneC_weight_target = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm_c, d->asym_max_erpm_c) / d->asym_max_erpm_c;
 					}
 				}
 			}
 
-			// Calculate tuneC_weight and step size for interpolation
+			// Calculate tuneC_weight and step size for interpolation (cow_ss = current out weight step size)
 			cow_ss = tuneC_weight_target > d->last_tuneC_weight_target ? d->tunec_transition_step_size : d->tunea_transition_step_size;
 			if (fabsf(tuneC_weight_target - d->tuneC_weight) <= cow_ss) {
 				d->tuneC_weight = tuneC_weight_target;
@@ -1526,20 +1498,32 @@ static void balance_thd(void *arg) {
 					d->integral_c = 0;
 			}
 
-			// Blend between Tune A & Tune B & Tune C, and apply filtering
-			float tuneA_weight = 1.0;
-			float tuneB_weight = 0;
-			float tuneC_weight = 0;
-			if (d->tuneB_weight > 0 || d->tuneC_weight) {
-				float BC_weights = d->tuneB_weight + d->tuneC_weight;
-				float tuneB_scaleBy = d->tuneB_weight / BC_weights;
-				float tuneC_scaleBy = d->tuneC_weight / BC_weights;
-				tuneB_weight = d->tuneB_weight * tuneB_scaleBy;
-				tuneC_weight = d->tuneC_weight * tuneC_scaleBy;
-				tuneA_weight = 1.0 - (tuneB_weight + tuneC_weight);
+			// Blend between Tune A & Tune B & Tune C
+			float new_output_current = d->tuneA_current;
+			if (d->balance_conf.transitions_order == ALL_TOGETHER) {
+				float tuneA_weight = 1.0;
+				float tuneB_weight = 0;
+				float tuneC_weight = 0;
+				if (d->tuneB_weight > 0 || d->tuneC_weight) {
+					float BC_weights = d->tuneB_weight + d->tuneC_weight;
+					float tuneB_scaleBy = d->tuneB_weight / BC_weights;
+					float tuneC_scaleBy = d->tuneC_weight / BC_weights;
+					tuneB_weight = d->tuneB_weight * tuneB_scaleBy;
+					tuneC_weight = d->tuneC_weight * tuneC_scaleBy;
+					tuneA_weight = 1.0 - (tuneB_weight + tuneC_weight);
+				}
+				new_output_current = d->tuneA_current * tuneA_weight + d->tuneB_current * tuneB_weight + d->tuneC_current * tuneC_weight;
+			}
+			else if (d->balance_conf.transitions_order == B_THEN_C) {
+				new_output_current = d->tuneA_current * (1.0 - d->tuneB_weight) + d->tuneB_current * d->tuneB_weight;
+				new_output_current = new_output_current * (1.0 - d->tuneC_weight) + d->tuneC_current * d->tuneC_weight;
+			}
+			else if (d->balance_conf.transitions_order == C_THEN_B) {
+				new_output_current = d->tuneA_current * (1.0 - d->tuneC_weight) + d->tuneC_current * d->tuneC_weight;
+				new_output_current = new_output_current * (1.0 - d->tuneB_weight) + d->tuneB_current * d->tuneB_weight;
 			}
 
-			float new_output_current = d->tuneA_current * tuneA_weight + d->tuneB_current * tuneB_weight + d->tuneC_current * tuneC_weight;
+			// Filter the current
 			new_output_current = d->current_request * 0.65 + new_output_current * 0.35;
 			
 			// Current Limiting!
@@ -1649,11 +1633,12 @@ static float app_balance_get_debug(int index) {
 
 static void send_realtime_data(data *d){
 	int32_t ind = 0;
-	uint8_t send_buffer[120];
+	uint8_t send_buffer[140];
 	send_buffer[ind++] = 101;
 	buffer_append_uint16(send_buffer, d->running, &ind);
 	buffer_append_float32_auto(send_buffer, d->diff_time, &ind);
 	buffer_append_uint16(send_buffer, d->state, &ind);
+	buffer_append_float32_auto(send_buffer, d->abs_duty_cycle, &ind);
 	buffer_append_float32_auto(send_buffer, d->motor_current, &ind);
 	buffer_append_float32_auto(send_buffer, d->torquetilt_filtered_current, &ind);
 	buffer_append_float32_auto(send_buffer, d->erpm, &ind);
