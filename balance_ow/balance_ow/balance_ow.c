@@ -186,6 +186,10 @@ typedef struct {
 	float asym_max_accel_c;
 	uint32_t asym_max_erpm_c;
 
+	// Soft Start
+	float softstart_pid_limit;
+	float softstart_ramp_step_size;
+
 	// Odometer
 	float odo_timer;
 	int odometer_dirty;
@@ -333,6 +337,14 @@ static void configure(data *d) {
 	else 
 		d->asym_max_erpm_c = d->balance_conf.asym_max_erpm_c - d->balance_conf.asym_min_erpm_c;
 
+	// Soft Start
+	if (d->balance_conf.softstart_speed > 0) {
+		d->softstart_ramp_step_size = (10.0 - d->balance_conf.softstart_speed) * 100.0 / d->balance_conf.hertz;
+	}
+	else {
+		d->softstart_ramp_step_size = d->mc_max_current;
+	}
+
 	// Odometer
 	d->odometer_dirty = 0;
 	d->odometer = VESC_IF->mc_get_odometer();
@@ -362,6 +374,7 @@ static void reset_vars(data *d) {
 	d->current_request = 0;
 	biquad_reset(&d->smooth_erpm_biquad);
 	d->smooth_erpm = 0;
+	d->softstart_pid_limit = 0;
 
 	// Asymmetric Tune
 	d->tuneA_current = 0;
@@ -1055,9 +1068,7 @@ static void do_rc_move(data *d)
 	}
 }
 
-static float calc_booster(data *d, float min_pitch, float max_pitch, float max_pitch_amps, 
-						  uint16_t min_erpm, uint16_t max_erpm, float max_erpm_scaleBy,
-						  float current_limit)
+static float calc_booster(data *d, float min_pitch, float max_pitch, float max_pitch_amps, float current_limit)
 {
 	float booster_current = 0;
 	float abs_proportional = fabsf(d->proportional);
@@ -1065,14 +1076,6 @@ static float calc_booster(data *d, float min_pitch, float max_pitch, float max_p
 		booster_current = max_pitch_amps;
 		if (abs_proportional < max_pitch && max_pitch > min_pitch) {
 			booster_current *= ((abs_proportional - min_pitch) / (max_pitch - min_pitch));
-		}
-
-		if (d->abs_erpm > min_erpm) {
-			if (d->abs_erpm < max_erpm) {
-				max_erpm_scaleBy *= ((d->abs_erpm - min_erpm) / (max_erpm - min_erpm));
-			}
-
-			booster_current *= max_erpm_scaleBy;
 		}
 
 		if (booster_current > current_limit) {
@@ -1120,11 +1123,14 @@ static float get_tuneA_current(data *d, const float prev_current)
 		// Add booster
 		if (d->balance_conf.booster_current_limit > 0) {
 			float booster_current = calc_booster(d, d->balance_conf.booster_min_pitch, d->balance_conf.booster_max_pitch, 
-												 d->balance_conf.booster_max_pitch_amps, d->balance_conf.booster_min_erpm, 
-												 d->balance_conf.booster_max_erpm, d->balance_conf.booster_max_erpm_scaleby,
-												 d->balance_conf.booster_current_limit);
+												 d->balance_conf.booster_max_pitch_amps, d->balance_conf.booster_current_limit);
 			d->tuneA_booster_current = 0.01 * booster_current + 0.99 * d->tuneA_booster_current;
 			output_current += d->tuneA_booster_current;
+		}
+
+		if (d->softstart_pid_limit < d->mc_max_current) {
+			output_current = fminf(output_current, d->softstart_pid_limit);
+			d->softstart_pid_limit += d->softstart_ramp_step_size;
 		}
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter) + output_current * d->balance_conf.current_out_filter;
@@ -1173,11 +1179,14 @@ static float get_tuneB_current(data *d, const float prev_current)
 		// Add booster
 		if (d->balance_conf.booster_current_limit_b > 0) {
 			float booster_current = calc_booster(d, d->balance_conf.booster_min_pitch_b, d->balance_conf.booster_max_pitch_b, 
-												 d->balance_conf.booster_max_pitch_amps_b, d->balance_conf.booster_min_erpm_b, 
-												 d->balance_conf.booster_max_erpm_b, d->balance_conf.booster_max_erpm_scaleby_b,
-												 d->balance_conf.booster_current_limit_b);
+												 d->balance_conf.booster_max_pitch_amps_b, d->balance_conf.booster_current_limit_b);
 			d->tuneB_booster_current = 0.01 * booster_current + 0.99 * d->tuneB_booster_current;
 			output_current += d->tuneB_booster_current;
+		}
+
+		if (d->softstart_pid_limit < d->mc_max_current) {
+			output_current = fminf(output_current, d->softstart_pid_limit);
+			d->softstart_pid_limit += d->softstart_ramp_step_size;
 		}
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter_b) + output_current * d->balance_conf.current_out_filter_b;
@@ -1226,11 +1235,14 @@ static float get_tuneC_current(data *d, const float prev_current)
 		// Add booster
 		if (d->balance_conf.booster_current_limit_c > 0) {
 			float booster_current = calc_booster(d, d->balance_conf.booster_min_pitch_c, d->balance_conf.booster_max_pitch_c, 
-												 d->balance_conf.booster_max_pitch_amps_c, d->balance_conf.booster_min_erpm_c, 
-												 d->balance_conf.booster_max_erpm_c, d->balance_conf.booster_max_erpm_scaleby_c,
-												 d->balance_conf.booster_current_limit_c);
+												 d->balance_conf.booster_max_pitch_amps_c, d->balance_conf.booster_current_limit_c);
 			d->tuneC_booster_current = 0.01 * booster_current + 0.99 * d->tuneC_booster_current;
 			output_current += d->tuneC_booster_current;
+		}
+
+		if (d->softstart_pid_limit < d->mc_max_current) {
+			output_current = fminf(output_current, d->softstart_pid_limit);
+			d->softstart_pid_limit += d->softstart_ramp_step_size;
 		}
 	}
 	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter_c) + output_current * d->balance_conf.current_out_filter_c;

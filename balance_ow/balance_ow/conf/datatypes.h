@@ -149,24 +149,16 @@ typedef struct {
 	float booster_min_pitch;
 	float booster_max_pitch;
 	float booster_max_pitch_amps; 
-	uint16_t booster_min_erpm;
-	uint16_t booster_max_erpm;
-	float booster_max_erpm_scaleby;
 	float booster_current_limit;
 	float booster_min_pitch_b;
 	float booster_max_pitch_b;
 	float booster_max_pitch_amps_b;
-	uint16_t booster_min_erpm_b;
-	uint16_t booster_max_erpm_b;
-	float booster_max_erpm_scaleby_b;
 	float booster_current_limit_b;
 	float booster_min_pitch_c;
 	float booster_max_pitch_c;
 	float booster_max_pitch_amps_c;
-	uint16_t booster_min_erpm_c;
-	uint16_t booster_max_erpm_c;
-	float booster_max_erpm_scaleby_c;
 	float booster_current_limit_c;
+	float softstart_speed;
 } balance_config;
 
 // DATATYPES_H_

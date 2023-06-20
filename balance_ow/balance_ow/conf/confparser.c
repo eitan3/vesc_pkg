@@ -117,24 +117,16 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->booster_min_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch_amps, &ind);
-	buffer_append_uint16(buffer, conf->booster_min_erpm, &ind);
-	buffer_append_uint16(buffer, conf->booster_max_erpm, &ind);
-	buffer_append_float32_auto(buffer, conf->booster_max_erpm_scaleby, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_current_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_min_pitch_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch_amps_b, &ind);
-	buffer_append_uint16(buffer, conf->booster_min_erpm_b, &ind);
-	buffer_append_uint16(buffer, conf->booster_max_erpm_b, &ind);
-	buffer_append_float32_auto(buffer, conf->booster_max_erpm_scaleby_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_current_limit_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_min_pitch_c, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch_c, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch_amps_c, &ind);
-	buffer_append_uint16(buffer, conf->booster_min_erpm_c, &ind);
-	buffer_append_uint16(buffer, conf->booster_max_erpm_c, &ind);
-	buffer_append_float32_auto(buffer, conf->booster_max_erpm_scaleby_c, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_current_limit_c, &ind);
+	buffer_append_float32_auto(buffer, conf->softstart_speed, &ind);
 
 	return ind;
 }
@@ -254,24 +246,16 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->booster_min_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch_amps = buffer_get_float32_auto(buffer, &ind);
-	conf->booster_min_erpm = buffer_get_uint16(buffer, &ind);
-	conf->booster_max_erpm = buffer_get_uint16(buffer, &ind);
-	conf->booster_max_erpm_scaleby = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_current_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_min_pitch_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch_amps_b = buffer_get_float32_auto(buffer, &ind);
-	conf->booster_min_erpm_b = buffer_get_uint16(buffer, &ind);
-	conf->booster_max_erpm_b = buffer_get_uint16(buffer, &ind);
-	conf->booster_max_erpm_scaleby_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_current_limit_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_min_pitch_c = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch_c = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch_amps_c = buffer_get_float32_auto(buffer, &ind);
-	conf->booster_min_erpm_c = buffer_get_uint16(buffer, &ind);
-	conf->booster_max_erpm_c = buffer_get_uint16(buffer, &ind);
-	conf->booster_max_erpm_scaleby_c = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_current_limit_c = buffer_get_float32_auto(buffer, &ind);
+	conf->softstart_speed = buffer_get_float32_auto(buffer, &ind);
 
 	return true;
 }
@@ -384,23 +368,15 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->booster_min_pitch = APPCONF_BALANCE_BOOSTER_MIN_PITCH;
 	conf->booster_max_pitch = APPCONF_BALANCE_BOOSTER_MAX_PITCH;
 	conf->booster_max_pitch_amps = APPCONF_BALANCE_BOOSTER_MAX_PITCH_AMPS;
-	conf->booster_min_erpm = APPCONF_BALANCE_BOOSTER_MIN_ERPM;
-	conf->booster_max_erpm = APPCONF_BALANCE_BOOSTER_MAX_ERPM;
-	conf->booster_max_erpm_scaleby = APPCONF_BALANCE_BOOSTER_MAX_ERPM_SCALE;
 	conf->booster_current_limit = APPCONF_BALANCE_BOOSTER_CURRENT_LIMIT;
 	conf->booster_min_pitch_b = APPCONF_BALANCE_BOOSTER_MIN_PITCH_B;
 	conf->booster_max_pitch_b = APPCONF_BALANCE_BOOSTER_MAX_PITCH_B;
 	conf->booster_max_pitch_amps_b = APPCONF_BALANCE_BOOSTER_MAX_PITCH_AMPS_B;
-	conf->booster_min_erpm_b = APPCONF_BALANCE_BOOSTER_MIN_ERPM_B;
-	conf->booster_max_erpm_b = APPCONF_BALANCE_BOOSTER_MAX_ERPM_B;
-	conf->booster_max_erpm_scaleby_b = APPCONF_BALANCE_BOOSTER_MAX_ERPM_SCALE_B;
 	conf->booster_current_limit_b = APPCONF_BALANCE_BOOSTER_CURRENT_LIMIT_B;
 	conf->booster_min_pitch_c = APPCONF_BALANCE_BOOSTER_MIN_PITCH_C;
 	conf->booster_max_pitch_c = APPCONF_BALANCE_BOOSTER_MAX_PITCH_C;
 	conf->booster_max_pitch_amps_c = APPCONF_BALANCE_BOOSTER_MAX_PITCH_AMPS_C;
-	conf->booster_min_erpm_c = APPCONF_BALANCE_BOOSTER_MIN_ERPM_C;
-	conf->booster_max_erpm_c = APPCONF_BALANCE_BOOSTER_MAX_ERPM_C;
-	conf->booster_max_erpm_scaleby_c = APPCONF_BALANCE_BOOSTER_MAX_ERPM_SCALE_C;
 	conf->booster_current_limit_c = APPCONF_BALANCE_BOOSTER_CURRENT_LIMIT_C;
+	conf->softstart_speed = APPCONF_BALANCE_SOFTSTART_SPEED;
 }
 
