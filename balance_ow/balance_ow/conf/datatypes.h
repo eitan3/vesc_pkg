@@ -80,6 +80,7 @@ typedef struct {
 	uint16_t asym_max_erpm_c;
 	float mahony_kp;
 	uint16_t hertz;
+	uint16_t loop_time_filter;
 	float fault_pitch;
 	float fault_roll;
 	float fault_adc1;
@@ -148,15 +149,12 @@ typedef struct {
 	float traction_control_mul_by;
 	float booster_min_pitch;
 	float booster_max_pitch;
-	float booster_max_pitch_amps; 
 	float booster_current_limit;
 	float booster_min_pitch_b;
 	float booster_max_pitch_b;
-	float booster_max_pitch_amps_b;
 	float booster_current_limit_b;
 	float booster_min_pitch_c;
 	float booster_max_pitch_c;
-	float booster_max_pitch_amps_c;
 	float booster_current_limit_c;
 	float softstart_speed;
 } balance_config;

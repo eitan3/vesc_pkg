@@ -48,6 +48,7 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_uint16(buffer, conf->asym_max_erpm_c, &ind);
 	buffer_append_float32_auto(buffer, conf->mahony_kp, &ind);
 	buffer_append_uint16(buffer, conf->hertz, &ind);
+	buffer_append_uint16(buffer, conf->loop_time_filter, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_roll, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_adc1, &ind);
@@ -116,15 +117,12 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_float32_auto(buffer, conf->traction_control_mul_by, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_min_pitch, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch, &ind);
-	buffer_append_float32_auto(buffer, conf->booster_max_pitch_amps, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_current_limit, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_min_pitch_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch_b, &ind);
-	buffer_append_float32_auto(buffer, conf->booster_max_pitch_amps_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_current_limit_b, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_min_pitch_c, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_max_pitch_c, &ind);
-	buffer_append_float32_auto(buffer, conf->booster_max_pitch_amps_c, &ind);
 	buffer_append_float32_auto(buffer, conf->booster_current_limit_c, &ind);
 	buffer_append_float32_auto(buffer, conf->softstart_speed, &ind);
 
@@ -177,6 +175,7 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->asym_max_erpm_c = buffer_get_uint16(buffer, &ind);
 	conf->mahony_kp = buffer_get_float32_auto(buffer, &ind);
 	conf->hertz = buffer_get_uint16(buffer, &ind);
+	conf->loop_time_filter = buffer_get_uint16(buffer, &ind);
 	conf->fault_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->fault_roll = buffer_get_float32_auto(buffer, &ind);
 	conf->fault_adc1 = buffer_get_float32_auto(buffer, &ind);
@@ -245,15 +244,12 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->traction_control_mul_by = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_min_pitch = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch = buffer_get_float32_auto(buffer, &ind);
-	conf->booster_max_pitch_amps = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_current_limit = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_min_pitch_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch_b = buffer_get_float32_auto(buffer, &ind);
-	conf->booster_max_pitch_amps_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_current_limit_b = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_min_pitch_c = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_max_pitch_c = buffer_get_float32_auto(buffer, &ind);
-	conf->booster_max_pitch_amps_c = buffer_get_float32_auto(buffer, &ind);
 	conf->booster_current_limit_c = buffer_get_float32_auto(buffer, &ind);
 	conf->softstart_speed = buffer_get_float32_auto(buffer, &ind);
 
@@ -299,6 +295,7 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->asym_max_erpm_c = APPCONF_BALANCE_ASYM_MAX_ERPM_C;
 	conf->mahony_kp = APPCONF_BALANCE_MAHONY_KP;
 	conf->hertz = APPCONF_BALANCE_HERTZ;
+	conf->loop_time_filter = APPCONF_BALANCE_LOOP_TIME_FILTER;
 	conf->fault_pitch = APPCONF_BALANCE_FAULT_PITCH;
 	conf->fault_roll = APPCONF_BALANCE_FAULT_ROLL;
 	conf->fault_adc1 = APPCONF_BALANCE_FAULT_ADC1;
@@ -367,15 +364,12 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->traction_control_mul_by = APPCONF_BALANCE_TRACTION_CONTROL_MUL_BY;
 	conf->booster_min_pitch = APPCONF_BALANCE_BOOSTER_MIN_PITCH;
 	conf->booster_max_pitch = APPCONF_BALANCE_BOOSTER_MAX_PITCH;
-	conf->booster_max_pitch_amps = APPCONF_BALANCE_BOOSTER_MAX_PITCH_AMPS;
 	conf->booster_current_limit = APPCONF_BALANCE_BOOSTER_CURRENT_LIMIT;
 	conf->booster_min_pitch_b = APPCONF_BALANCE_BOOSTER_MIN_PITCH_B;
 	conf->booster_max_pitch_b = APPCONF_BALANCE_BOOSTER_MAX_PITCH_B;
-	conf->booster_max_pitch_amps_b = APPCONF_BALANCE_BOOSTER_MAX_PITCH_AMPS_B;
 	conf->booster_current_limit_b = APPCONF_BALANCE_BOOSTER_CURRENT_LIMIT_B;
 	conf->booster_min_pitch_c = APPCONF_BALANCE_BOOSTER_MIN_PITCH_C;
 	conf->booster_max_pitch_c = APPCONF_BALANCE_BOOSTER_MAX_PITCH_C;
-	conf->booster_max_pitch_amps_c = APPCONF_BALANCE_BOOSTER_MAX_PITCH_AMPS_C;
 	conf->booster_current_limit_c = APPCONF_BALANCE_BOOSTER_CURRENT_LIMIT_C;
 	conf->softstart_speed = APPCONF_BALANCE_SOFTSTART_SPEED;
 }

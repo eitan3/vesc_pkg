@@ -244,7 +244,7 @@ static void biquad_reset(Biquad *biquad) {
 
 static void configure(data *d) {
 	// Set calculated values from config
-	d->loop_time_seconds = 1.0 / d->balance_conf.hertz;
+	d->loop_time_seconds = (float)1.0 / (float)d->balance_conf.hertz;
 
 	d->motor_timeout_seconds = d->loop_time_seconds * 20; // Times 20 for a nice long grace period
 
@@ -274,10 +274,11 @@ static void configure(data *d) {
 	d->max_duty_with_margin = VESC_IF->get_cfg_float(CFG_PARAM_l_max_duty) - 0.1;
 
 	// Init Filters
-	float loop_time_filter = 3.0; // Originally Parameter, now hard-coded
-	d->loop_overshoot_alpha = 2.0 * M_PI * ((float)1.0 / (float)d->balance_conf.hertz) *
-				loop_time_filter / (2.0 * M_PI * (1.0 / (float)d->balance_conf.hertz) *
-						loop_time_filter + 1.0);
+	if (d->balance_conf.loop_time_filter > 0) {
+		d->loop_overshoot_alpha = 2.0 * M_PI * d->loop_time_seconds *
+				d->balance_conf.loop_time_filter / (2.0 * M_PI * d->loop_time_seconds *
+						d->balance_conf.loop_time_filter + 1.0);
+	}
 
 	if (d->balance_conf.torquetilt_filter > 0) { // Torquetilt Current Biquad
 		float Fc = d->balance_conf.torquetilt_filter / d->balance_conf.hertz;
@@ -1068,18 +1069,21 @@ static void do_rc_move(data *d)
 	}
 }
 
-static float calc_booster(data *d, float min_pitch, float max_pitch, float max_pitch_amps, float current_limit)
+static float calc_booster(data *d, float min_pitch, float max_pitch, float current_limit)
 {
 	float booster_current = 0;
 	float abs_proportional = fabsf(d->proportional);
 	if (abs_proportional >= min_pitch) {
-		booster_current = max_pitch_amps;
+		booster_current = current_limit;
 		if (abs_proportional < max_pitch && max_pitch > min_pitch) {
 			booster_current *= ((abs_proportional - min_pitch) / (max_pitch - min_pitch));
 		}
 
 		if (booster_current > current_limit) {
 			booster_current = current_limit;
+		}
+		else if (booster_current < 0) {
+			booster_current = 0;
 		}
 
 		booster_current *= SIGN(d->proportional);
@@ -1088,20 +1092,17 @@ static float calc_booster(data *d, float min_pitch, float max_pitch, float max_p
 	return booster_current;
 }
 
-static float get_tuneA_current(data *d, const float prev_current)
+static void get_tuneA_current(data *d)
 {
-	// Calculate proportional
-	d->proportional = d->setpoint - d->pitch_angle;
-
 	// Apply integral and limiter
-	if (d->abs_erpm > 250) {
-		d->integral = d->integral + d->proportional;
-		if (d->balance_conf.pitch_thi_limit > 0 && fabsf(d->integral * d->balance_conf.pitch_thi) > d->balance_conf.pitch_thi_limit) {
-			d->integral = d->balance_conf.pitch_thi_limit / d->balance_conf.pitch_thi * SIGN(d->integral);
+	if (d->abs_erpm > 150) {
+		d->integral += d->proportional * d->balance_conf.pitch_thi;
+		if (d->balance_conf.pitch_thi_limit > 0 && fabsf(d->integral) > d->balance_conf.pitch_thi_limit) {
+			d->integral = d->balance_conf.pitch_thi_limit * SIGN(d->integral);
 		}
 	}
 	else {
-		d->integral = d->integral * 0.99;
+		d->integral = d->integral * 0.999;
 	}
 
 	// Lowering the integral while reverse stop
@@ -1110,30 +1111,24 @@ static float get_tuneA_current(data *d, const float prev_current)
 	}
 
 	// Calculate new current
-	float output_current = d->balance_conf.pitch_th * d->proportional + d->balance_conf.pitch_thi * d->integral;
+	float output_current = d->balance_conf.pitch_th * d->proportional + d->integral;
 			
 	// Start Rate PID and Booster portion a few cycles later, after the start clicks have been emitted
 	// this keeps the start smooth and predictable
 	if (d->start_counter_clicks == 0) {
 		if (d->balance_conf.gyro_th > 0) {
-			d->proportional2 = -d->gyro[1];
 			output_current += d->balance_conf.gyro_th * d->proportional2;
 		}
 
 		// Add booster
 		if (d->balance_conf.booster_current_limit > 0) {
 			float booster_current = calc_booster(d, d->balance_conf.booster_min_pitch, d->balance_conf.booster_max_pitch, 
-												 d->balance_conf.booster_max_pitch_amps, d->balance_conf.booster_current_limit);
+												 d->balance_conf.booster_current_limit);
 			d->tuneA_booster_current = 0.01 * booster_current + 0.99 * d->tuneA_booster_current;
 			output_current += d->tuneA_booster_current;
 		}
-
-		if (d->softstart_pid_limit < d->mc_max_current) {
-			output_current = fminf(output_current, d->softstart_pid_limit);
-			d->softstart_pid_limit += d->softstart_ramp_step_size;
-		}
 	}
-	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter) + output_current * d->balance_conf.current_out_filter;
+	output_current = d->tuneA_current * (1.0 - d->balance_conf.current_out_filter) + output_current * d->balance_conf.current_out_filter;
 
 	// Brake Amp Rate Limiting
 	if (d->braking && (fabsf(output_current - d->current_request) > d->balance_conf.brake_max_amp_change)) {
@@ -1144,21 +1139,20 @@ static float get_tuneA_current(data *d, const float prev_current)
 			output_current = d->current_request - d->balance_conf.brake_max_amp_change;
 		}
 	}
-
-	return output_current;
+	d->tuneA_current = output_current;
 }
 
-static float get_tuneB_current(data *d, const float prev_current)
+static void get_tuneB_current(data *d)
 {
 	// Apply integral_b and limiter
-	if (d->abs_erpm > 250) {
-		d->integral_b = d->integral_b + d->proportional;
-		if (d->balance_conf.pitch_thi_limit_b > 0 && fabsf(d->integral_b * d->balance_conf.pitch_thi_b) > d->balance_conf.pitch_thi_limit_b) {
-			d->integral_b = d->balance_conf.pitch_thi_limit_b / d->balance_conf.pitch_thi_b * SIGN(d->integral_b);
+	if (d->abs_erpm > 150) {
+		d->integral_b += d->proportional * d->balance_conf.pitch_thi_b;
+		if (d->balance_conf.pitch_thi_limit_b > 0 && fabsf(d->integral_b) > d->balance_conf.pitch_thi_limit_b) {
+			d->integral_b = d->balance_conf.pitch_thi_limit_b * SIGN(d->integral_b);
 		}
 	}
 	else {
-		d->integral_b = d->integral_b * 0.99;
+		d->integral_b = d->integral_b * 0.999;
 	}
 
 	// Lowering the integral_b while reverse stop
@@ -1167,7 +1161,7 @@ static float get_tuneB_current(data *d, const float prev_current)
 	}
 
 	// Calculate new current
-	float output_current = d->balance_conf.pitch_th_b * d->proportional + d->balance_conf.pitch_thi_b * d->integral_b;
+	float output_current = d->balance_conf.pitch_th_b * d->proportional + d->integral_b;
 			
 	// Start Rate PID and Booster portion a few cycles later, after the start clicks have been emitted
 	// this keeps the start smooth and predictable
@@ -1179,17 +1173,12 @@ static float get_tuneB_current(data *d, const float prev_current)
 		// Add booster
 		if (d->balance_conf.booster_current_limit_b > 0) {
 			float booster_current = calc_booster(d, d->balance_conf.booster_min_pitch_b, d->balance_conf.booster_max_pitch_b, 
-												 d->balance_conf.booster_max_pitch_amps_b, d->balance_conf.booster_current_limit_b);
+												 d->balance_conf.booster_current_limit_b);
 			d->tuneB_booster_current = 0.01 * booster_current + 0.99 * d->tuneB_booster_current;
 			output_current += d->tuneB_booster_current;
 		}
-
-		if (d->softstart_pid_limit < d->mc_max_current) {
-			output_current = fminf(output_current, d->softstart_pid_limit);
-			d->softstart_pid_limit += d->softstart_ramp_step_size;
-		}
 	}
-	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter_b) + output_current * d->balance_conf.current_out_filter_b;
+	output_current = d->tuneB_current * (1.0 - d->balance_conf.current_out_filter_b) + output_current * d->balance_conf.current_out_filter_b;
 
 	// Brake Amp Rate Limiting
 	if (d->braking && (fabsf(output_current - d->current_request) > d->balance_conf.brake_max_amp_change_b)) {
@@ -1201,20 +1190,20 @@ static float get_tuneB_current(data *d, const float prev_current)
 		}
 	}
 
-	return output_current;
+	d->tuneB_current = output_current;
 }
 
-static float get_tuneC_current(data *d, const float prev_current)
+static void get_tuneC_current(data *d)
 {
 	// Apply integral_c and limiter
-	if (d->abs_erpm > 250) {
-		d->integral_c = d->integral_c + d->proportional;
-		if (d->balance_conf.pitch_thi_limit_c > 0 && fabsf(d->integral_c * d->balance_conf.pitch_thi_c) > d->balance_conf.pitch_thi_limit_c) {
-			d->integral_c = d->balance_conf.pitch_thi_limit_c / d->balance_conf.pitch_thi_c * SIGN(d->integral_c);
+	if (d->abs_erpm > 150) {
+		d->integral_c += d->proportional * d->balance_conf.pitch_thi_c;
+		if (d->balance_conf.pitch_thi_limit_c > 0 && fabsf(d->integral_c) > d->balance_conf.pitch_thi_limit_c) {
+			d->integral_c = d->balance_conf.pitch_thi_limit_c * SIGN(d->integral_c);
 		}
 	}
 	else {
-		d->integral_c = d->integral_c * 0.99;
+		d->integral_c = d->integral_c * 0.999;
 	}
 
 	// Lowering the integral_c while reverse stop
@@ -1223,7 +1212,7 @@ static float get_tuneC_current(data *d, const float prev_current)
 	}
 
 	// Calculate new current
-	float output_current = d->balance_conf.pitch_th_c * d->proportional + d->balance_conf.pitch_thi_c * d->integral_c;
+	float output_current = d->balance_conf.pitch_th_c * d->proportional + d->integral_c;
 			
 	// Start Rate PID and Booster portion a few cycles later, after the start clicks have been emitted
 	// this keeps the start smooth and predictable
@@ -1235,17 +1224,12 @@ static float get_tuneC_current(data *d, const float prev_current)
 		// Add booster
 		if (d->balance_conf.booster_current_limit_c > 0) {
 			float booster_current = calc_booster(d, d->balance_conf.booster_min_pitch_c, d->balance_conf.booster_max_pitch_c, 
-												 d->balance_conf.booster_max_pitch_amps_c, d->balance_conf.booster_current_limit_c);
+												 d->balance_conf.booster_current_limit_c);
 			d->tuneC_booster_current = 0.01 * booster_current + 0.99 * d->tuneC_booster_current;
 			output_current += d->tuneC_booster_current;
 		}
-
-		if (d->softstart_pid_limit < d->mc_max_current) {
-			output_current = fminf(output_current, d->softstart_pid_limit);
-			d->softstart_pid_limit += d->softstart_ramp_step_size;
-		}
 	}
-	output_current = prev_current * (1.0 - d->balance_conf.current_out_filter_c) + output_current * d->balance_conf.current_out_filter_c;
+	output_current = d->tuneC_current * (1.0 - d->balance_conf.current_out_filter_c) + output_current * d->balance_conf.current_out_filter_c;
 
 	// Brake Amp Rate Limiting
 	if (d->braking && (fabsf(output_current - d->current_request) > d->balance_conf.brake_max_amp_change_c)) {
@@ -1257,7 +1241,7 @@ static float get_tuneC_current(data *d, const float prev_current)
 		}
 	}
 
-	return output_current;
+	d->tuneC_current = output_current;
 }
 
 static void imu_ref_callback(float *acc, float *gyro, float *mag, float dt) {
@@ -1487,23 +1471,23 @@ static void balance_thd(void *arg) {
 			// Set d->last_tuneC_weight_target to the new value
 			d->last_tuneC_weight_target = tuneC_weight_target;
 
+			// Calculate proportional
+			d->proportional = d->setpoint - d->pitch_angle;
+			d->proportional2 = -d->gyro[1];
+
 			// Tune A Calculate output current
-			d->tuneA_current = get_tuneA_current(d, d->tuneA_current);
+			get_tuneA_current(d);
 			// Tune B Calculate output current
-			if (tuneB_weight_target > 0.0 || d->tuneB_weight > 0) {
-				d->tuneB_current = get_tuneB_current(d, d->tuneB_current);
-			}
-			else {
+			get_tuneB_current(d);
+			if (tuneB_weight_target == 0.0 && d->tuneB_weight == 0) {
 				d->tuneB_current = d->tuneA_current;
 				d->tuneB_booster_current = d->tuneA_booster_current;
 				if (d->balance_conf.reset_pitch_thi_on_entering_b)
 					d->integral_b = 0;
 			}
 			// Tune C Calculate output current
-			if (tuneC_weight_target > 0.0 || d->tuneC_weight > 0) {
-				d->tuneC_current = get_tuneC_current(d, d->tuneC_current);
-			}
-			else {
+			get_tuneC_current(d);
+			if (tuneC_weight_target == 0.0 && d->tuneC_weight == 0) {
 				d->tuneC_current = d->tuneA_current;
 				d->tuneC_booster_current = d->tuneA_booster_current;
 				if (d->balance_conf.reset_pitch_thi_on_entering_c)
@@ -1557,6 +1541,12 @@ static void balance_thd(void *arg) {
 			// Everything ok, set new_output_current as the final current
 			else {
 				d->current_request = new_output_current;
+			}
+
+			// Soft start
+			if (d->softstart_pid_limit < d->mc_max_current) {
+				d->current_request = fminf(d->current_request, d->softstart_pid_limit);
+				d->softstart_pid_limit += d->softstart_ramp_step_size;
 			}
 
 			// Output to motor

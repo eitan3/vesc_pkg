@@ -49,14 +49,13 @@ Item {
                               ["double", "yaw_turntilt_start_angle"], ["int", "yaw_turntilt_start_erpm"], ["double", "yaw_turntilt_speed"],
                               ["int", "yaw_turntilt_erpm_boost"], ["int", "yaw_turntilt_erpm_boost_end"], ["int", "yaw_turntilt_aggregate"],
                               ["bool", "enable_traction_control"], ["double", "traction_control_mul_by"], ["double", "booster_min_pitch"],
-                              ["double", "booster_max_pitch"], ["double", "booster_max_pitch_amps"], ["double", "booster_current_limit"],
-                              ["double", "booster_min_pitch_b"], ["double", "booster_max_pitch_b"], ["double", "booster_max_pitch_amps_b"], 
-                              ["double", "booster_current_limit_b"], ["double", "booster_min_pitch_c"], ["double", "booster_max_pitch_c"], 
-                              ["double", "booster_max_pitch_amps_c"], ["double", "booster_current_limit_c"]]
-    property var extraParams: [["int", "hertz"], ["double", "fault_adc1"], ["double", "fault_adc2"], ["int", "fault_delay_switch_half"],
-                               ["int", "fault_delay_switch_full"], ["int", "fault_adc_half_erpm"], ["bool", "fault_is_single_switch"],
-                               ["double", "fault_pitch"], ["double", "fault_roll"], ["int", "fault_delay_pitch"], ["int", "fault_delay_roll"],
-                               ["double", "tiltback_hv"], ["double", "tiltback_lv"], ["double", "startup_speed"],
+                              ["double", "booster_max_pitch"], ["double", "booster_current_limit"], ["double", "booster_min_pitch_b"], 
+                              ["double", "booster_max_pitch_b"], ["double", "booster_current_limit_b"], ["double", "booster_min_pitch_c"], 
+                              ["double", "booster_max_pitch_c"], ["double", "booster_current_limit_c"]]
+    property var extraParams: [["int", "hertz"], ["int", "loop_time_filter"], ["double", "fault_adc1"], ["double", "fault_adc2"], 
+                               ["int", "fault_delay_switch_half"], ["int", "fault_delay_switch_full"], ["int", "fault_adc_half_erpm"], 
+                               ["bool", "fault_is_single_switch"], ["double", "fault_pitch"], ["double", "fault_roll"], ["int", "fault_delay_pitch"], 
+                               ["int", "fault_delay_roll"], ["double", "tiltback_hv"], ["double", "tiltback_lv"], ["double", "startup_speed"],
                                ["double", "brake_current"], ["double", "temp_tiltback_start_offset"], ["double", "temp_tiltback_speed"],
                                ["double", "temp_tiltback_angle"], ["bool", "enable_reverse_stop"], ["bool", "enable_quickstop"],
                                ["int", "quickstop_erpm"], ["double", "quickstop_angle"], ["int", "startup_click_current"], 
@@ -869,15 +868,32 @@ Item {
             }
 
             // Buzzer
-            if (enable_buzzer_dc == true && duty_cycle >= buzzer_dc_threshold / 100 && is_playing_dc_buzzer == false)
+            if (enable_buzzer_dc == true)
             {
-                is_playing_dc_buzzer = true
-                mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
-            }
-            else if (enable_buzzer_dc == true && duty_cycle < buzzer_dc_threshold / 100 && is_playing_dc_buzzer == true)
-            {
-                is_playing_dc_buzzer = false
-                mBuzzer.NoteOff()
+                var abs_erpm = erpm;
+                if (abs_erpm < 0)
+                    abs_erpm *= -1;
+
+                if (duty_cycle >= buzzer_dc_threshold / 100 && is_playing_dc_buzzer == false)
+                {
+                    is_playing_dc_buzzer = true
+                    mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
+                }
+                else if (abs_erpm >= 300 && (adc1 <= 1 && adc2 <= 1) && is_playing_dc_buzzer == false)
+                {
+                    is_playing_dc_buzzer = true
+                    mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
+                }
+                else if (duty_cycle < buzzer_dc_threshold / 100 && is_playing_dc_buzzer == true)
+                {
+                    is_playing_dc_buzzer = false
+                    mBuzzer.NoteOff()
+                }
+                else if ((adc1 >= 1 || adc2 >= 1) && is_playing_dc_buzzer == true)
+                {
+                    is_playing_dc_buzzer = false
+                    mBuzzer.NoteOff()
+                }
             }
         }
     }
