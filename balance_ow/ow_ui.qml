@@ -1,22 +1,3 @@
-/*
-    Copyright 2022 Benjamin Vedder	benjamin@vedder.se
-
-    This file is part of VESC Tool.
-
-    VESC Tool is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    VESC Tool is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    */
-
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.3
@@ -27,11 +8,7 @@ import Vedder.vesc.commands 1.0
 import Vedder.vesc.configparams 1.0
 
 import Vedder.vesc.logwriter 1.0
-
-// This example shows how to read and write settings using the custom
-// config. It is also possible to send and receive custom data using
-// send_app_data and set_app_data_handler on the euc-side and Commands
-// onCustomAppDataReceived and mCommands.sendCustomAppData in qml.
+import Vedder.vesc.tonesynthbuzzer 1.0
 
 Item {
     id: mainItem
@@ -53,18 +30,16 @@ Item {
                               ["double", "brake_max_amp_change"], ["double", "brake_max_amp_change_b"], ["double", "brake_max_amp_change_c"],
                               ["double", "pitch_thi_limit"], ["double", "pitch_thi_limit_b"], ["double", "pitch_thi_limit_c"],
                               ["bool", "reset_pitch_thi_on_entering_b"], ["bool", "reset_pitch_thi_on_entering_c"],
-                              ["double", "pitch_thi_decay_on_wheelslip"], ["double", "pitch_thi_decay_on_wheelslip_b"],
-                              ["double", "pitch_thi_decay_on_wheelslip_c"], ["double", "tunea_transition_speed"], ["double", "tuneb_transition_speed"],
-                              ["double", "tunec_transition_speed"], ["enum", "tunes_mixing_b"], ["enum", "tunes_mixing_c"], ["double", "asym_min_accel_b"],
-                              ["double", "asym_max_accel_b"], ["int", "asym_min_erpm_b"], ["int", "asym_max_erpm_b"], ["double", "asym_min_accel_c"],
-                              ["double", "asym_max_accel_c"], ["int", "asym_min_erpm_c"], ["int", "asym_max_erpm_c"], ["double", "mahony_kp"],
-                              ["double", "fault_pitch"], ["double", "fault_roll"], ["int", "fault_delay_pitch"], ["int", "fault_delay_roll"],
-                              ["double", "tiltback_duty_angle"], ["double", "tiltback_duty_speed"], ["double", "tiltback_duty"],
+                              ["double", "tunea_transition_speed"], ["double", "tuneb_transition_speed"], ["double", "tunec_transition_speed"], 
+                              ["enum", "transitions_order"], ["enum", "tunes_mixing_b"], ["enum", "tunes_mixing_c"],
+                              ["double", "asym_min_accel_b"], ["double", "asym_max_accel_b"], ["int", "asym_min_erpm_b"], ["int", "asym_max_erpm_b"], 
+                              ["double", "asym_min_accel_c"], ["double", "asym_max_accel_c"], ["int", "asym_min_erpm_c"], ["int", "asym_max_erpm_c"], 
+                              ["double", "mahony_kp"], ["double", "tiltback_duty_angle"], ["double", "tiltback_duty_speed"], ["double", "tiltback_duty"],
                               ["double", "tiltback_hv_angle"], ["double", "tiltback_hv_speed"], ["double", "tiltback_lv_angle"],
                               ["double", "tiltback_lv_speed"], ["double", "tiltback_return_speed"], ["double", "tiltback_constant"],
                               ["int", "tiltback_constant_erpm"], ["double", "tiltback_variable"], ["double", "tiltback_variable_max"], 
-                              ["double", "noseangling_speed"], ["double", "startup_pitch_tolerance"], ["double", "startup_roll_tolerance"], 
-                              ["double", "torquetilt_start_current"], ["double", "torquetilt_start_current_b"],
+                              ["int", "tiltback_variable_start_erpm"], ["double", "noseangling_speed"], ["double", "startup_pitch_tolerance"], 
+                              ["double", "startup_roll_tolerance"], ["double", "torquetilt_start_current"], ["double", "torquetilt_start_current_b"],
                               ["double", "torquetilt_angle_limit"], ["double", "torquetilt_on_speed"], ["double", "torquetilt_off_speed"],
                               ["double", "torquetilt_strength"], ["double", "torquetilt_strength_regen"], ["double", "torquetilt_filter"],
                               ["enum", "turntilt_mixing_mode"], ["double", "roll_turntilt_weight"], ["double", "roll_turntilt_strength"],
@@ -74,19 +49,28 @@ Item {
                               ["double", "yaw_turntilt_start_angle"], ["int", "yaw_turntilt_start_erpm"], ["double", "yaw_turntilt_speed"],
                               ["int", "yaw_turntilt_erpm_boost"], ["int", "yaw_turntilt_erpm_boost_end"], ["int", "yaw_turntilt_aggregate"],
                               ["bool", "enable_traction_control"], ["double", "traction_control_mul_by"], ["double", "booster_min_pitch"],
-                              ["double", "booster_max_pitch"], ["double", "booster_pitch_scale"], ["double", "booster_base"],
-                              ["double", "booster_exponent"], ["double", "booster_out_scale"], ["double", "booster_limit"],
-                              ["double", "booster_min_pitch_b"], ["double", "booster_max_pitch_b"], ["double", "booster_pitch_scale_b"],
-                              ["double", "booster_base_b"], ["double", "booster_exponent_b"], ["double", "booster_out_scale_b"],
-                              ["double", "booster_limit_b"], ["double", "booster_min_pitch_c"], ["double", "booster_max_pitch_c"],
-                              ["double", "booster_pitch_scale_c"], ["double", "booster_base_c"], ["double", "booster_exponent_c"],
-                              ["double", "booster_out_scale_c"], ["double", "booster_limit_c"]]
-    property var extraParams: [["int", "hertz"], ["double", "fault_adc1"], ["double", "fault_adc2"], ["int", "fault_delay_switch_half"],
-                               ["int", "fault_delay_switch_full"], ["int", "fault_adc_half_erpm"], ["bool", "fault_is_single_switch"],
-                               ["int", "fault_adc_to_copy"], ["double", "tiltback_hv"], ["double", "tiltback_lv"], ["double", "startup_speed"],
+                              ["double", "booster_max_pitch"], ["double", "booster_current_limit"], ["double", "booster_min_pitch_b"], 
+                              ["double", "booster_max_pitch_b"], ["double", "booster_current_limit_b"], ["double", "booster_min_pitch_c"], 
+                              ["double", "booster_max_pitch_c"], ["double", "booster_current_limit_c"]]
+    property var extraParams: [["int", "hertz"], ["int", "loop_time_filter"], ["double", "fault_adc1"], ["double", "fault_adc2"], 
+                               ["int", "fault_delay_switch_half"], ["int", "fault_delay_switch_full"], ["int", "fault_adc_half_erpm"], 
+                               ["bool", "fault_is_single_switch"], ["double", "fault_pitch"], ["double", "fault_roll"], ["int", "fault_delay_pitch"], 
+                               ["int", "fault_delay_roll"], ["double", "tiltback_hv"], ["double", "tiltback_lv"], ["double", "startup_speed"],
                                ["double", "brake_current"], ["double", "temp_tiltback_start_offset"], ["double", "temp_tiltback_speed"],
                                ["double", "temp_tiltback_angle"], ["bool", "enable_reverse_stop"], ["bool", "enable_quickstop"],
-                               ["int", "quickstop_erpm"], ["double", "quickstop_angle"], ["int", "startup_click_current"]]
+                               ["int", "quickstop_erpm"], ["double", "quickstop_angle"], ["int", "startup_click_current"], 
+                               ["double", "softstart_speed"]]
+    
+    property var is_playing_dc_buzzer: false
+    property var enable_buzzer_dc: false
+    property var buzzer_dc_threshold: 90
+    property var buzzer_error_text: ""
+    property var buzzer_volume: 50
+    property var audio_notes: []
+    property var audio_devs: []
+    ToneSynthBuzzer {
+        id: mBuzzer
+    }
     
     Settings {
         id: settingStorage
@@ -94,6 +78,53 @@ Item {
     
     Component.onCompleted: {
         displaySavedTunes()
+
+        // Add wave type options
+        dcWaveTypeModel.append({"text": "Sine Wave"})
+        dcWaveTypeModel.append({"text": "Saw Wave"})
+
+        // Get available notes and load the last selected note
+        audio_notes = mBuzzer.GetNotesAvailable();
+        for(var i in audio_notes){
+            buzzerDcNoteModel.append({ "text": audio_notes[i] })
+        }
+        buzzerDcNoteCB.currentIndex = settingStorage.value("dc_note", 0)
+
+        // Scan audio devices and load the last used device
+        mBuzzer.ScanForDevices()
+        audio_devs = mBuzzer.GetDevicesNames()
+        for(var i in audio_devs){
+            audioDevicesDbModel.append({ "text": audio_devs[i] })
+        }
+        audioDevicesDownBox.currentIndex = settingStorage.value("audio_device", 0)
+        mBuzzer.SetDeviceByName(audio_devs[audioDevicesDownBox.currentIndex])
+
+        // Load the last used wave type
+        dcWaveTypeCB.currentIndex = settingStorage.value("dc_wave_type", 0)
+        if (dcWaveTypeCB.currentIndex == 0)
+            mBuzzer.SetWaveType("Sine")
+        else if (dcWaveTypeCB.currentIndex == 1)
+            mBuzzer.SetWaveType("Saw")
+
+        // Load volume
+        buzzerVolumeSlider.value = settingStorage.value("buzzer_volume", 50)
+        mBuzzer.SetVolume(buzzerVolumeSlider.value)
+        
+        // Load enable/disable buzzer
+        enable_buzzer_dc = settingStorage.value("enable_buzzer_dc", false)
+        if (enable_buzzer_dc == "true")
+            enable_buzzer_dc = true
+        else if (enable_buzzer_dc == "false")
+            enable_buzzer_dc = false
+        buzzerEnabledForDC.checked = enable_buzzer_dc
+
+        // Load buzzer threshold
+        buzzer_dc_threshold = settingStorage.value("buzzer_dc_threshold", "90")
+        buzzerDcThreshold_TF.text = buzzer_dc_threshold
+
+        // Load octave
+        buzzerDcOctave_TF.text = settingStorage.value("buzzer_dc_octave", 3)
+        mBuzzer.SetOctave(buzzerDcOctave_TF.text)
     }
 
     Component.onDestruction: {
@@ -102,10 +133,6 @@ Item {
     
     LogWriter {
         id: mLogWriter
-    }
-    
-    LogWriter {
-        id: mArchiveCsvWriter
     }
 
     // Timer 1, 10hz for ble comms
@@ -190,11 +217,11 @@ Item {
                 opacity: 1
                 color: {color = Utility.getAppHexColor("lightBackground")}
             }
-            property int buttons: 3
+            property int buttons: 4
             property int buttonWidth: 120
 
             Repeater {
-                model: ["Info", "Tunes", "Control", "Dev"]
+                model: ["Info", "Tunes", "Buzzer", "Dev"]
                 TabButton {
                     text: modelData
                     onClicked:{
@@ -339,50 +366,6 @@ Item {
                     }
                 }
 
-                TextInput {
-                    id: cloudCsvFileName
-                    text: "CloudCsvFile_.csv"
-                }
-
-                Button {
-                    id: exportBtn
-                    text: "Export CSV to archive"
-                    Layout.fillWidth: true
-                    onClicked: {
-                        // REMOVE ME FOR PUBLIC RELEASE
-                        mArchiveCsvWriter.openLogFileFromPath(cloudCsvFileName.text, "/storage/emulated/0/Documents/logs/")
-                        mArchiveCsvWriter.writeToLogFile("_name,")
-                        for(var i in paramsArr) {
-                            mArchiveCsvWriter.writeToLogFile(paramsArr[i][0] + "_" + paramsArr[i][1])
-                            if (i < paramsArr.length - 1) {
-                                mArchiveCsvWriter.writeToLogFile(",")
-                            }
-                        }
-                        mArchiveCsvWriter.writeToLogFile("\n")
-                        mArchiveCsvWriter.writeToLogFile("Name,")
-                        for(var i in paramsArr) {
-                            if (paramsArr[i][0] == "double") {
-                                mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamDouble(paramsArr[i][1]))
-                            }
-                            else if (paramsArr[i][0] == "int") {
-                                mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamInt(paramsArr[i][1]))
-                            }
-                            else if (paramsArr[i][0] == "bool") {
-                                mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamBool(paramsArr[i][1])?1:0)
-                            }
-                            else if (paramsArr[i][0] == "enum") {
-                                mArchiveCsvWriter.writeToLogFile(mCustomConf.getParamEnum(paramsArr[i][1]))
-                            }
-                            if (i < paramsArr.length - 1) {
-                                mArchiveCsvWriter.writeToLogFile(",")
-                            }
-                        }
-                        mArchiveCsvWriter.closeLogFile()
-                        VescIf.emitStatusMessage("Save Csv Complete!", true)
-                        // VescIf.emitStatusMessage("This feature is disabled!", true)
-                    }
-                }
-
                 Button {
                     id: downloadTunesButton
                     text: "Refresh Tune Archive"
@@ -391,7 +374,7 @@ Item {
                         downloadTunesButton.text = "Downloading Tunes..."
                         downloadedTunesModel.clear()
                         var http = new XMLHttpRequest()
-                        var url = "http://eitan3.pythonanywhere.com/get_tunes?version=1"
+                        var url = "http://eitan3.pythonanywhere.com/get_tunes?version=2"
                         http.open("GET", url, true);
                         http.onreadystatechange = function() {
                             if (http.readyState == XMLHttpRequest.DONE) {
@@ -423,6 +406,14 @@ Item {
                         width: parent.width
                         Layout.fillWidth: true
                         Button {
+                            text: "?"
+                            Layout.fillWidth: false
+                            onClicked: {
+                                tuneInfoText = tune._info
+                                tuneInfoPopup.open()
+                            }
+                        }
+                        Button {
                             text: tune._name
                             Layout.fillWidth: true
                             onClicked: {
@@ -442,145 +433,294 @@ Item {
 
             }
 
-            ColumnLayout { // Controls Page
-                id: controlsColumn
+            ColumnLayout { // Buzzer Page
+                id: buzzerColumn
                 Layout.fillWidth: true
 
-                // Movement controls
                 Text {
-                    id: movementControlsHeader
                     color: Utility.getAppHexColor("lightText")
-                    font.family: "DejaVu Sans Mono"
-                    Layout.margins: 0
-                    Layout.leftMargin: 0
-                    Layout.fillWidth: true
-                    text: "Movement Controls"
-                    font.underline: true
-                    font.weight: Font.Black
-                    font.pointSize: 14
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WordWrap
+                    text: "Audio Output Device: "
                 }
-                RowLayout {
-                    id: movementStrength
+                ComboBox {
+                    id: audioDevicesDownBox
                     Layout.fillWidth: true
-
+                    editable: false
+                    
+                    model: ListModel {
+                        id: audioDevicesDbModel
+                    }
+                    
+                    onCurrentIndexChanged: {
+                        settingStorage.setValue("audio_device", currentIndex)
+                        mBuzzer.SetDeviceByName(audio_devs[currentIndex])
+                    }
+                }
+                RowLayout{
                     Text {
-                        id: movementStrengthLabel
                         color: Utility.getAppHexColor("lightText")
-                        font.family: "DejaVu Sans Mono"
-                        text: "Strength:"
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WordWrap
+                        text: "General Volume:"
                     }
                     Slider {
-                        id: movementStrengthSlider
-                        from: 20
-                        value: 40
-                        to: 80
-                        stepSize: 1
-                    }
-                }
-                RowLayout {
-                    id: movementControls
-                    Layout.fillWidth: true
-                    Button {
-                        id: reverseButton
-                        text: "Reverse"
+                        id: buzzerVolumeSlider
+                        from: 0
+                        value: 50
+                        to: 100
                         Layout.fillWidth: true
-                    }
-                    Button {
-                        id: forwardButton
-                        text: "Forward"
-                        Layout.fillWidth: true
-                    }
-                }
-                
-                // Tilt controls
-                Text {
-                    id: tiltControlsHeader
-                    color: Utility.getAppHexColor("lightText")
-                    font.family: "DejaVu Sans Mono"
-                    Layout.margins: 0
-                    Layout.leftMargin: 0
-                    Layout.fillWidth: true
-                    text: "Tilt Controls"
-                    font.underline: true
-                    font.weight: Font.Black
-                    font.pointSize: 14
-                }
-                 CheckBox {
-                    id: tiltEnabled
-                    checked: false
-                    text: qsTr("Enabled (Overrides Remote)")
-                    onClicked: {
-                        if(tiltEnabled.checked && mCustomConf.getParamEnum("inputtilt_remote_type", 0) != 1){
-                            mCustomConf.updateParamEnum("inputtilt_remote_type", 1)
-                            mCommands.customConfigSet(0, mCustomConf)
+
+                        onValueChanged: {
+                            if(buzzerVolumeSlider.value != buzzer_volume){
+                                buzzer_volume = buzzerVolumeSlider.value
+                                mBuzzer.SetVolume(buzzer_volume)
+                                settingStorage.setValue("buzzer_volume", buzzer_volume)
+                            }
                         }
                     }
                 }
-                Slider {
-                    id: tiltSlider
-                    from: -1
-                    value: 0
-                    to: 1
+                
+                Item {
                     Layout.fillWidth: true
+                    height: 25
+                    Rectangle {
+                        id: rect
+                        anchors.fill: parent
+                        color: {color = Utility.getAppHexColor("darkAccent")}
+                        radius: 5
+
+                        Text {
+                            anchors.centerIn: parent
+                            color: {color = Utility.getAppHexColor("lightText")}
+                            id: buzzerDcSeparator
+                            text: "Duty Cycle Buzzer"
+                            font.bold: true
+                            font.pointSize: 12
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                }
+                CheckBox {
+                    id: buzzerEnabledForDC
+                    checked: false
+                    text: qsTr("Enabled Buzzer for Duty Cycle")
+                    onClicked: {
+                        enable_buzzer_dc = buzzerEnabledForDC.checked
+                        settingStorage.setValue("enable_buzzer_dc", enable_buzzer_dc)
+                    }
+                }
+                RowLayout{
+                    Text {
+                        color: Utility.getAppHexColor("lightText")
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WordWrap
+                        text: "DC Threshold:"
+                    }
+                    TextField {
+                        id: buzzerDcThreshold_TF
+                        placeholderText: "0-100"
+                        text: "90"
+                        validator: IntValidator{bottom: 0; top: 100;}
+                        onTextChanged: {
+                            buzzer_dc_threshold = text
+                            settingStorage.setValue("buzzer_dc_threshold", text)
+                        }
+                    }
+                }
+                RowLayout{
+                    Text {
+                        color: Utility.getAppHexColor("lightText")
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WordWrap
+                        text: "Octave:"
+                    }
+                    TextField {
+                        id: buzzerDcOctave_TF
+                        placeholderText: "0-6"
+                        text: "3"
+                        validator: IntValidator{bottom: 0; top: 6;}
+                        onTextChanged: {
+                            settingStorage.setValue("buzzer_dc_octave", buzzerDcOctave_TF.text)
+                            mBuzzer.SetOctave(buzzerDcOctave_TF.text)
+                        }
+                    }
+                    Text {
+                        color: Utility.getAppHexColor("lightText")
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WordWrap
+                        text: "Note:"
+                    }
+                    ComboBox {
+                        id: buzzerDcNoteCB
+
+                        model: ListModel {
+                            id: buzzerDcNoteModel
+                        }
+                        
+                        onCurrentIndexChanged: {
+                            settingStorage.setValue("dc_note", currentIndex)
+                        }
+                    }
+                }
+                RowLayout{
+                    Text {
+                        color: Utility.getAppHexColor("lightText")
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WordWrap
+                        text: "Wave:"
+                    }
+                    ComboBox {
+                        id: dcWaveTypeCB
+                        Layout.fillWidth: true
+                        editable: false
+                        
+                        model: ListModel {
+                            id: dcWaveTypeModel
+                        }
+                        
+                        onCurrentIndexChanged: {
+                            settingStorage.setValue("dc_wave_type", currentIndex)
+                            if (currentIndex == 0)
+                            {
+                                mBuzzer.SetWaveType("Sine")
+                            }
+                            else if (currentIndex == 1)
+                            {
+                                mBuzzer.SetWaveType("Saw")
+                            }
+                        }
+                    }
+                }
+
+                RowLayout{
+                    Button {
+                        text: "Play"
+                        onClicked: {                
+                            mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
+                        }
+                    }
+                    Button {
+                        text: "Stop"
+                        onClicked: {                
+                            mBuzzer.NoteOff()
+                        }
+                    }
+                }
+                RowLayout{
+                    Button {
+                        text: "Get Error"
+                        onClicked: {              
+                            buzzer_error_text = mBuzzer.GetError()
+                        }
+                    }
+                    Button {
+                        text: "Clear Error"
+                        onClicked: {         
+                            mBuzzer.ClearError()         
+                            buzzer_error_text = ""
+                        }
+                    }
+                }
+                
+                Text {
+                    color: Utility.getAppHexColor("lightText")
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WordWrap
+                    text: buzzer_error_text
                 }
             }
 
             ColumnLayout { // Dev Page
                 Layout.fillWidth: true
 
-                ScrollView {
+                ColumnLayout {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    clip: true
-                        
-                    ColumnLayout {
-                        id: gaugeColumn
-                        anchors.fill: parent
-                        
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            Text{
-                                text: "Dumping file name"
-                            }
+                    Text{
+                        text: "Dumping file name"
+                    }
 
-                            TextInput {
-                                id: csvFilePath
-                                text: "/storage/emulated/0/Documents/logs/"
-                            }
+                    TextInput {
+                        id: csvFilePath
+                        text: "/storage/emulated/0/Documents/logs/"
+                    }
+                    TextInput {
+                        id: csvFileName
+                        text: "log_file.csv"
+                    }
 
-                            TextInput {
-                                id: csvFileName
-                                text: "log_file.csv"
-                            }
-
-                            Button {
-                                id: toggleDataDump
-                                text: "Null"
-                                Layout.fillWidth: true
+                    Button {
+                        id: toggleDataDump
+                        text: "Dump"
+                        Layout.fillWidth: true
                                 
-                                onClicked: {
-                                    // REMOVE ME FOR PUBLIC RELEASE
-                                    if (enableDataDumping == 0) {
-                                        enableDataDumping = 1
-                                        mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
-                                        var header = "erpm,braking,tuneB_weight,tuneC_weight,"
-                                        header += "tuneA_current,tuneB_current,tuneC_current,"
-                                        header += "current_request,tuneA_booster,tuneB_booster,tuneC_booster\n"
-                                        mLogWriter.writeToLogFile(header)
-                                    }
-                                    else {
-                                        enableDataDumping = 0
-                                        // Close file when done to ensure that all data is written.
-                                        mLogWriter.closeLogFile()
-                                    }
-                                    // VescIf.emitStatusMessage("This feature is disabled!", true)
-                                }
+                        onClicked: {
+                            // REMOVE ME FOR PUBLIC RELEASE
+                            if (enableDataDumping == 0) {
+                                enableDataDumping = 1
+                                mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
+                                var header = "erpm,braking,tuneB_weight,tuneC_weight,"
+                                header += "tuneA_current,tuneB_current,tuneC_current,"
+                                header += "current_request,tuneA_booster,tuneB_booster,tuneC_booster\n"
+                                mLogWriter.writeToLogFile(header)
                             }
+                            else {
+                                enableDataDumping = 0
+                                mLogWriter.closeLogFile()
+                            }
+                            // VescIf.emitStatusMessage("This feature is disabled!", true)
+                        }
+                    }
+
+                    
+                    // Movement controls
+                    Text {
+                        id: movementControlsHeader
+                        color: Utility.getAppHexColor("lightText")
+                        font.family: "DejaVu Sans Mono"
+                        Layout.margins: 0
+                        Layout.leftMargin: 0
+                        Layout.fillWidth: true
+                        text: "Movement Controls"
+                        font.underline: true
+                        font.weight: Font.Black
+                        font.pointSize: 14
+                    }
+                    RowLayout {
+                        id: movementStrength
+                        Layout.fillWidth: true
+
+                        Text {
+                            id: movementStrengthLabel
+                            color: Utility.getAppHexColor("lightText")
+                            font.family: "DejaVu Sans Mono"
+                            text: "Strength:"
+                        }
+                        Slider {
+                            id: movementStrengthSlider
+                            from: 20
+                            value: 40
+                            to: 80
+                            stepSize: 1
+                        }
+                    }
+                    RowLayout {
+                        id: movementControls
+                        Layout.fillWidth: true
+                        Button {
+                            id: reverseButton
+                            text: "Reverse"
+                            Layout.fillWidth: true
+                        }
+                        Button {
+                            id: forwardButton
+                            text: "Forward"
+                            Layout.fillWidth: true
                         }
                     }
                 }
             }
-                
         }
     }
     
@@ -602,6 +742,7 @@ Item {
             var running = dv.getInt16(ind); ind += 2;
             var time_diff = dv.getFloat32(ind); ind += 4;
             var state = dv.getInt16(ind); ind += 2;
+            var duty_cycle = dv.getFloat32(ind); ind += 4;
             var motor_current = dv.getFloat32(ind); ind += 4;
             var filtered_current = dv.getFloat32(ind); ind += 4;
             var erpm = dv.getFloat32(ind); ind += 4;
@@ -725,6 +866,35 @@ Item {
                     }
                 }
             }
+
+            // Buzzer
+            if (enable_buzzer_dc == true)
+            {
+                var abs_erpm = erpm;
+                if (abs_erpm < 0)
+                    abs_erpm *= -1;
+
+                if (duty_cycle >= buzzer_dc_threshold / 100 && is_playing_dc_buzzer == false)
+                {
+                    is_playing_dc_buzzer = true
+                    mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
+                }
+                else if (abs_erpm >= 300 && (adc1 <= 1 && adc2 <= 1) && is_playing_dc_buzzer == false)
+                {
+                    is_playing_dc_buzzer = true
+                    mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
+                }
+                else if (duty_cycle < buzzer_dc_threshold / 100 && is_playing_dc_buzzer == true)
+                {
+                    is_playing_dc_buzzer = false
+                    mBuzzer.NoteOff()
+                }
+                else if ((adc1 >= 1 || adc2 >= 1) && is_playing_dc_buzzer == true)
+                {
+                    is_playing_dc_buzzer = false
+                    mBuzzer.NoteOff()
+                }
+            }
         }
     }
 
@@ -796,29 +966,28 @@ Item {
             result.push(obj);
         }
 
-        // return JSON.stringify(result); //JSON
-        return result; //JavaScript object
+        return result;
     }
 
     function applyDownloadedTune(tune){
         var found = false;
         for (const [key, value] of Object.entries(tune)) {
             if(!key.startsWith("_")){
-                VescIf.emitStatusMessage(key + ": " + value, true);
+                VescIf.emitStatusMessage(key + ": " + value, true)
                 if(key.startsWith("double_")){
-                    mCustomConf.updateParamDouble(key.substring(7), value);
+                    mCustomConf.updateParamDouble(key.substring(7), value)
                     found = true;
                 }else if(key.startsWith("int_")){
-                    mCustomConf.updateParamInt(key.substring(4), value);
+                    mCustomConf.updateParamInt(key.substring(4), value)
                     found = true;
                 }else if(key.startsWith("bool_")){
-                    mCustomConf.updateParamBool(key.substring(5), parseInt(value));
+                    mCustomConf.updateParamBool(key.substring(5), parseInt(value))
                     found = true;
                 }else if(key.startsWith("enum_")){
-                    mCustomConf.updateParamEnum(key.substring(5), value);
+                    mCustomConf.updateParamEnum(key.substring(5), value)
                     found = true;
                 } else {
-                    VescIf.emitStatusMessage("Couldn't find key '" + key + "', Value: " + value, False);
+                    VescIf.emitStatusMessage("Couldn't find key '" + key + "', Value: " + value, False)
                 }
             }
         }

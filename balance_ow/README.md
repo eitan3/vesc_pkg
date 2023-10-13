@@ -8,10 +8,7 @@ Most things should be similar to the regular balance app, except some of the tim
 
 
 Recent features:
-
-New booster.
-
-Added asymmetric tune (regular tune & braking tune).
+Added asymmetric tune (2 more tunes and blending options).
 
 Added new tunes tab (thanks to mitch).
 

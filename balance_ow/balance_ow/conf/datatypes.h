@@ -35,6 +35,12 @@ typedef enum {
 	ERPM_BASED = 2
 } TUNES_MIXING_MODE;
 
+typedef enum {
+	ALL_TOGETHER = 0,
+	B_THEN_C = 1,
+	C_THEN_B = 2
+} TRANSITIONS_ORDER_MODE;
+
 typedef struct {
 	float pitch_th;
 	float pitch_th_b;
@@ -58,12 +64,10 @@ typedef struct {
 	float pitch_thi_limit_c;
 	bool reset_pitch_thi_on_entering_b;
 	bool reset_pitch_thi_on_entering_c;
-	float pitch_thi_decay_on_wheelslip;
-	float pitch_thi_decay_on_wheelslip_b;
-	float pitch_thi_decay_on_wheelslip_c;
 	float tunea_transition_speed;
 	float tuneb_transition_speed;
 	float tunec_transition_speed;
+	TRANSITIONS_ORDER_MODE transitions_order;
 	TUNES_MIXING_MODE tunes_mixing_b;
 	TUNES_MIXING_MODE tunes_mixing_c;
 	float asym_min_accel_b;
@@ -76,6 +80,7 @@ typedef struct {
 	uint16_t asym_max_erpm_c;
 	float mahony_kp;
 	uint16_t hertz;
+	uint16_t loop_time_filter;
 	float fault_pitch;
 	float fault_roll;
 	float fault_adc1;
@@ -86,7 +91,6 @@ typedef struct {
 	uint16_t fault_delay_switch_full;
 	uint16_t fault_adc_half_erpm;
 	bool fault_is_single_switch;
-	uint16_t fault_adc_to_copy;
 	float tiltback_duty_angle;
 	float tiltback_duty_speed;
 	float tiltback_duty;
@@ -101,6 +105,7 @@ typedef struct {
 	uint16_t tiltback_constant_erpm;
 	float tiltback_variable;
 	float tiltback_variable_max;
+	uint16_t tiltback_variable_start_erpm;
 	float noseangling_speed;
 	float startup_pitch_tolerance;
 	float startup_roll_tolerance;
@@ -144,25 +149,14 @@ typedef struct {
 	float traction_control_mul_by;
 	float booster_min_pitch;
 	float booster_max_pitch;
-	float booster_pitch_scale;
-	float booster_base;
-	float booster_exponent;
-	float booster_out_scale;
-	float booster_limit;
+	float booster_current_limit;
 	float booster_min_pitch_b;
 	float booster_max_pitch_b;
-	float booster_pitch_scale_b;
-	float booster_base_b;
-	float booster_exponent_b;
-	float booster_out_scale_b;
-	float booster_limit_b;
+	float booster_current_limit_b;
 	float booster_min_pitch_c;
 	float booster_max_pitch_c;
-	float booster_pitch_scale_c;
-	float booster_base_c;
-	float booster_exponent_c;
-	float booster_out_scale_c;
-	float booster_limit_c;
+	float booster_current_limit_c;
+	float softstart_speed;
 } balance_config;
 
 // DATATYPES_H_
