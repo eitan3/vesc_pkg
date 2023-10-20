@@ -68,8 +68,13 @@ Item {
     property var buzzer_volume: 50
     property var audio_notes: []
     property var audio_devs: []
+    
     ToneSynthBuzzer {
         id: mBuzzer
+    }
+    
+    LogWriter {
+        id: mLogWriter
     }
     
     Settings {
@@ -129,10 +134,6 @@ Item {
 
     Component.onDestruction: {
         
-    }
-    
-    LogWriter {
-        id: mLogWriter
     }
 
     // Timer 1, 10hz for ble comms
