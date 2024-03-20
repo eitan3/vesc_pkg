@@ -1406,16 +1406,14 @@ static void balance_thd(void *arg) {
 			{
 				// calculate how much weight to give to Tune (B) based on acceleration
 				if (d->balance_conf.tunes_mixing_b == ACCELERATION_BASED) {
-					if (abs_accel - d->balance_conf.asym_min_accel_b > 0 &&
-						d->abs_erpm - d->balance_conf.asym_min_erpm_b > 0) 
+					if (abs_accel - d->balance_conf.asym_min_accel_b > 0) 
 					{
 						tuneB_weight_target = fminf(abs_accel - d->balance_conf.asym_min_accel_b, d->asym_max_accel_b) / d->asym_max_accel_b;
 					}
 				}
 				// calculate how much weight to give to Tune (B) based on ERPM
 				else if (d->balance_conf.tunes_mixing_b == ERPM_BASED) {
-					if (abs_accel - d->balance_conf.asym_min_accel_b > 0 &&
-						d->abs_erpm - d->balance_conf.asym_min_erpm_b > 0) 
+					if (d->abs_erpm - d->balance_conf.asym_min_erpm_b > 0) 
 					{
 						tuneB_weight_target = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm_b, d->asym_max_erpm_b) / d->asym_max_erpm_b;
 					}
@@ -1442,16 +1440,14 @@ static void balance_thd(void *arg) {
 			{
 				// calculate how much weight to give to Tune (C) based on acceleration
 				if (d->balance_conf.tunes_mixing_c == ACCELERATION_BASED) {
-					if (abs_accel - d->balance_conf.asym_min_accel_c > 0 &&
-						d->abs_erpm - d->balance_conf.asym_min_erpm_c > 0) 
+					if (abs_accel - d->balance_conf.asym_min_accel_c > 0) 
 					{
 						tuneC_weight_target = fminf(abs_accel - d->balance_conf.asym_min_accel_c, d->asym_max_accel_c) / d->asym_max_accel_c;
 					}
 				}
 				// calculate how much weight to give to Tune (C) based on ERPM
 				else if (d->balance_conf.tunes_mixing_c == ERPM_BASED) {
-					if (abs_accel - d->balance_conf.asym_min_accel_c > 0 &&
-						d->abs_erpm - d->balance_conf.asym_min_erpm_c > 0) 
+					if (d->abs_erpm - d->balance_conf.asym_min_erpm_c > 0) 
 					{
 						tuneC_weight_target = fminf(d->abs_erpm - d->balance_conf.asym_min_erpm_c, d->asym_max_erpm_c) / d->asym_max_erpm_c;
 					}
@@ -1647,7 +1643,6 @@ static void send_realtime_data(data *d){
 	buffer_append_float32_auto(send_buffer, d->acceleration, &ind);
 	buffer_append_uint16(send_buffer, d->braking, &ind);
 	buffer_append_float32_auto(send_buffer, d->current_request, &ind);
-	buffer_append_float32_auto(send_buffer, d->true_pitch_angle, &ind);
 	buffer_append_float32_auto(send_buffer, d->pitch_angle, &ind);
 	buffer_append_float32_auto(send_buffer, d->roll_angle, &ind);
 	buffer_append_uint16(send_buffer, d->switch_state, &ind);
