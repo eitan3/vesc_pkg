@@ -7,9 +7,6 @@ import Vedder.vesc.utility 1.0
 import Vedder.vesc.commands 1.0
 import Vedder.vesc.configparams 1.0
 
-import Vedder.vesc.logwriter 1.0
-import Vedder.vesc.tonesynthbuzzer 1.0
-
 Item {
     id: mainItem
     anchors.fill: parent
@@ -69,13 +66,9 @@ Item {
     property var audio_notes: []
     property var audio_devs: []
     
-    ToneSynthBuzzer {
-        id: mBuzzer
-    }
-    
-    LogWriter {
-        id: mLogWriter
-    }
+    //ToneSynthBuzzer {
+    //    id: mBuzzer
+    //}
     
     Settings {
         id: settingStorage
@@ -89,6 +82,7 @@ Item {
         dcWaveTypeModel.append({"text": "Saw Wave"})
 
         // Get available notes and load the last selected note
+        /*
         audio_notes = mBuzzer.GetNotesAvailable();
         for(var i in audio_notes){
             buzzerDcNoteModel.append({ "text": audio_notes[i] })
@@ -130,6 +124,7 @@ Item {
         // Load octave
         buzzerDcOctave_TF.text = settingStorage.value("buzzer_dc_octave", 3)
         mBuzzer.SetOctave(buzzerDcOctave_TF.text)
+        */
     }
 
     Component.onDestruction: {
@@ -455,7 +450,7 @@ Item {
                     
                     onCurrentIndexChanged: {
                         settingStorage.setValue("audio_device", currentIndex)
-                        mBuzzer.SetDeviceByName(audio_devs[currentIndex])
+                        //mBuzzer.SetDeviceByName(audio_devs[currentIndex])
                     }
                 }
                 RowLayout{
@@ -475,7 +470,7 @@ Item {
                         onValueChanged: {
                             if(buzzerVolumeSlider.value != buzzer_volume){
                                 buzzer_volume = buzzerVolumeSlider.value
-                                mBuzzer.SetVolume(buzzer_volume)
+                                //mBuzzer.SetVolume(buzzer_volume)
                                 settingStorage.setValue("buzzer_volume", buzzer_volume)
                             }
                         }
@@ -544,7 +539,7 @@ Item {
                         validator: IntValidator{bottom: 0; top: 6;}
                         onTextChanged: {
                             settingStorage.setValue("buzzer_dc_octave", buzzerDcOctave_TF.text)
-                            mBuzzer.SetOctave(buzzerDcOctave_TF.text)
+                            //mBuzzer.SetOctave(buzzerDcOctave_TF.text)
                         }
                     }
                     Text {
@@ -585,11 +580,11 @@ Item {
                             settingStorage.setValue("dc_wave_type", currentIndex)
                             if (currentIndex == 0)
                             {
-                                mBuzzer.SetWaveType("Sine")
+                                //mBuzzer.SetWaveType("Sine")
                             }
                             else if (currentIndex == 1)
                             {
-                                mBuzzer.SetWaveType("Saw")
+                                //mBuzzer.SetWaveType("Saw")
                             }
                         }
                     }
@@ -599,13 +594,13 @@ Item {
                     Button {
                         text: "Play"
                         onClicked: {                
-                            mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
+                            //mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
                         }
                     }
                     Button {
                         text: "Stop"
                         onClicked: {                
-                            mBuzzer.NoteOff()
+                            //mBuzzer.NoteOff()
                         }
                     }
                 }
@@ -613,13 +608,13 @@ Item {
                     Button {
                         text: "Get Error"
                         onClicked: {              
-                            buzzer_error_text = mBuzzer.GetError()
+                            //buzzer_error_text = mBuzzer.GetError()
                         }
                     }
                     Button {
                         text: "Clear Error"
                         onClicked: {         
-                            mBuzzer.ClearError()         
+                            //mBuzzer.ClearError()         
                             buzzer_error_text = ""
                         }
                     }
@@ -658,19 +653,7 @@ Item {
                                 
                         onClicked: {
                             // REMOVE ME FOR PUBLIC RELEASE
-                            if (enableDataDumping == 0) {
-                                enableDataDumping = 1
-                                mLogWriter.openLogFileFromPath(csvFileName.text, csvFilePath.text)
-                                var header = "erpm,braking,tuneB_weight,tuneC_weight,"
-                                header += "tuneA_current,tuneB_current,tuneC_current,"
-                                header += "current_request,tuneA_booster,tuneB_booster,tuneC_booster\n"
-                                mLogWriter.writeToLogFile(header)
-                            }
-                            else {
-                                enableDataDumping = 0
-                                mLogWriter.closeLogFile()
-                            }
-                            // VescIf.emitStatusMessage("This feature is disabled!", true)
+                            VescIf.emitStatusMessage("This feature is disabled!", true)
                         }
                     }
 
@@ -750,7 +733,6 @@ Item {
             var acceleration = dv.getFloat32(ind); ind += 4;
             var braking = dv.getInt16(ind); ind += 2;
             var current_request = dv.getFloat32(ind); ind += 4;
-            var true_pitch = dv.getFloat32(ind); ind += 4;
             var pitch = dv.getFloat32(ind); ind += 4;
             var roll = dv.getFloat32(ind); ind += 4;
             var switch_state = dv.getInt16(ind); ind += 2;
@@ -831,10 +813,9 @@ Item {
                 "Tune A Booster     : " + tuneA_booster_current.toFixed(2) + " A\n" + 
                 "Tune B Booster     : " + tuneB_booster_current.toFixed(2) + " A\n" + 
                 "Tune C Booster     : " + tuneC_booster_current.toFixed(2) + " A\n" + 
-                "ERPM               : " + (erpm / 1000).toFixed(3) + " / 1000 \n" +
+                "ERPM               : " + erpm.toFixed(2) + "\n" +
                 "Acceleration       : " + acceleration.toFixed(2) + "\n" +
                 "Braking            : " + braking + "\n" + 
-                "True Pitch         : " + true_pitch.toFixed(2) + "°\n" +
                 "Pitch              : " + pitch.toFixed(2) + "°\n" +
                 "Roll               : " + roll.toFixed(2) + "°\n" +
                 "Switch             : " + switchString + "\n" +
@@ -861,7 +842,7 @@ Item {
                                    tuneB_booster_current.toFixed(3) + "," + tuneC_booster_current.toFixed(3) + "\n"
                     if (dumpingCount == 100){
                         // REMOVE ME FOR PUBLIC RELEASE
-                        mLogWriter.writeToLogFile(dumpingText)
+                        // mLogWriter.writeToLogFile(dumpingText)
                         dumpingText = ""
                         dumpingCount = 0
                     }
@@ -878,22 +859,22 @@ Item {
                 if (duty_cycle >= buzzer_dc_threshold / 100 && is_playing_dc_buzzer == false)
                 {
                     is_playing_dc_buzzer = true
-                    mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
+                    //mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
                 }
                 else if (abs_erpm >= 300 && (adc1 <= 1 && adc2 <= 1) && is_playing_dc_buzzer == false)
                 {
                     is_playing_dc_buzzer = true
-                    mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
+                    //mBuzzer.NoteOn(audio_notes[settingStorage.value("dc_note", 0)]) // Include octave and volume
                 }
                 else if (duty_cycle < buzzer_dc_threshold / 100 && is_playing_dc_buzzer == true)
                 {
                     is_playing_dc_buzzer = false
-                    mBuzzer.NoteOff()
+                    //mBuzzer.NoteOff()
                 }
                 else if ((adc1 >= 1 || adc2 >= 1) && is_playing_dc_buzzer == true)
                 {
                     is_playing_dc_buzzer = false
-                    mBuzzer.NoteOff()
+                    //mBuzzer.NoteOff()
                 }
             }
         }

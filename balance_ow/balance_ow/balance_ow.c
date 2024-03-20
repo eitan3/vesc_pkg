@@ -1072,7 +1072,8 @@ static void do_rc_move(data *d)
 static float calc_booster(data *d, float min_pitch, float max_pitch, float current_limit)
 {
 	float booster_current = 0;
-	float abs_proportional = fabsf(d->proportional);
+	float true_proportional = d->setpoint - d->true_pitch_angle;
+	float abs_proportional = fabsf(true_proportional);
 	if (abs_proportional >= min_pitch) {
 		booster_current = current_limit;
 		if (abs_proportional < max_pitch && max_pitch > min_pitch) {
