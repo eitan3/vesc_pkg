@@ -79,6 +79,9 @@ typedef struct {
 	uint16_t asym_min_erpm_c;
 	uint16_t asym_max_erpm_c;
 	float mahony_kp;
+    float mahony_kp_roll;
+    float mahony_kp_yaw;
+    float bf_accel_confidence_decay;
 	uint16_t hertz;
 	uint16_t loop_time_filter;
 	float fault_pitch;

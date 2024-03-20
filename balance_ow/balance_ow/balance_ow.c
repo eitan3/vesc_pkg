@@ -25,6 +25,8 @@
 #include "conf/confxml.h"
 #include "conf/buffer.h"
 
+#include "balance_filter.h"
+
 #include <math.h>
 #include <string.h>
 
@@ -101,9 +103,6 @@ typedef struct {
 	float tiltback_variable, tiltback_variable_max_erpm, noseangling_step_size;
 	float tunea_transition_step_size, tuneb_transition_step_size, tunec_transition_step_size;
 
-	// Feature: True Pitch
-	ATTITUDE_INFO m_att_ref;
-
 	// Runtime values read from elsewhere
 	float pitch_angle, last_pitch_angle, roll_angle, abs_roll_angle, abs_roll_angle_sin, last_gyro_y;
     float true_pitch_angle;
@@ -148,6 +147,9 @@ typedef struct {
 	float acceleration;
 	int accelidx;
 	float accelhist[ACCEL_ARRAY_SIZE];
+
+    // IMU data for the balancing filter
+    BalanceFilterData balance_filter;
 
 	// Temp tiltback
 	float mc_fet_start_temp;
@@ -349,6 +351,8 @@ static void configure(data *d) {
 	// Odometer
 	d->odometer_dirty = 0;
 	d->odometer = VESC_IF->mc_get_odometer();
+
+	balance_filter_configure(&d->balance_filter, &d->balance_conf);
 }
 
 static void reset_vars(data *d) {
@@ -1247,7 +1251,7 @@ static void get_tuneC_current(data *d)
 
 static void imu_ref_callback(float *acc, float *gyro, float *mag, float dt) {
 	data *d = (data*)ARG;
-	VESC_IF->ahrs_update_mahony_imu(gyro, acc, dt, &d->m_att_ref);
+    balance_filter_update(&d->balance_filter, gyro, acc, dt);
 }
 
 static void balance_thd(void *arg) {
@@ -1277,11 +1281,11 @@ static void balance_thd(void *arg) {
 
 		// Get pitch & true pitch (true pitch is derived from the secondary IMU filter running with kp=0.2)
 		d->last_pitch_angle = d->pitch_angle;
-		d->true_pitch_angle = RAD2DEG_f(VESC_IF->ahrs_get_pitch(&d->m_att_ref));
-		d->pitch_angle = RAD2DEG_f(VESC_IF->imu_get_pitch());
+		d->true_pitch_angle = RAD2DEG_f(VESC_IF->imu_get_pitch());
+		d->pitch_angle = RAD2DEG_f(balance_filter_get_pitch(&d->balance_filter));
 
 		// Get roll
-		d->roll_angle = RAD2DEG_f(VESC_IF->ahrs_get_roll(&d->m_att_ref));
+		d->roll_angle = RAD2DEG_f(VESC_IF->imu_get_roll());
 		d->abs_roll_angle = fabsf(d->roll_angle);
 		d->abs_roll_angle_sin = sinf(DEG2RAD_f(d->abs_roll_angle));
 
@@ -1320,7 +1324,7 @@ static void balance_thd(void *arg) {
 		d->switch_state = check_adcs(d);
 
 		// Yaw Turn Tilt:
-		d->yaw_angle = VESC_IF->ahrs_get_yaw(&d->m_att_ref) * 180.0f / M_PI;
+		d->yaw_angle = VESC_IF->imu_get_yaw() * 180.0f / M_PI;
 		float new_change = d->yaw_angle - d->last_yaw_angle;
 		bool unchanged = false;
 		if ((new_change == 0) // Exact 0's only happen when the IMU is not updating between loops
@@ -1852,10 +1856,7 @@ INIT_FUN(lib_info *info) {
 
 	configure(d);
 
-	VESC_IF->ahrs_init_attitude_info(&d->m_att_ref);
-	d->m_att_ref.acc_confidence_decay = 0.1;
-	d->m_att_ref.kp = 0.2;
-
+    balance_filter_init(&d->balance_filter);
 	VESC_IF->imu_set_read_callback(imu_ref_callback);
 
 	d->thread = VESC_IF->spawn(balance_thd, 2048, "Balance Main", d);

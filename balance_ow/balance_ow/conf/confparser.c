@@ -47,6 +47,9 @@ int32_t confparser_serialize_balance_config(uint8_t *buffer, const balance_confi
 	buffer_append_uint16(buffer, conf->asym_min_erpm_c, &ind);
 	buffer_append_uint16(buffer, conf->asym_max_erpm_c, &ind);
 	buffer_append_float32_auto(buffer, conf->mahony_kp, &ind);
+	buffer_append_float32_auto(buffer, conf->mahony_kp_roll, &ind);
+	buffer_append_float32_auto(buffer, conf->mahony_kp_yaw, &ind);
+	buffer_append_float32_auto(buffer, conf->bf_accel_confidence_decay, &ind);
 	buffer_append_uint16(buffer, conf->hertz, &ind);
 	buffer_append_uint16(buffer, conf->loop_time_filter, &ind);
 	buffer_append_float32_auto(buffer, conf->fault_pitch, &ind);
@@ -174,6 +177,9 @@ bool confparser_deserialize_balance_config(const uint8_t *buffer, balance_config
 	conf->asym_min_erpm_c = buffer_get_uint16(buffer, &ind);
 	conf->asym_max_erpm_c = buffer_get_uint16(buffer, &ind);
 	conf->mahony_kp = buffer_get_float32_auto(buffer, &ind);
+	conf->mahony_kp_roll = buffer_get_float32_auto(buffer, &ind);
+	conf->mahony_kp_yaw = buffer_get_float32_auto(buffer, &ind);
+	conf->bf_accel_confidence_decay = buffer_get_float32_auto(buffer, &ind);
 	conf->hertz = buffer_get_uint16(buffer, &ind);
 	conf->loop_time_filter = buffer_get_uint16(buffer, &ind);
 	conf->fault_pitch = buffer_get_float32_auto(buffer, &ind);
@@ -294,6 +300,9 @@ void confparser_set_defaults_balance_config(balance_config *conf) {
 	conf->asym_min_erpm_c = APPCONF_BALANCE_ASYM_MIN_ERPM_C;
 	conf->asym_max_erpm_c = APPCONF_BALANCE_ASYM_MAX_ERPM_C;
 	conf->mahony_kp = APPCONF_BALANCE_MAHONY_KP;
+	conf->mahony_kp_roll = APPCONF_BALANCE_MAHONY_KP_ROLL;
+	conf->mahony_kp_yaw = APPCONF_BALANCE_MAHONY_KP_YAW;
+	conf->bf_accel_confidence_decay = APPCONF_BALANCE_BF_ACCEL_CONF_DECAY;
 	conf->hertz = APPCONF_BALANCE_HERTZ;
 	conf->loop_time_filter = APPCONF_BALANCE_LOOP_TIME_FILTER;
 	conf->fault_pitch = APPCONF_BALANCE_FAULT_PITCH;

@@ -56,7 +56,8 @@ Item {
                                ["double", "brake_current"], ["double", "temp_tiltback_start_offset"], ["double", "temp_tiltback_speed"],
                                ["double", "temp_tiltback_angle"], ["bool", "enable_reverse_stop"], ["bool", "enable_quickstop"],
                                ["int", "quickstop_erpm"], ["double", "quickstop_angle"], ["int", "startup_click_current"], 
-                               ["double", "softstart_speed"]]
+                               ["double", "softstart_speed"], ["double", "mahony_kp_roll"], ["double", "mahony_kp_yaw"], 
+                               ["double", "bf_accel_confidence_decay"]]
     
     property var is_playing_dc_buzzer: false
     property var enable_buzzer_dc: false

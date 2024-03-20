@@ -8,6 +8,8 @@ Most things should be similar to the regular balance app, except some of the tim
 
 
 Recent features:
+Added new mahony imu filter (thanks to luke carver).
+
 Added asymmetric tune (2 more tunes and blending options).
 
 Added new tunes tab (thanks to mitch).
